@@ -1,36 +1,87 @@
-/* =========================================================
-   BILLING PAGE
-   ========================================================= */
 
-.billing-page {
-  width: 100%;
-  min-height: 100vh;
-  background-color: #f7f9f8;
+/* ============================================================
+   billing.css
+   Page-specific rules for voiceBilling.html.
+   Load AFTER common.css.
+   ============================================================ */
+
+
+/* ============================================================
+   HEADER BUTTONS
+   ============================================================ */
+
+.back-button,
+.profile-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+
+  cursor: pointer;
 }
 
-.billing-layout {
+.back-button img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+}
+
+.back-button:hover {
+  background-color: #dddfe1;
+}
+
+.profile-button img {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
+.profile-button:hover {
+  background-color: #dddfe1;
+}
+
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+
+.main-container {
   display: flex;
   width: 100%;
   min-height: calc(100vh - 4rem);
 }
 
-.billing-main {
-  flex: 1;
+.main-content {
+  flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  padding-bottom: 5rem;
+  padding-bottom: 0;
 }
 
-/* =========================================================
+.sidebar-desktop {
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
    VOICE SECTION
-   ========================================================= */
+   ============================================================ */
 
 .voice-section {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
   gap: 1rem;
+
   margin-top: 0;
   padding: 1rem;
 }
@@ -53,6 +104,7 @@
   background-color: #0b8a6a;
   border: none;
   border-radius: 50%;
+
   cursor: pointer;
 
   box-shadow:
@@ -70,8 +122,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
   gap: 0.65rem;
+
   margin-top: 0.7rem;
+
   font-size: 1.25rem;
 }
 
@@ -79,28 +134,39 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+
   gap: 0.6rem;
+}
+
+.listening-timer {
+  display: inline-block;
+
+  margin: 0 0.15rem;
+
+  font-size: 1.25rem;
 }
 
 .listening-timer-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.25rem;
-}
 
-.listening-timer {
-  display: inline-block;
-  margin: 0 0.15rem;
   font-size: 1.25rem;
 }
 
 .listening-timer-container .voice-text {
   margin-right: 0.5rem;
+
   color: #0b8a6a;
+
   font-size: 1.25rem;
   font-weight: 600;
 }
+
+
+/* ============================================================
+   STOP VOICE BUTTON
+   ============================================================ */
 
 #stopVoiceButton {
   display: flex;
@@ -113,10 +179,12 @@
   margin-top: 0.2rem;
 
   color: #22272b;
+
   font-size: 0.95rem;
   font-weight: 600;
 
   background-color: #ffffff;
+
   border: 0.0625rem solid #c7ccd1;
   border-radius: 999rem;
 
@@ -133,9 +201,10 @@
   color: #ffffff;
 }
 
-/* =========================================================
+
+/* ============================================================
    VOICE OUTPUT
-   ========================================================= */
+   ============================================================ */
 
 .voice-output-section {
   display: flex;
@@ -149,12 +218,14 @@
 .voice-output-container {
   display: flex;
   flex-direction: column;
+
   gap: 0.65rem;
 
   width: 100%;
   padding: 1rem;
 
   background-color: #f7f8fa;
+
   border: 0.0625rem solid #e2e5e9;
   border-radius: 0.8rem;
 
@@ -165,16 +236,20 @@
 
 .voice-output-label {
   color: #5f6368;
+
   font-size: 0.75rem;
   font-weight: 500;
+
   letter-spacing: 0.08em;
 }
 
 .voice-output-text {
   min-height: 1.5rem;
+
   margin: 0;
 
   color: #1d2329;
+
   font-size: 1.1rem;
   font-weight: 600;
 }
@@ -183,6 +258,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+
   gap: 0.6rem;
 }
 
@@ -198,6 +274,7 @@
 
   font-size: 0.75rem;
   font-weight: 600;
+
   white-space: nowrap;
 }
 
@@ -211,14 +288,18 @@
   background-color: #fde5e5;
 }
 
-/* =========================================================
+
+/* ============================================================
    BILL CONTAINER
-   ========================================================= */
+   ============================================================ */
 
 .bill-container {
   display: flex;
   flex-direction: column;
+
   gap: 0.65rem;
+
+  width: 100%;
 
   margin-top: 0.8rem;
   padding: 0 1rem;
@@ -228,6 +309,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   gap: 0.8rem;
 }
 
@@ -235,38 +317,211 @@
   margin: 0;
 
   color: #22272b;
+
   font-size: 1.15rem;
   font-weight: 700;
 }
+
+
+/* ============================================================
+   ADD ITEM BUTTON
+   ============================================================ */
 
 .add-item-button-container {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+
   gap: 0.5rem;
+
+  position: relative;
+  z-index: 10;
 }
 
 .add-item-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   padding: 0.5rem 0;
 
   color: #0b8a6a;
+
   font-size: 0.88rem;
   font-weight: 600;
 
   background-color: transparent;
+
   border: none;
 
   cursor: pointer;
+
+  position: relative;
+  z-index: 11;
 }
 
 .add-item-button-container img {
   width: 1rem;
   height: 0.75rem;
+
+  object-fit: contain;
+
+  pointer-events: none;
 }
 
-/* =========================================================
+
+/* ============================================================
+   POPUP
+   ============================================================ */
+
+#billItemForm.overlay {
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+#billItemForm.overlay::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.billing-popup-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 3000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1rem;
+
+  background-color: rgba(0, 0, 0, 0.45);
+}
+
+.pop-up {
+  position: relative;
+
+  z-index: 3001;
+
+  width: 22rem;
+  max-width: 100%;
+
+  background: #ffffff;
+
+  border-radius: 0.8rem;
+
+  padding: 1.5rem;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.8rem;
+
+  box-shadow:
+    0 0.5rem 1.5rem
+    rgba(0, 0, 0, 0.3);
+}
+
+.pop-up h2 {
+  text-align: center;
+
+  margin: 0 0 0.5rem;
+
+  font-size: 2rem;
+  font-weight: 600;
+
+  font-family: inherit;
+
+  color: #0b8a6a;
+}
+
+
+/* ============================================================
+   ADD ITEM FORM
+   ============================================================ */
+
+#addItemForm {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.8rem;
+}
+
+#addItemForm label {
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  color: #444444;
+}
+
+#addItemForm input {
+  width: 100%;
+
+  padding: 0.7rem;
+
+  border: 0.0625rem solid #cccccc;
+  border-radius: 0.4rem;
+
+  font-size: 0.95rem;
+
+  outline: none;
+}
+
+#addItemForm input:focus {
+  border-color: #0b8a6a;
+}
+
+
+/* ============================================================
+   POPUP ACTIONS
+   ============================================================ */
+
+.popup-actions {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 1rem;
+
+  gap: 0.5rem;
+}
+
+.popup-actions button {
+  width: 48%;
+
+  padding: 0.8rem;
+
+  border: none;
+  border-radius: 0.4rem;
+
+  font-size: 1rem;
+
+  cursor: pointer;
+}
+
+.secondary-button {
+  background: #dc3545;
+  color: #ffffff;
+}
+
+.secondary-button:hover {
+  background: #c82333;
+}
+
+.primary-button {
+  background: #0b8a6a;
+  color: #ffffff;
+}
+
+.primary-button:hover {
+  background: #007a5b;
+}
+
+
+/* ============================================================
    BILL TABLE
-   ========================================================= */
+   ============================================================ */
 
 .bill-table-container {
   max-height: 16.25rem;
@@ -322,7 +577,9 @@
 
 .bill-table tbody tr:hover {
   background-color: #f8fafc;
-  transition: background-color 0.2s ease;
+
+  transition:
+    background-color 0.2s ease;
 }
 
 .empty-bill-cell {
@@ -331,6 +588,7 @@
   color: #6b7470;
 
   font-size: 0.9rem;
+
   text-align: center;
 }
 
@@ -345,17 +603,20 @@
 
 .item-description {
   color: #555555;
+
   font-size: 0.82rem;
 }
 
-/* =========================================================
+
+/* ============================================================
    ROW ACTIONS
-   ========================================================= */
+   ============================================================ */
 
 .row-actions {
   display: flex;
   align-items: center;
   justify-content: center;
+
   gap: 1rem;
 }
 
@@ -367,9 +628,11 @@
 
   width: 2rem;
   height: 2rem;
+
   padding: 0;
 
   background-color: transparent;
+
   border: none;
   border-radius: 50%;
 
@@ -388,12 +651,14 @@
 .delete-item-button img {
   width: 1.1rem;
   height: 1.1rem;
+
   object-fit: contain;
 }
 
-/* =========================================================
+
+/* ============================================================
    BILL SUMMARY
-   ========================================================= */
+   ============================================================ */
 
 .bill-summary {
   width: 100%;
@@ -421,6 +686,7 @@
 
 .discount-row {
   margin-bottom: 0;
+
   color: #775a20;
 }
 
@@ -429,9 +695,15 @@
   align-items: center;
 
   gap: 0.3rem;
+  padding: 0;
 
   color: #775a20;
+
   font-size: 0.94rem;
+
+  background-color: transparent;
+
+  border: none;
 }
 
 .discount-input {
@@ -449,6 +721,7 @@
   outline: none;
 
   text-align: center;
+
   font-size: 0.9rem;
 }
 
@@ -473,19 +746,22 @@
 
 .grand-total-label {
   color: #22272b;
+
   font-size: 1.05rem;
   font-weight: 700;
 }
 
 .grand-total-price {
   color: #007b5a;
+
   font-size: 1.55rem;
   font-weight: 700;
 }
 
-/* =========================================================
+
+/* ============================================================
    BILL ACTIONS
-   ========================================================= */
+   ============================================================ */
 
 .bill-actions {
   display: flex;
@@ -502,6 +778,7 @@
 
 .bill-action-button {
   display: inline-flex;
+
   flex: 1;
 
   align-items: center;
@@ -533,23 +810,26 @@
   object-fit: contain;
 }
 
-/* =========================================================
-   GENERATE / NEW BILL
-   ========================================================= */
+
+/* ============================================================
+   NEW BILL / GENERATE BILL
+   ============================================================ */
 
 .new-bill-container {
   width: 100%;
+
   padding: 0;
+
   margin-top: auto;
 }
 
 .new-bill {
-  width: 100%;
-  height: 3rem;
-
   display: flex;
   align-items: center;
   justify-content: center;
+
+  width: 100%;
+  height: 3rem;
 
   gap: 0.4rem;
 
@@ -557,6 +837,7 @@
   border-radius: 2rem;
 
   background-color: #008f6b;
+
   color: #ffffff;
 
   cursor: pointer;
@@ -579,18 +860,37 @@
 .new-bill img {
   width: 1rem;
   height: 1rem;
+
   object-fit: contain;
 }
 
 .new-bill p {
   margin: 0;
+
   font-size: 0.75rem;
   font-weight: 600;
 }
 
-/* =========================================================
+
+/* ============================================================
+   SUCCESS SCREEN
+   ============================================================ */
+
+#voiceBillingContent {
+  width: 100%;
+}
+
+#billSuccessScreen {
+  width: 100%;
+  min-height: 100%;
+
+  box-sizing: border-box;
+}
+
+
+/* ============================================================
    FOOTER
-   ========================================================= */
+   ============================================================ */
 
 .footer-gap {
   height: 1rem;
@@ -598,6 +898,7 @@
 
 .footer-section {
   width: 100%;
+
   padding: 1rem 0;
 
   text-align: center;
@@ -605,417 +906,71 @@
 
 .footer-section footer {
   color: #7b847f;
+
   font-size: 0.75rem;
 }
 
-/* =========================================================
-   POPUP
-   ========================================================= */
 
-.billing-popup-overlay {
-  position: fixed;
-  inset: 0;
+/* ============================================================
+   COMMON OVERRIDES
+   ============================================================ */
 
-  z-index: 3000;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 1rem;
-
-  background-color: rgba(0, 0, 0, 0.45);
+.top-bar {
+  min-height: 3rem;
 }
 
-.pop-up {
-  width: min(22rem, 100%);
+.nav-item button {
+  min-height: 3.85rem;
 
-  background-color: #ffffff;
-
-  border-radius: 0.8rem;
-
-  padding: 1.5rem;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 0.8rem;
-
-  box-shadow:
-    0 0.5rem 1.5rem
-    rgba(0, 0, 0, 0.3);
+  font-size: 0.72rem;
 }
 
-.pop-up h2 {
-  text-align: center;
-
-  margin: 0 0 0.5rem;
-
-  color: #0b8a6a;
-
-  font-size: 2rem;
-  font-weight: 600;
+.nav-label {
+  font-size: 0.72rem;
 }
 
-#addItemForm,
-#addUserForm {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+.hidden {
+  display: none !important;
 }
 
-#addItemForm input,
-#addUserForm input {
-  width: 100%;
 
-  padding: 0.7rem;
-
-  border: 0.0625rem solid #cccccc;
-  border-radius: 0.4rem;
-
-  font-size: 0.95rem;
-
-  outline: none;
-}
-
-#addItemForm input:focus,
-#addUserForm input:focus {
-  border-color: #0b8a6a;
-}
-
-.popup-actions {
-  display: flex;
-  justify-content: space-between;
-
-  margin-top: 1rem;
-
-  gap: 0.5rem;
-}
-
-.popup-actions button {
-  width: 48%;
-
-  padding: 0.8rem;
-
-  border: none;
-  border-radius: 0.4rem;
-
-  font-size: 1rem;
-
-  cursor: pointer;
-}
-
-.secondary-button {
-  background-color: #dc3545;
-  color: #ffffff;
-}
-
-.secondary-button:hover {
-  background-color: #c82333;
-}
-
-.primary-button {
-  background-color: #0b8a6a;
-  color: #ffffff;
-}
-
-.primary-button:hover {
-  background-color: #007a5b;
-}
-
-/* =========================================================
-   BILL SUCCESS SCREEN
-   ========================================================= */
-
-.mobile-screen {
-  width: 100%;
-  min-height: calc(100vh - 4rem);
-
-  padding: 2rem 1rem 5rem;
-
-  background-color: #f7f9f8;
-}
-
-.success {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  text-align: center;
-
-  padding: 1rem 0 1.5rem;
-}
-
-.success-outer-circle {
-  width: 6rem;
-  height: 6rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background-color: #dff6ee;
-}
-
-.success-icon {
-  width: 4.5rem;
-  height: 4.5rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background-color: #0b8a6a;
-}
-
-.success-icon img {
-  width: 2rem;
-  height: 2rem;
-  object-fit: contain;
-}
-
-.success h2 {
-  margin: 1.2rem 0 0;
-
-  color: #17211d;
-
-  font-size: 1.5rem;
-  font-weight: 750;
-}
-
-.description {
-  max-width: 30rem;
-
-  margin: 0.6rem 0 0;
-
-  color: #737c78;
-
-  font-size: 0.9rem;
-
-  line-height: 1.5;
-}
-
-/* =========================================================
-   BILL DETAILS
-   ========================================================= */
-
-.bill-details {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-
-  gap: 1rem;
-
-  width: 100%;
-}
-
-.bill-details .card {
-  padding: 1.2rem;
-
-  background-color: #ffffff;
-
-  border: 0.0625rem solid #e5e9e7;
-  border-radius: 0.8rem;
-
-  box-shadow:
-    0 0.25rem 1rem
-    rgba(0, 0, 0, 0.05);
-}
-
-.bill-details .card strong {
-  color: #737c78;
-
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-}
-
-.bill-details .card h2 {
-  margin: 0.5rem 0 0;
-
-  color: #17211d;
-
-  font-size: 1rem;
-}
-
-/* =========================================================
-   AMOUNT CARD
-   ========================================================= */
-
-.amount-card {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin-top: 1rem;
-
-  padding: 1.3rem;
-
-  background-color: #0b8a6a;
-
-  border-radius: 0.9rem;
-
-  color: #ffffff;
-}
-
-.amount-content strong {
-  display: block;
-
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.amount-content h1 {
-  margin: 0.4rem 0 0;
-
-  font-size: 1.8rem;
-}
-
-.receipt-btn {
-  width: 3rem;
-  height: 3rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: none;
-  border-radius: 50%;
-
-  background-color: rgba(255, 255, 255, 0.18);
-
-  cursor: pointer;
-}
-
-.receipt-btn img {
-  width: 1.5rem;
-  height: 1.5rem;
-}
-
-/* =========================================================
-   SUCCESS ACTION LIST
-   ========================================================= */
-
-.action-list {
-  width: 100%;
-
-  display: flex;
-  flex-direction: column;
-
-  margin-top: 1rem;
-
-  background-color: #ffffff;
-
-  border: 0.0625rem solid #e5e9e7;
-  border-radius: 0.8rem;
-
-  overflow: hidden;
-}
-
-.action-item {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 1rem;
-
-  background-color: #ffffff;
-
-  border: none;
-  border-bottom: 0.0625rem solid #edf0ee;
-
-  cursor: pointer;
-}
-
-.action-item:last-child {
-  border-bottom: none;
-}
-
-.action-item:hover {
-  background-color: #fafafa;
-}
-
-.action-left {
-  display: flex;
-  align-items: center;
-
-  gap: 0.8rem;
-}
-
-.action-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 0.6rem;
-
-  background-color: #e5f5ef;
-}
-
-.action-icon img {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.action-left p {
-  margin: 0;
-
-  color: #17211d;
-
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.arrow img {
-  width: 1rem;
-  height: 1rem;
-}
-
-/* =========================================================
+/* ============================================================
    DESKTOP
-   ========================================================= */
+   IMPORTANT:
+   NO padding-left: var(--sidebar-width)
+   because Sidebar is already a flex item.
+   ============================================================ */
 
 @media screen and (min-width: 1024px) {
 
-  .billing-main {
-    padding-left: var(--sidebar-width);
+  .main-container {
+    display: flex;
+
+    width: 100%;
+    min-height: calc(100vh - 4rem);
   }
 
-  .voice-output-section,
-  .bill-container {
-    max-width: 75rem;
-    margin-left: auto;
-    margin-right: auto;
+  .sidebar-desktop {
+    flex-shrink: 0;
   }
 
-  .voice-section {
-    padding-top: 2rem;
-  }
+  .main-content {
+    flex: 1 1 auto;
 
-  .bill-table-container {
-    max-height: 25rem;
+    width: 100%;
+    min-width: 0;
+
+    padding-left: 0;
   }
 
 }
 
-/* =========================================================
+
+/* ============================================================
    TABLET
-   ========================================================= */
+   ============================================================ */
 
 @media screen and (max-width: 768px) {
-
-  .billing-main {
-    padding-bottom: 5.5rem;
-  }
 
   .voice-button {
     width: 6rem;
@@ -1033,9 +988,10 @@
 
 }
 
-/* =========================================================
+
+/* ============================================================
    SMALL MOBILE
-   ========================================================= */
+   ============================================================ */
 
 @media screen and (max-width: 480px) {
 
