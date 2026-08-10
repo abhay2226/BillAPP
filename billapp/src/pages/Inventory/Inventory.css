@@ -1,0 +1,550 @@
+/* =========================================================
+   INVENTORY PAGE
+========================================================= */
+
+/* Search Wrapper */
+.search-container {
+  width: 100%;
+  height: 4.5rem;
+  min-height: 4.5rem;
+  padding: 0.65rem 0;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 400;
+}
+
+.search-input-wrapper {
+  width: 100%;
+  height: 3.2rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #f3f5f7;
+  border-radius: 0.85rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1.2rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  border-radius: 0.85rem;
+  background-color: transparent;
+  padding: 0 1.2rem 0 3.2rem;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #333333;
+}
+
+.search-input::placeholder {
+  color: #9e9e9e;
+}
+
+
+/* Metric Display Cards */
+.card_section {
+  width: 100%;
+  min-height: 7.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding: 0.5rem 0 1rem;
+  background-color: #ffffff;
+  position: sticky;
+  top: 4.2rem;
+  z-index: 300;
+}
+
+.card_box {
+  width: 100%;
+  min-width: 0;
+  min-height: 6.5rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #f2f4f6;
+  border: 0.0625rem solid #e4e8e6;
+  border-radius: 0.95rem;
+  box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.06);
+}
+
+.card_box_header {
+  margin: 0;
+  color: #53605a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.card_box_count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #007357;
+}
+
+.card_box:nth-child(2) .card_box_count {
+  color: #e58a00;
+}
+
+.card_box:nth-child(3) .card_box_count {
+  color: #ba1a1a;
+}
+
+
+/* =========================================================
+   CORE DATA TABLE LAYOUT & FIXED ALIGNMENT
+========================================================= */
+.table-container {
+  width: 100%;
+  margin-top: 0.5rem;
+  border: 0.0625rem solid #eae2f0;
+  border-radius: 0.9375rem;
+  background-color: #ffffff;
+  box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+table {
+  width: 100%;
+  min-width: 48rem;
+  border-collapse: collapse;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1.15rem; /* Large legible base size for numbers, text, and weights */
+}
+
+/* Global table head rules */
+thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  letter-spacing: 0.05rem;
+  padding: 1.4rem 1.25rem;
+  border-bottom: 0.15rem solid #e2e8f0;
+  white-space: nowrap;
+  
+  /* CRITICAL: Set center alignment as standard for all headers */
+  text-align: center;
+}
+
+/* Force left-alignment specifically for the first column layout header (ITEM) */
+thead th:first-child {
+  text-align: left;
+}
+
+/* Global table data body rules */
+tbody td {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 0.0625rem solid #f1f5f9;
+  vertical-align: middle;
+  color: #1e293b;
+  
+  /* CRITICAL: Center row items like numbers, weights, and checkmarks by default */
+  text-align: center;
+}
+
+/* Keep the main descriptive text cell left-aligned for proper balance */
+tbody td:first-child {
+  text-align: left;
+}
+
+tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Row Content Layout Micro-elements */
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.item strong {
+  color: #0f172a;
+  font-size: 1.25rem;
+}
+
+.item small {
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+/* Price block (₹5) formatting */
+.price {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 1.15rem;
+}
+
+.meta-text {
+  color: #475569;
+  font-size: 1.15rem;
+}
+
+.empty-bill-cell {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7470;
+}
+
+
+/* Action Key Blocks */
+.action-buttons {
+  display: flex;
+  /* Centered uniformly under the structural ACTION column text header */
+  justify-content: center; 
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.icon-btn {
+  width: 2.8rem;
+  height: 2.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.0625rem solid #e2e8f0;
+  border-radius: 0.6rem;
+  background-color: #ffffff;
+  cursor: pointer;
+  padding: 0;
+}
+
+.icon-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.icon-btn img {
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+}
+
+
+/* Status Key Blocks (Tick Mark Fix) */
+.status-cell {
+  text-align: center;
+}
+
+.status-btn {
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 0.0625rem solid #e2e8f0;
+  border-radius: 0.6rem;
+  background-color: #ffffff;
+  
+  /* Flex parameters center the visual check image graphic inside the button profile box */
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  
+  padding: 0;
+  /* Centers the button container perfectly within the td column block constraints */
+  margin: 0 auto; 
+  cursor: pointer;
+}
+
+.status-btn img {
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+}
+
+
+/* Pagination Controls */
+.pagination-container {
+  width: 100%;
+  min-height: 4.5rem;
+  margin-top: 0;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f3f5f7;
+  border-top: 0.0625rem solid #e5e7eb;
+}
+
+.pagination-text {
+  font-size: 1rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.pagination-btn {
+  width: 2.6rem;
+  height: 2.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border: 0.0625rem solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.pagination-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination-btn img {
+  width: 1.15rem;
+  height: 1.15rem;
+  filter: brightness(0);
+}
+
+
+/* Input Form Popups */
+.popup {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.popup-content {
+  width: min(28rem, 90%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border-radius: 1rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+}
+
+.popup-content h2 {
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-size: 1.85rem;
+  font-weight: 600;
+  color: #008f6b;
+}
+
+.popup-content input,
+.popup-content select {
+  width: 100%;
+  padding: 1rem;
+  border: 0.0625rem solid #cccccc;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  outline: none;
+  background-color: #ffffff;
+}
+
+.popup-content input:focus,
+.popup-content select:focus {
+  border-color: #007bff;
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.popup-buttons button {
+  width: 50%;
+  padding: 1.1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.popup-buttons button:first-child {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.popup-buttons button:last-child {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+
+/* Footers */
+.footer-section {
+  left: 0;
+  right: 0;
+}
+
+.footer-gap {
+  height: 40rem;
+}
+
+
+/* =========================================================
+   BREAKPOINTS / MEDIA QUERIES
+========================================================= */
+
+@media screen and (max-width: 768px) {
+  .main-content {
+    padding: 0 0.75rem 1rem;
+  }
+}
+
+@media screen and (max-width: 390px) {
+  .inventory_section {
+    height: 3.75rem;
+    min-height: 3.75rem;
+    padding: 0 0.75rem;
+  }
+
+  .left_inventory_section {
+    gap: 0.6rem;
+  }
+
+  .left_inventory_section h4 {
+    font-size: 0.9rem;
+  }
+
+  .search-container {
+    height: 3.25rem;
+    min-height: 3.25rem;
+  }
+
+  .card_section {
+    top: 3.25rem;
+    gap: 0.4rem;
+  }
+
+  .card_box {
+    min-height: 4.25rem;
+    padding: 0.6rem;
+  }
+
+  .card_box_header {
+    font-size: 0.55rem;
+  }
+
+  .card_box_count {
+    font-size: 1rem;
+  }
+
+  .pagination-text {
+    font-size: 0.6rem;
+  }
+}
+
+@media screen and (min-width: 391px) and (max-width: 480px) {
+  .card_section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .card_box_header {
+    font-size: 0.58rem;
+  }
+
+  table {
+    font-size: 0.85rem;
+  }
+
+  .item strong {
+    font-size: 0.95rem;
+  }
+}
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .main-content {
+    padding: 0 1rem 0 var(--sidebar-width);
+    margin-left: 0.5rem;
+  }
+
+  .card_section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .card_box {
+    min-height: 5rem;
+    padding: 0.9rem;
+  }
+
+  table {
+    font-size: 0.95rem;
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .main-content {
+    padding: 0 1.5rem 0 var(--sidebar-width);
+    margin-left: 0.5rem;
+  }
+
+  #backButton {
+    display: none;
+  }
+
+  .inventory_section {
+    padding: 0 1.5rem;
+  }
+
+  .card_section {
+    gap: 1.5rem;
+    top: 4.2rem;
+  }
+
+  .card_box {
+    min-height: 5.5rem;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .app_container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  #backButton {
+    display: none;
+  }
+
+  .main-content {
+    padding: 0 2rem 0 var(--sidebar-width);
+    margin-left: 0.5rem;
+  }
+
+  .card_section {
+    gap: 2rem;
+  }
+
+  .card_box {
+    padding: 1.25rem;
+  }
+
+  thead th,
+  tbody td {
+    padding: 1.6rem 1.5rem;
+  }
+}

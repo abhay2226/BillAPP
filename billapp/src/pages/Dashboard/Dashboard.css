@@ -1,0 +1,439 @@
+/* =========================================================
+   DASHBOARD CONTENT
+========================================================= */
+
+.main-content {
+  padding: 1.5rem 2rem;
+  background-color: #f7f9f8;
+}
+
+/* =========================================================
+   WELCOME CARD
+========================================================= */
+
+.card-welcome {
+  width: 100%;
+  min-height: 10rem;
+
+  display: flex;
+  align-items: center;
+
+  padding: 2rem;
+
+  background-color: #0b8a6a;
+  border-radius: 1rem;
+
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+
+  margin-bottom: 1.5rem;
+}
+
+.card-content {
+  width: 100%;
+}
+
+.card-date {
+  margin: 0 0 0.75rem;
+
+  color: #d9f5ed;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.welcome-title {
+  margin: 0;
+
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* =========================================================
+   STAT CARDS
+========================================================= */
+
+.stats-row {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 1.25rem;
+
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  width: 100%;
+  min-height: 7.5rem;
+
+  padding: 1.5rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #e5e7eb;
+  border-radius: 1rem;
+
+  box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.05);
+}
+
+.stat-label {
+  margin: 0 0 0.6rem;
+
+  color: #64748b;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.stat-value {
+  margin: 0;
+
+  color: #0b8a6a;
+
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.stat-value-container {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.low-stock-number {
+  color: #e58a00;
+}
+
+.stat-items-label {
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* =========================================================
+   QUICK ACTION HEADING
+========================================================= */
+
+.section-heading {
+  width: 100%;
+
+  margin-bottom: 1rem;
+}
+
+.section-heading h2 {
+  margin: 0;
+
+  color: #22272b;
+
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+/* =========================================================
+   ACTION CARDS
+========================================================= */
+
+.card-action {
+  width: 100%;
+
+  margin-bottom: 1rem;
+  padding: 0;
+
+  display: block;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #e5e7eb;
+  border-radius: 1rem;
+
+  box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.05);
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card-action:hover {
+  transform: translateY(-0.1rem);
+
+  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+.card-link {
+  width: 100%;
+
+  min-height: 6rem;
+
+  padding: 1.25rem 1.5rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.action-left {
+  display: flex;
+  align-items: center;
+
+  gap: 1rem;
+
+  min-width: 0;
+}
+
+/* =========================================================
+   ACTION ICON
+========================================================= */
+
+.card-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 0.8rem;
+}
+
+.card-icon img {
+  width: 1.6rem;
+  height: 1.6rem;
+
+  object-fit: contain;
+}
+
+.inventory-icon-background {
+  background-color: #e7f5f0;
+}
+
+.billing-icon-background {
+  background-color: #fff3dc;
+}
+
+/* =========================================================
+   ACTION TEXT
+========================================================= */
+
+.card-text {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.3rem;
+}
+
+.card-title {
+  margin: 0;
+
+  color: #22272b;
+
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.card-subtitle {
+  color: #6b7470;
+
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* =========================================================
+   ARROW
+========================================================= */
+
+.card-arrow {
+  width: 2rem;
+  height: 2rem;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-arrow img {
+  width: 1.1rem;
+  height: 1.1rem;
+
+  object-fit: contain;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer-gap {
+  height: 2rem;
+}
+
+.footer-section {
+  width: 100%;
+
+  padding: 1.5rem 0;
+
+  text-align: center;
+}
+
+.footer-section footer {
+  color: #8a938f;
+
+  font-size: 0.75rem;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media screen and (max-width: 768px) {
+
+  .main-content {
+    padding: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .card-welcome {
+    min-height: 9rem;
+    padding: 1.5rem;
+
+    border-radius: 0.9rem;
+  }
+
+  .welcome-title {
+    font-size: 1.6rem;
+  }
+
+  .stats-row {
+    gap: 0.8rem;
+  }
+
+  .stat-card {
+    min-height: 6.5rem;
+    padding: 1rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.4rem;
+  }
+
+  .card-link {
+    min-height: 5.25rem;
+    padding: 1rem;
+  }
+
+  .card-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .card-icon img {
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .card-title {
+    font-size: 0.95rem;
+  }
+
+  .card-subtitle {
+    font-size: 0.75rem;
+  }
+
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media screen and (max-width: 390px) {
+
+  .main-content {
+    padding: 0.75rem;
+  }
+
+  .card-welcome {
+    min-height: 8rem;
+    padding: 1.25rem;
+  }
+
+  .card-date {
+    font-size: 0.7rem;
+  }
+
+  .welcome-title {
+    font-size: 1.35rem;
+  }
+
+  .stats-row {
+    gap: 0.6rem;
+  }
+
+  .stat-card {
+    min-height: 5.75rem;
+    padding: 0.85rem;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+
+  .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .stat-items-label {
+    font-size: 0.7rem;
+  }
+
+  .section-heading h2 {
+    font-size: 1rem;
+  }
+
+  .card-link {
+    padding: 0.85rem;
+  }
+
+  .action-left {
+    gap: 0.75rem;
+  }
+
+  .card-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .card-icon img {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .card-title {
+    font-size: 0.85rem;
+  }
+
+  .card-subtitle {
+    font-size: 0.7rem;
+  }
+
+}

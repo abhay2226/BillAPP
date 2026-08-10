@@ -1,0 +1,367 @@
+:root {
+  --sidebar-width: 6rem;
+  font-size: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #ffffff;
+}
+
+/* =========================================================
+   APP CONTAINER
+========================================================= */
+
+.app_container {
+  width: 100%;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+
+  background-color: #ffffff;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.inventory_section {
+  width: 100%;
+  height: 4.5rem;
+  min-height: 4.5rem;
+
+  padding: 0 1.5rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: #ffffff;
+
+  border-bottom: 0.0625rem solid #e5e7eb;
+
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
+
+  position: sticky;
+  top: 0;
+
+  z-index: 500;
+}
+
+.left_inventory_section {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.right_inventory_section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-icon-button {
+  width: 2.8rem;
+  height: 2.8rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background-color: transparent;
+
+  padding: 0;
+
+  cursor: pointer;
+}
+
+.header-icon-button img {
+  width: 2rem;
+  height: 1.8rem;
+
+  object-fit: contain;
+}
+
+.left_inventory_section h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+
+  color: #0b8a6a;
+}
+
+/* =========================================================
+   MAIN LAYOUT
+========================================================= */
+
+.main-container {
+  width: 100%;
+
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+.main-content {
+  width: 100%;
+  height: 100%;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+
+  padding-left: var(--sidebar-width);
+
+  transition: padding-left 0.3s ease;
+}
+
+/* =========================================================
+   DESKTOP SIDEBAR
+========================================================= */
+
+.sidebar-desktop {
+  position: fixed;
+
+  left: 0;
+  top: 4.5rem;
+  bottom: 0;
+
+  width: var(--sidebar-width);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 1.5rem 0;
+
+  background-color: #ffffff;
+
+  border-right: 0.0625rem solid #e5e7eb;
+
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+
+  z-index: 450;
+}
+
+.sidebar-desktop .nav-item {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  margin-bottom: 1rem;
+}
+
+.sidebar-desktop button {
+  width: 100%;
+  min-height: 4.2rem;
+
+  border: none;
+
+  background-color: transparent;
+
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.5rem;
+}
+
+.sidebar-desktop .nav-icon {
+  width: 2rem;
+  height: 2rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-desktop .nav-icon img {
+  width: 1.8rem;
+  height: 1.8rem;
+
+  object-fit: contain;
+}
+
+.sidebar-desktop .nav-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  color: #53605a;
+}
+
+.sidebar-desktop .dashboard-active,
+.sidebar-desktop .dashboard-active .nav-label {
+  color: #008f6b;
+}
+
+.sidebar-desktop .inventory,
+.sidebar-desktop .inventory .nav-label {
+  color: #53605a;
+}
+
+.sidebar-desktop .billing,
+.sidebar-desktop .billing .nav-label {
+  color: #53605a;
+}
+
+.sidebar-desktop .profile,
+.sidebar-desktop .profile .nav-label {
+  color: #53605a;
+}
+
+/* =========================================================
+   BOTTOM NAVIGATION
+========================================================= */
+
+.bottom-nav {
+  display: none;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media screen and (max-width: 768px) {
+
+  .sidebar-desktop {
+    display: none;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+  .bottom-nav {
+    width: 100%;
+    height: 4.5rem;
+    min-height: 4.5rem;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-around;
+
+    background-color: #ffffff;
+
+    border-top: 0.0625rem solid #e5e7eb;
+
+    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+
+    z-index: 600;
+  }
+
+  .bottom-nav .nav-item {
+    flex: 1;
+
+    display: flex;
+    justify-content: center;
+  }
+
+  .bottom-nav button {
+    width: 100%;
+    height: 4rem;
+
+    border: none;
+
+    background-color: transparent;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 0.35rem;
+
+    cursor: pointer;
+  }
+
+  .bottom-nav .nav-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bottom-nav .nav-icon img {
+    width: 1.4rem;
+    height: 1.4rem;
+
+    object-fit: contain;
+  }
+
+  .bottom-nav .nav-label {
+    font-size: 0.7rem;
+    color: #53605a;
+  }
+
+  .bottom-nav .active,
+  .bottom-nav .active .nav-label {
+    color: #008f6b;
+  }
+}
+
+/* =========================================================
+   DESKTOP HEADER
+========================================================= */
+
+@media screen and (min-width: 769px) {
+
+  #backButton {
+    display: none;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media screen and (max-width: 390px) {
+
+  .inventory_section {
+    height: 3.75rem;
+    min-height: 3.75rem;
+
+    padding: 0 0.75rem;
+  }
+
+  .left_inventory_section {
+    gap: 0.6rem;
+  }
+
+  .left_inventory_section h4 {
+    font-size: 1.1rem;
+  }
+}
