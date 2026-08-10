@@ -22,7 +22,6 @@ function Billing() {
      ========================================================= */
 
   const [items, setItems] = useState([]);
-
   const [editingItemId, setEditingItemId] = useState(null);
 
   const [itemName, setItemName] = useState("");
@@ -78,7 +77,10 @@ function Billing() {
   const subtotalWithGST = subtotal + gst;
 
   const discountAmount = useMemo(() => {
-    return (subtotalWithGST * Number(discountPercent || 0)) / 100;
+    return (
+      (subtotalWithGST * Number(discountPercent || 0)) /
+      100
+    );
   }, [subtotalWithGST, discountPercent]);
 
   const grandTotal = subtotalWithGST - discountAmount;
@@ -89,7 +91,8 @@ function Billing() {
 
   useEffect(() => {
     const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       return;
@@ -103,7 +106,8 @@ function Billing() {
 
     recognition.onresult = (event) => {
       const result =
-        event.results[event.results.length - 1][0].transcript;
+        event.results[event.results.length - 1][0]
+          .transcript;
 
       setVoiceOutput(result);
     };
@@ -161,7 +165,9 @@ function Billing() {
     timerRef.current = setInterval(() => {
       setSeconds((previousSeconds) => {
         if (previousSeconds === 59) {
-          setMinutes((previousMinutes) => previousMinutes + 1);
+          setMinutes(
+            (previousMinutes) => previousMinutes + 1
+          );
           return 0;
         }
 
@@ -172,7 +178,9 @@ function Billing() {
     try {
       recognitionRef.current.start();
     } catch (error) {
-      console.log("Speech recognition already running.");
+      console.log(
+        "Speech recognition already running."
+      );
     }
   };
 
@@ -254,9 +262,7 @@ function Billing() {
       return;
     }
 
-    /* =====================================================
-       EDIT EXISTING ITEM
-       ===================================================== */
+    /* EDIT EXISTING ITEM */
 
     if (editingItemId !== null) {
       setItems((previousItems) =>
@@ -281,15 +287,12 @@ function Billing() {
       return;
     }
 
-    /* =====================================================
-       ADD NEW ITEM
-       ===================================================== */
+    /* ADD NEW ITEM */
 
     const newItem = {
       id: `${Date.now()}-${Math.random()
         .toString(16)
         .slice(2)}`,
-
       name: itemName.trim(),
       quantity,
       type: itemType.trim(),
@@ -342,7 +345,9 @@ function Billing() {
       return;
     }
 
-    setSuccessTotalAmount(`₹${grandTotal.toFixed(2)}`);
+    setSuccessTotalAmount(
+      `₹${grandTotal.toFixed(2)}`
+    );
 
     const date = new Date();
 
@@ -393,10 +398,9 @@ function Billing() {
 
     const generatedBillNumber =
       `${year}${month}${day}-` +
-      `${String(todayBillCountRef.current).padStart(
-        4,
-        "0"
-      )}`;
+      `${String(
+        todayBillCountRef.current
+      ).padStart(4, "0")}`;
 
     setBillNumber(generatedBillNumber);
 
@@ -469,7 +473,6 @@ function Billing() {
 
   const handleProfileSubmit = (event) => {
     event.preventDefault();
-
     setShowProfilePopup(false);
   };
 
@@ -480,19 +483,28 @@ function Billing() {
   return (
     <div className="billing-page">
 
-      <Header />
+      {/* ================= HEADER ================= */}
+
+      <Header title="Billing" />
+
+      {/* ================= BILLING LAYOUT ================= */}
 
       <div className="billing-layout">
 
-        <Sidebar />
+        {/* ================= SIDEBAR ================= */}
+
+        <aside
+          className="sidebar-desktop"
+          id="sidebar"
+        >
+          <Sidebar />
+        </aside>
+
+        {/* ================= MAIN ================= */}
 
         <main className="billing-main">
 
           {!showSuccessScreen ? (
-
-            /* =================================================
-               BILLING SCREEN
-               ================================================= */
 
             <div
               id="voiceBillingView"
@@ -549,13 +561,19 @@ function Billing() {
                         </span>
 
                         <span className="listening-timer">
-                          {String(minutes).padStart(2, "0")}
+                          {String(minutes).padStart(
+                            2,
+                            "0"
+                          )}
                         </span>
 
                         <span>:</span>
 
                         <span className="listening-timer">
-                          {String(seconds).padStart(2, "0")}
+                          {String(seconds).padStart(
+                            2,
+                            "0"
+                          )}
                         </span>
 
                       </div>
@@ -773,9 +791,7 @@ function Billing() {
 
                   <div className="summary-row">
 
-                    <span>
-                      Subtotal
-                    </span>
+                    <span>Subtotal</span>
 
                     <span>
                       ₹{subtotal.toFixed(2)}
@@ -785,9 +801,7 @@ function Billing() {
 
                   <div className="summary-row">
 
-                    <span>
-                      GST (18%)
-                    </span>
+                    <span>GST (18%)</span>
 
                     <span>
                       ₹{gst.toFixed(2)}
@@ -862,9 +876,7 @@ function Billing() {
                       alt=""
                     />
 
-                    <span>
-                      Print
-                    </span>
+                    <span>Print</span>
                   </button>
 
                   <button
@@ -877,9 +889,7 @@ function Billing() {
                       alt=""
                     />
 
-                    <span>
-                      WhatsApp
-                    </span>
+                    <span>WhatsApp</span>
                   </button>
 
                 </div>
@@ -893,9 +903,7 @@ function Billing() {
                     type="button"
                     onClick={generateBill}
                   >
-                    <p>
-                      Generate Bill
-                    </p>
+                    <p>Generate Bill</p>
                   </button>
 
                 </div>
@@ -920,7 +928,7 @@ function Billing() {
                BILL SUCCESS SCREEN
                ================================================= */
 
-            <main
+            <div
               id="billSuccessScreen"
               className="mobile-screen"
             >
@@ -1111,7 +1119,7 @@ function Billing() {
 
               </div>
 
-            </main>
+            </div>
 
           )}
 
@@ -1120,8 +1128,8 @@ function Billing() {
       </div>
 
       {/* =====================================================
-         ADD / EDIT ITEM POPUP
-         ===================================================== */}
+          ADD / EDIT ITEM POPUP
+          ===================================================== */}
 
       {showItemPopup && (
 
@@ -1232,8 +1240,8 @@ function Billing() {
       )}
 
       {/* =====================================================
-         PROFILE POPUP
-         ===================================================== */}
+          PROFILE POPUP
+          ===================================================== */}
 
       {showProfilePopup && (
 
@@ -1338,6 +1346,8 @@ function Billing() {
         </div>
 
       )}
+
+      {/* ================= MOBILE BOTTOM NAV ================= */}
 
       <BottomNav />
 
