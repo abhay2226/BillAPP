@@ -162,7 +162,7 @@ tbody td {
 
 /* Keep the main descriptive text cell left-aligned for proper balance */
 tbody td:first-child {
-  text-align: left;
+  text-align: center;
 }
 
 tbody tr:hover {

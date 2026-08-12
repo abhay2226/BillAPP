@@ -1,25 +1,43 @@
+
 import { useEffect, useMemo, useRef, useState } from "react";
+
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import BottomNav from "../../components/BottomNav";
+import BillSuccess from "../../components/BillSuccess";
+import pencilIcon from "../../assets/icons/pencil.png";
+import deleteIcon from "../../assets/icons/delete.png";
+import micIcon from "../../assets/icons/mic.png";
+
 import "./Voicebilling.css";
 
 function Billing() {
-  /* =========================================================
+  /*
      VOICE BILLING
-     ========================================================= */
+  */
 
   const [isListening, setIsListening] = useState(false);
   const [voiceOutput, setVoiceOutput] = useState("");
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+
+  /*
+     SIDEBAR TOGGLE
+  */
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleMenuToggle = () => {
+    setSidebarOpen((previous) => !previous);
+  };
 
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
 
-  /* =========================================================
+  /*
      BILL ITEMS
-     ========================================================= */
+  */
 
   const [items, setItems] = useState([]);
   const [editingItemId, setEditingItemId] = useState(null);
@@ -32,17 +50,15 @@ function Billing() {
 
   const [showItemPopup, setShowItemPopup] = useState(false);
 
-  /* =========================================================
+  /*
      DISCOUNT
-     ========================================================= */
+  */
 
   const [discountPercent, setDiscountPercent] = useState(18);
 
-  /* =========================================================
-     SUCCESS SCREEN
-     ========================================================= */
-
-  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  /*
+     SUCCESS SCREEN DATA
+  */
 
   const [billNumber, setBillNumber] = useState("");
   const [billDate, setBillDate] = useState("");
@@ -50,9 +66,9 @@ function Billing() {
 
   const todayBillCountRef = useRef(0);
 
-  /* =========================================================
+  /*
      PROFILE POPUP
-     ========================================================= */
+  */
 
   const [showProfilePopup, setShowProfilePopup] = useState(false);
 
@@ -62,9 +78,9 @@ function Billing() {
   const [userEmail, setUserEmail] = useState("");
   const [gstID, setGstID] = useState("");
 
-  /* =========================================================
+  /*
      BILL CALCULATIONS
-     ========================================================= */
+  */
 
   const subtotal = useMemo(() => {
     return items.reduce((sum, item) => sum + item.total, 0);
@@ -85,9 +101,9 @@ function Billing() {
 
   const grandTotal = subtotalWithGST - discountAmount;
 
-  /* =========================================================
+  /*
      VOICE RECOGNITION
-     ========================================================= */
+  */
 
   useEffect(() => {
     const SpeechRecognition =
@@ -106,8 +122,7 @@ function Billing() {
 
     recognition.onresult = (event) => {
       const result =
-        event.results[event.results.length - 1][0]
-          .transcript;
+        event.results[event.results.length - 1][0].transcript;
 
       setVoiceOutput(result);
     };
@@ -141,9 +156,9 @@ function Billing() {
     };
   }, []);
 
-  /* =========================================================
+  /*
      START VOICE
-     ========================================================= */
+  */
 
   const startVoiceBilling = () => {
     if (!recognitionRef.current) {
@@ -168,6 +183,7 @@ function Billing() {
           setMinutes(
             (previousMinutes) => previousMinutes + 1
           );
+
           return 0;
         }
 
@@ -178,15 +194,13 @@ function Billing() {
     try {
       recognitionRef.current.start();
     } catch (error) {
-      console.log(
-        "Speech recognition already running."
-      );
+      console.log("Speech recognition already running.");
     }
   };
 
-  /* =========================================================
+  /*
      STOP VOICE
-     ========================================================= */
+  */
 
   const stopVoiceBilling = () => {
     setIsListening(false);
@@ -205,9 +219,9 @@ function Billing() {
     setSeconds(0);
   };
 
-  /* =========================================================
+  /*
      OPEN ADD ITEM POPUP
-     ========================================================= */
+  */
 
   const openAddItemPopup = () => {
     setEditingItemId(null);
@@ -221,9 +235,9 @@ function Billing() {
     setShowItemPopup(true);
   };
 
-  /* =========================================================
+  /*
      CLOSE ITEM POPUP
-     ========================================================= */
+  */
 
   const closeItemPopup = () => {
     setShowItemPopup(false);
@@ -237,9 +251,9 @@ function Billing() {
     setItemPrice("");
   };
 
-  /* =========================================================
+  /*
      ADD / EDIT ITEM
-     ========================================================= */
+  */
 
   const handleItemSubmit = (event) => {
     event.preventDefault();
@@ -262,7 +276,9 @@ function Billing() {
       return;
     }
 
-    /* EDIT EXISTING ITEM */
+    /*
+       EDIT EXISTING ITEM
+    */
 
     if (editingItemId !== null) {
       setItems((previousItems) =>
@@ -287,7 +303,9 @@ function Billing() {
       return;
     }
 
-    /* ADD NEW ITEM */
+    /*
+       ADD NEW ITEM
+    */
 
     const newItem = {
       id: `${Date.now()}-${Math.random()
@@ -309,9 +327,9 @@ function Billing() {
     closeItemPopup();
   };
 
-  /* =========================================================
+  /*
      DELETE ITEM
-     ========================================================= */
+  */
 
   const deleteItem = (id) => {
     setItems((previousItems) =>
@@ -319,9 +337,9 @@ function Billing() {
     );
   };
 
-  /* =========================================================
+  /*
      EDIT ITEM
-     ========================================================= */
+  */
 
   const editItem = (item) => {
     setEditingItemId(item.id);
@@ -335,9 +353,9 @@ function Billing() {
     setShowItemPopup(true);
   };
 
-  /* =========================================================
+  /*
      GENERATE BILL
-     ========================================================= */
+  */
 
   const generateBill = () => {
     if (items.length === 0) {
@@ -407,9 +425,9 @@ function Billing() {
     setShowSuccessScreen(true);
   };
 
-  /* =========================================================
+  /*
      SHARE RECEIPT
-     ========================================================= */
+  */
 
   const shareReceipt = () => {
     const message =
@@ -422,17 +440,17 @@ function Billing() {
     window.open(whatsappURL, "_blank");
   };
 
-  /* =========================================================
+  /*
      PRINT BILL
-     ========================================================= */
+  */
 
   const printBill = () => {
     window.print();
   };
 
-  /* =========================================================
+  /*
      NEW BILL
-     ========================================================= */
+  */
 
   const createNewBill = () => {
     setShowSuccessScreen(false);
@@ -459,9 +477,9 @@ function Billing() {
     setBillDate("");
   };
 
-  /* =========================================================
+  /*
      PROFILE
-     ========================================================= */
+  */
 
   const openProfilePopup = () => {
     setShowProfilePopup(true);
@@ -476,33 +494,31 @@ function Billing() {
     setShowProfilePopup(false);
   };
 
-  /* =========================================================
+  /*
      RETURN
-     ========================================================= */
+  */
 
   return (
-    <div className="billing-page">
+    <main className="app_container">
 
       {/* ================= HEADER ================= */}
 
-      <Header title="Billing" />
+      <Header
+        title="Billing"
+        onMenuToggle={handleMenuToggle}
+      />
 
-      {/* ================= BILLING LAYOUT ================= */}
+      {/* ================= MAIN CONTAINER ================= */}
 
-      <div className="billing-layout">
+      <section className="main-container">
 
         {/* ================= SIDEBAR ================= */}
 
-        <aside
-          className="sidebar-desktop"
-          id="sidebar"
-        >
-          <Sidebar />
-        </aside>
+        {sidebarOpen && <Sidebar />}
 
-        {/* ================= MAIN ================= */}
+        {/* ================= MAIN CONTENT ================= */}
 
-        <main className="billing-main">
+        <div className="main-content">
 
           {!showSuccessScreen ? (
 
@@ -511,7 +527,7 @@ function Billing() {
               className="voice-billing-view"
             >
 
-              {/* ================= VOICE SECTION ================= */}
+              {/* ----- VOICE SECTION ------ */}
 
               <section className="voice-section">
 
@@ -525,10 +541,12 @@ function Billing() {
                       onClick={startVoiceBilling}
                       aria-label="Start voice billing"
                     >
+
                       <img
-                        src="/assets/icons/microphone.png"
+                        src={micIcon}
                         alt="Voice"
                       />
+
                     </button>
 
                     <div className="voice-button-static">
@@ -546,10 +564,12 @@ function Billing() {
                       type="button"
                       aria-label="Listening"
                     >
+
                       <img
                         src="/assets/icons/microphone.png"
                         alt="Listening"
                       />
+
                     </button>
 
                     <div className="voice-button-use">
@@ -561,19 +581,13 @@ function Billing() {
                         </span>
 
                         <span className="listening-timer">
-                          {String(minutes).padStart(
-                            2,
-                            "0"
-                          )}
+                          {String(minutes).padStart(2, "0")}
                         </span>
 
                         <span>:</span>
 
                         <span className="listening-timer">
-                          {String(seconds).padStart(
-                            2,
-                            "0"
-                          )}
+                          {String(seconds).padStart(2, "0")}
                         </span>
 
                       </div>
@@ -666,6 +680,7 @@ function Billing() {
                     <thead>
 
                       <tr>
+
                         <th style={{ width: "12%" }}>
                           Qty
                         </th>
@@ -685,6 +700,7 @@ function Billing() {
                         <th style={{ width: "24%" }}>
                           Actions
                         </th>
+
                       </tr>
 
                     </thead>
@@ -749,10 +765,12 @@ function Billing() {
                                   }
                                   aria-label={`Edit ${item.name}`}
                                 >
+
                                   <img
-                                    src="/assets/icons/pencil.png"
-                                    alt=""
+                                    src={pencilIcon}
+                                    alt="Edit"
                                   />
+
                                 </button>
 
                                 <button
@@ -763,10 +781,12 @@ function Billing() {
                                   }
                                   aria-label={`Remove ${item.name}`}
                                 >
+
                                   <img
-                                    src="/assets/icons/delete.png"
-                                    alt=""
+                                    src={deleteIcon}
+                                    alt="Delete"
                                   />
+
                                 </button>
 
                               </div>
@@ -785,7 +805,7 @@ function Billing() {
 
                 </div>
 
-                {/* ================= SUMMARY ================= */}
+                {/* ------- SUMMARY-------- */}
 
                 <div className="bill-summary">
 
@@ -862,7 +882,7 @@ function Billing() {
 
                 </div>
 
-                {/* ================= ACTIONS ================= */}
+                {/* ------ ACTIONS ------- */}
 
                 <div className="bill-actions">
 
@@ -871,12 +891,14 @@ function Billing() {
                     type="button"
                     onClick={printBill}
                   >
+
                     <img
                       src="/assets/icons/printing.png"
                       alt=""
                     />
 
                     <span>Print</span>
+
                   </button>
 
                   <button
@@ -884,17 +906,19 @@ function Billing() {
                     type="button"
                     onClick={shareReceipt}
                   >
+
                     <img
                       src="/assets/icons/share.png"
                       alt=""
                     />
 
                     <span>WhatsApp</span>
+
                   </button>
 
                 </div>
 
-                {/* ================= GENERATE BILL ================= */}
+                {/*----- GENERATE BILL ------ */}
 
                 <div className="new-bill-container">
 
@@ -903,7 +927,9 @@ function Billing() {
                     type="button"
                     onClick={generateBill}
                   >
+
                     <p>Generate Bill</p>
+
                   </button>
 
                 </div>
@@ -911,11 +937,15 @@ function Billing() {
                 <div className="footer-gap"></div>
 
                 <div className="footer-section">
+
                   <footer>
+
                     <span>
                       Copyright @2026
                     </span>
+
                   </footer>
+
                 </div>
 
               </section>
@@ -924,223 +954,39 @@ function Billing() {
 
           ) : (
 
-            /* =================================================
-               BILL SUCCESS SCREEN
-               ================================================= */
-
-            <div
-              id="billSuccessScreen"
-              className="mobile-screen"
-            >
-
-              {/* ================= SUCCESS ================= */}
-
-              <section className="success">
-
-                <div className="success-outer-circle">
-
-                  <div className="success-icon">
-
-                    <img
-                      src="/assets/icons/check (1).png"
-                      alt="Success"
-                    />
-
-                  </div>
-
-                </div>
-
-                <h2>
-                  Bill Generated Successfully
-                </h2>
-
-                <p className="description">
-                  The transaction has been processed
-                  and recorded in your inventory system.
-                </p>
-
-              </section>
-
-              {/* ================= BILL DETAILS ================= */}
-
-              <section className="bill-details">
-
-                <article className="card">
-
-                  <strong>
-                    BILL NUMBER
-                  </strong>
-
-                  <h2>
-                    {billNumber}
-                  </h2>
-
-                </article>
-
-                <article className="card">
-
-                  <strong>
-                    DATE
-                  </strong>
-
-                  <h2>
-                    {billDate}
-                  </h2>
-
-                </article>
-
-              </section>
-
-              {/* ================= AMOUNT ================= */}
-
-              <section className="amount-card">
-
-                <div className="amount-content">
-
-                  <strong>
-                    Total Amount Paid
-                  </strong>
-
-                  <h1>
-                    {successTotalAmount}
-                  </h1>
-
-                </div>
-
-                <button
-                  className="receipt-btn"
-                  type="button"
-                  aria-label="View Receipt"
-                >
-
-                  <img
-                    src="/assets/icons/bill.png"
-                    alt="Receipt"
-                  />
-
-                </button>
-
-              </section>
-
-              {/* ================= ACTIONS ================= */}
-
-              <section className="action-list">
-
-                <button
-                  className="action-item"
-                  type="button"
-                  onClick={shareReceipt}
-                >
-
-                  <div className="action-left">
-
-                    <div className="action-icon">
-
-                      <img
-                        src="/assets/icons/share.png"
-                        alt="Share"
-                      />
-
-                    </div>
-
-                    <p>
-                      Share Receipt
-                    </p>
-
-                  </div>
-
-                  <div className="arrow">
-
-                    <img
-                      src="/assets/icons/chevron.png"
-                      alt="Next"
-                    />
-
-                  </div>
-
-                </button>
-
-                <button
-                  className="action-item"
-                  type="button"
-                  onClick={printBill}
-                >
-
-                  <div className="action-left">
-
-                    <div className="action-icon">
-
-                      <img
-                        src="/assets/icons/printing.png"
-                        alt="Print"
-                      />
-
-                    </div>
-
-                    <p>
-                      Print Bill
-                    </p>
-
-                  </div>
-
-                  <div className="arrow">
-
-                    <img
-                      src="/assets/icons/chevron.png"
-                      alt="Next"
-                    />
-
-                  </div>
-
-                </button>
-
-              </section>
-
-              {/* ================= NEW BILL ================= */}
-
-              <div className="new-bill-container">
-
-                <button
-                  className="new-bill"
-                  type="button"
-                  onClick={createNewBill}
-                >
-
-                  <img
-                    src="/assets/icons/add (2).png"
-                    alt="Add"
-                  />
-
-                  <p>
-                    New Bill
-                  </p>
-
-                </button>
-
-              </div>
-
-            </div>
+            /* BILL SUCCESS COMPONENT */
+
+            <BillSuccess
+              billNumber={billNumber}
+              billDate={billDate}
+              successTotalAmount={successTotalAmount}
+              onShare={shareReceipt}
+              onPrint={printBill}
+              onNewBill={createNewBill}
+            />
 
           )}
 
-        </main>
+        </div>
 
-      </div>
+      </section>
 
-      {/* =====================================================
+      {/*
           ADD / EDIT ITEM POPUP
-          ===================================================== */}
+      */}
 
       {showItemPopup && (
 
         <div
           className="billing-popup-overlay"
           onMouseDown={(event) => {
+
             if (
               event.target === event.currentTarget
             ) {
               closeItemPopup();
             }
+
           }}
         >
 
@@ -1239,20 +1085,20 @@ function Billing() {
 
       )}
 
-      {/* =====================================================
-          PROFILE POPUP
-          ===================================================== */}
+      {/* PROFILE POPUP */}
 
       {showProfilePopup && (
 
         <div
           className="billing-popup-overlay"
           onMouseDown={(event) => {
+
             if (
               event.target === event.currentTarget
             ) {
               closeProfilePopup();
             }
+
           }}
         >
 
@@ -1351,8 +1197,9 @@ function Billing() {
 
       <BottomNav />
 
-    </div>
+    </main>
   );
 }
 
 export default Billing;
+

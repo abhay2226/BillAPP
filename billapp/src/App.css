@@ -238,6 +238,13 @@ body {
 .sidebar-desktop .profile .nav-label {
   color: #53605a;
 }
+ .sidebar-desktop-open {
+  display:block;
+}
+
+.sidebar-desktop-close {
+  dispLay:none;
+} 
 
 /* =========================================================
    BOTTOM NAVIGATION

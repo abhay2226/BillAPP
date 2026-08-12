@@ -1,0 +1,510 @@
+/* ============================================================
+   BillSuccess.css
+   CSS for BillSuccess.jsx
+   ============================================================ */
+
+
+/*  MAIN BILL SUCCESS PAGE */
+
+.bill-success-page {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  min-height: 100%;
+
+  padding: 2rem;
+  box-sizing: border-box;
+
+  background-color: #ffffff;
+  color: #22272b;
+}
+
+
+/* ==== SUCCESS ==== */
+
+.bill-success-page .success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+
+  padding: 1.5rem 1rem;
+
+  text-align: center;
+  box-sizing: border-box;
+}
+
+
+.bill-success-page .success-outer-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 7rem;
+  height: 7rem;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+  background-color: #dff7ef;
+}
+
+
+.bill-success-page .success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 5rem;
+  height: 5rem;
+
+  border-radius: 50%;
+  background-color: #0b8a6a;
+}
+
+
+.bill-success-page .success-icon img {
+  display: block;
+
+  width: 2.5rem;
+  height: 2.5rem;
+
+  object-fit: contain;
+}
+
+
+.bill-success-page .success h2 {
+  margin: 1.2rem 0 0.5rem;
+
+  color: #22272b;
+
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  line-height: 1.3;
+}
+
+
+.bill-success-page .description {
+  width: 100%;
+  max-width: 30rem;
+
+  margin: 0;
+
+  color: #6b7470;
+
+  font-size: 0.95rem;
+  line-height: 1.5;
+
+  text-align: center;
+}
+
+
+/* ================= BILL DETAILS ================= */
+
+.bill-success-page .bill-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 1rem;
+
+  width: 100%;
+
+  margin-top: 1rem;
+
+  box-sizing: border-box;
+}
+
+
+.bill-success-page .card {
+  width: 100%;
+
+  padding: 1.2rem;
+
+  box-sizing: border-box;
+
+  background-color: #f7f8fa;
+
+  border: 0.0625rem solid #e2e5e9;
+  border-radius: 0.75rem;
+}
+
+
+.bill-success-page .card strong {
+  display: block;
+
+  margin: 0;
+
+  color: #6b7470;
+
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  letter-spacing: 0.08em;
+}
+
+
+.bill-success-page .card h2 {
+  margin: 0.5rem 0 0;
+
+  color: #22272b;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  line-height: 1.3;
+}
+
+
+/* ================= AMOUNT ================= */
+
+.bill-success-page .amount-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+
+  margin-top: 1rem;
+  padding: 1.2rem;
+
+  box-sizing: border-box;
+
+  background-color: #0b8a6a;
+
+  border-radius: 0.8rem;
+}
+
+
+.bill-success-page .amount-content {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.4rem;
+
+  min-width: 0;
+}
+
+
+.bill-success-page .amount-content strong {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+
+.bill-success-page .amount-content h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 1.7rem;
+  font-weight: 700;
+
+  line-height: 1.2;
+}
+
+
+.bill-success-page .receipt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 3rem;
+  height: 3rem;
+
+  flex-shrink: 0;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background-color: #ffffff;
+
+  cursor: pointer;
+}
+
+
+.bill-success-page .receipt-btn img {
+  display: block;
+
+  width: 1.4rem;
+  height: 1.4rem;
+
+  object-fit: contain;
+}
+
+
+/* ================= ACTION LIST ================= */
+
+.bill-success-page .action-list {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+
+  margin-top: 1rem;
+}
+
+
+.bill-success-page .action-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+
+  margin: 0;
+  padding: 1rem 0;
+
+  box-sizing: border-box;
+
+  background-color: transparent;
+
+  border: none;
+  border-bottom: 0.0625rem solid #eeeeee;
+
+  color: #22272b;
+
+  cursor: pointer;
+
+  text-align: left;
+}
+
+
+.bill-success-page .action-item:hover {
+  background-color: #fafafa;
+}
+
+
+.bill-success-page .action-left {
+  display: flex;
+  align-items: center;
+
+  gap: 0.8rem;
+
+  min-width: 0;
+}
+
+
+.bill-success-page .action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2.5rem;
+  height: 2.5rem;
+
+  flex-shrink: 0;
+
+  background-color: #f1f3f4;
+
+  border-radius: 50%;
+}
+
+
+.bill-success-page .action-icon img {
+  display: block;
+
+  width: 1.2rem;
+  height: 1.2rem;
+
+  object-fit: contain;
+}
+
+
+.bill-success-page .action-left p {
+  margin: 0;
+
+  color: #22272b;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+
+.bill-success-page .arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+
+.bill-success-page .arrow img {
+  display: block;
+
+  width: 1rem;
+  height: 1rem;
+
+  object-fit: contain;
+}
+
+
+/* ================= NEW BILL ================= */
+
+.bill-success-page .new-bill-container {
+  width: 100%;
+
+  margin-top: 1.5rem;
+
+  box-sizing: border-box;
+}
+
+
+.bill-success-page .new-bill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.4rem;
+
+  width: 100%;
+  height: 3rem;
+
+  margin: 0;
+  padding: 0 1rem;
+
+  box-sizing: border-box;
+
+  border: none;
+  border-radius: 2rem;
+
+  background-color: #008f6b;
+  color: #ffffff;
+
+  cursor: pointer;
+
+  font-family: inherit;
+}
+
+
+.bill-success-page .new-bill:hover {
+  background-color: #007a5b;
+}
+
+
+.bill-success-page .new-bill img {
+  display: block;
+
+  width: 1rem;
+  height: 1rem;
+
+  object-fit: contain;
+}
+
+
+.bill-success-page .new-bill p {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   TABLET / MOBILE
+   ============================================================ */
+
+@media screen and (max-width: 600px) {
+
+  .bill-success-page {
+    width: 100%;
+
+    padding: 1rem;
+  }
+
+
+  .bill-success-page .success {
+    padding: 1rem 0.5rem;
+  }
+
+
+  .bill-success-page .success-outer-circle {
+    width: 6rem;
+    height: 6rem;
+  }
+
+
+  .bill-success-page .success-icon {
+    width: 4.3rem;
+    height: 4.3rem;
+  }
+
+
+  .bill-success-page .success-icon img {
+    width: 2rem;
+    height: 2rem;
+  }
+
+
+  .bill-success-page .success h2 {
+    font-size: 1.25rem;
+  }
+
+
+  .bill-success-page .description {
+    font-size: 0.85rem;
+  }
+
+
+  .bill-success-page .bill-details {
+    grid-template-columns: 1fr;
+
+    gap: 0.75rem;
+  }
+
+
+  .bill-success-page .card {
+    padding: 1rem;
+  }
+
+
+  .bill-success-page .amount-card {
+    padding: 1rem;
+  }
+
+
+  .bill-success-page .amount-content h1 {
+    font-size: 1.5rem;
+  }
+
+}
+
+
+/* ============================================================
+   VERY SMALL MOBILE
+   ============================================================ */
+
+@media screen and (max-width: 360px) {
+
+  .bill-success-page {
+    padding: 0.75rem;
+  }
+
+
+  .bill-success-page .success h2 {
+    font-size: 1.1rem;
+  }
+
+
+  .bill-success-page .description {
+    font-size: 0.8rem;
+  }
+
+
+  .bill-success-page .amount-content h1 {
+    font-size: 1.35rem;
+  }
+
+}
