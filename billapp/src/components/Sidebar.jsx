@@ -1,28 +1,20 @@
 import { useNavigate } from "react-router-dom";
 
-import menuIcon from "../assets/icons/menu.png";
 import dashboardIcon from "../assets/icons/dashboard.png";
 import boxIcon from "../assets/icons/box.png";
 import billIcon from "../assets/icons/bill.png";
 import userIcon from "../assets/icons/user.png";
 
-function Sidebar() {
+function Sidebar({ isOpen }) {
   const navigate = useNavigate();
 
   return (
-    <aside className="sidebar-desktop" id="sidebar">
-
-      <div className="nav-item">
-        <button type="button">
-          <div className="nav-icon">
-            <img src={menuIcon} alt="Menu" />
-          </div>
-
-          <div className="nav-label">
-            Menu
-          </div>
-        </button>
-      </div>
+    <aside
+      className={`sidebar-desktop ${
+        isOpen ? "sidebar-open" : "sidebar-closed"
+      }`}
+      id="sidebar"
+    >
 
       <div className="nav-item">
         <button
