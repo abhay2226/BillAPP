@@ -210,6 +210,19 @@ function BillSuccess({
 
       </div>
 
+       <div className="footer-section">
+
+
+            <footer>
+              <span>
+                Copyright @2026
+              </span>
+            </footer>
+
+
+          </div>
+
+
     </div>
   );
 }
