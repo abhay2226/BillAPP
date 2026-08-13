@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
-import leftIcon from "../assets/icons/left.png";
+
+import menuIcon from "../assets/icons/menu.png";
 import addIcon from "../assets/icons/add (2).png";
 
 const routeTitles = {
@@ -9,25 +10,30 @@ const routeTitles = {
   // add other routes here
 };
 
-function Header({ onBack, onAddProduct }) {
+function Header({ onMenuToggle, onAddProduct }) {
   const location = useLocation();
   const title = routeTitles[location.pathname];
 
   return (
     <header className="inventory_section">
+
       <div className="left_inventory_section">
+
+        {/* MENU TOGGLE */}
         <button
           type="button"
           className="header-icon-button"
-          onClick={onBack}
+          onClick={onMenuToggle}
         >
-          <img src={leftIcon} alt="Back" />
+          <img src={menuIcon} alt="Menu" />
         </button>
 
         <h4>{title}</h4>
+
       </div>
 
       <div className="right_inventory_section">
+
         <button
           type="button"
           className="header-icon-button"
@@ -35,7 +41,9 @@ function Header({ onBack, onAddProduct }) {
         >
           <img src={addIcon} alt="Add Product" />
         </button>
+
       </div>
+
     </header>
   );
 }

@@ -20,8 +20,10 @@ function Inventory() {
 
   const [showPopup, setShowPopup] = useState(false);
 
-  // EDIT
+  // SIDEBAR TOGGLE
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // EDIT
   const [editingProductId, setEditingProductId] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,6 +42,11 @@ function Inventory() {
 
   const goBack = () => {
     window.history.back();
+  };
+
+  // SIDEBAR TOGGLE FUNCTION
+  const handleMenuToggle = () => {
+    setSidebarOpen((previous) => !previous);
   };
 
   const handleInputChange = (event) => {
@@ -137,7 +144,10 @@ function Inventory() {
         brand: productBrand,
       };
 
-      setProducts((previousProducts) => [...previousProducts, newProduct]);
+      setProducts((previousProducts) => [
+        ...previousProducts,
+        newProduct,
+      ]);
     }
 
     closePopup();
@@ -181,9 +191,7 @@ function Inventory() {
     setCurrentPage(1);
   }, [searchValue]);
 
-  // =========================
   // PAGINATION
-  // =========================
 
   const totalProducts = filteredProducts.length;
 
@@ -201,7 +209,10 @@ function Inventory() {
 
   const endIndex = startIndex + rowsPerPage;
 
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+  const currentProducts = filteredProducts.slice(
+    startIndex,
+    endIndex,
+  );
 
   // PREVIOUS PAGE
 
@@ -245,31 +256,56 @@ function Inventory() {
 
   return (
     <main className="app_container">
+
       {/* HEADER */}
-      <Header onBack={goBack} onAddProduct={openPopup} />
+      <Header
+        onBack={goBack}
+        onAddProduct={openPopup}
+        onMenuToggle={handleMenuToggle}
+      />
 
       {/* MAIN */}
       <section className="main-container">
-        <div className="main-content">
+
+        {/* MAIN CONTENT */}
+        <div
+          className={
+            sidebarOpen
+              ? "main-content sidebar-open"
+              : "main-content"
+          }
+        >
+
           {/* SEARCH */}
           <div className="search-container">
             <div className="search-input-wrapper">
-              <img className="search-icon" src={searchIcon} alt="Search" />
+
+              <img
+                className="search-icon"
+                src={searchIcon}
+                alt="Search"
+              />
 
               <input
                 type="text"
                 className="search-input"
                 placeholder="Search Product"
                 value={searchValue}
-                onChange={(event) => setSearchValue(event.target.value)}
+                onChange={(event) =>
+                  setSearchValue(event.target.value)
+                }
               />
+
             </div>
           </div>
 
           {/* CARDS */}
           <div className="card_section">
+
             <div className="card_box">
-              <div className="card_box_header">Items IN</div>
+              <div className="card_box_header">
+                Items IN
+              </div>
 
               <div className="card_box_count">
                 {String(itemsIn).padStart(2, "0")}
@@ -277,7 +313,9 @@ function Inventory() {
             </div>
 
             <div className="card_box">
-              <div className="card_box_header">Low Stock</div>
+              <div className="card_box_header">
+                Low Stock
+              </div>
 
               <div className="card_box_count">
                 {String(lowStock).padStart(2, "0")}
@@ -285,17 +323,22 @@ function Inventory() {
             </div>
 
             <div className="card_box">
-              <div className="card_box_header">Out of Stock</div>
+              <div className="card_box_header">
+                Out of Stock
+              </div>
 
               <div className="card_box_count">
                 {String(outOfStock).padStart(2, "0")}
               </div>
             </div>
+
           </div>
 
           {/* TABLE */}
           <div className="table-container">
+
             <table>
+
               <thead>
                 <tr>
                   <th>Item</th>
@@ -308,30 +351,46 @@ function Inventory() {
               </thead>
 
               <tbody>
+
                 {currentProducts.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="empty-bill-cell">
+                    <td
+                      colSpan="6"
+                      className="empty-bill-cell"
+                    >
                       Add Items to Inventory
                     </td>
                   </tr>
                 ) : (
                   currentProducts.map((product) => (
+
                     <tr key={product.id}>
+
                       <td>
                         <div className="item">
-                          <strong>{product.product}</strong>
+
+                          <strong>
+                            {product.product}
+                          </strong>
 
                           <small>
                             ({product.type} - {product.brand})
                           </small>
+
                         </div>
                       </td>
 
-                      <td className="price">₹{product.cost}</td>
+                      <td className="price">
+                        ₹{product.cost}
+                      </td>
 
-                      <td className="meta-text">{product.weight}</td>
+                      <td className="meta-text">
+                        {product.weight}
+                      </td>
 
-                      <td className="meta-text">{product.quantity}</td>
+                      <td className="meta-text">
+                        {product.quantity}
+                      </td>
 
                       <td
                         className="status-cell"
@@ -343,7 +402,12 @@ function Inventory() {
                               : "outOfStock"
                         }
                       >
-                        <button className="status-btn" type="button">
+
+                        <button
+                          className="status-btn"
+                          type="button"
+                        >
+
                           <img
                             src={
                               product.status === "Out of Stock"
@@ -352,69 +416,114 @@ function Inventory() {
                             }
                             alt={product.status}
                           />
+
                         </button>
+
                       </td>
 
                       <td className="action-buttons">
+
                         <button
                           className="icon-btn"
                           type="button"
                           onClick={() => editRow(product)}
                         >
-                          <img src={pencilIcon} alt="Edit" />
+                          <img
+                            src={pencilIcon}
+                            alt="Edit"
+                          />
                         </button>
 
                         <button
                           className="icon-btn"
                           type="button"
-                          onClick={() => deleteRow(product.id)}
+                          onClick={() =>
+                            deleteRow(product.id)
+                          }
                         >
-                          <img src={deleteIcon} alt="Delete" />
+                          <img
+                            src={deleteIcon}
+                            alt="Delete"
+                          />
                         </button>
+
                       </td>
+
                     </tr>
+
                   ))
                 )}
+
               </tbody>
+
             </table>
+
           </div>
 
           {/* PAGINATION */}
           <div className="pagination-container">
-            <div className="pagination-text">{paginationText}</div>
+
+            <div className="pagination-text">
+              {paginationText}
+            </div>
 
             <div className="pagination-buttons">
+
               <button
                 className="pagination-btn"
                 type="button"
                 onClick={previousPage}
-                disabled={currentPage === 1 || totalProducts === 0}
+                disabled={
+                  currentPage === 1 ||
+                  totalProducts === 0
+                }
               >
-                <img src={leftIcon} alt="Previous" />
+
+                <img
+                  src={leftIcon}
+                  alt="Previous"
+                />
+
               </button>
 
               <button
                 className="pagination-btn"
                 type="button"
                 onClick={nextPage}
-                disabled={currentPage >= totalPages || totalProducts === 0}
+                disabled={
+                  currentPage >= totalPages ||
+                  totalProducts === 0
+                }
               >
-                <img src={chevronIcon} alt="Next" />
+
+                <img
+                  src={chevronIcon}
+                  alt="Next"
+                />
+
               </button>
+
             </div>
+
           </div>
 
           <div className="footer-gap"></div>
 
           <div className="footer-section">
+
             <footer>
-              <small>Copyright @2026</small>
+              <small>
+                Copyright @2026
+              </small>
             </footer>
+
           </div>
+
         </div>
 
         {/* SIDEBAR */}
-        <Sidebar />
+        {sidebarOpen && <Sidebar />}
+
       </section>
 
       {/* BOTTOM NAV */}
@@ -422,6 +531,7 @@ function Inventory() {
 
       {/* ADD PRODUCT POPUP */}
       {showPopup && (
+
         <div
           className="popup"
           onClick={(event) => {
@@ -430,9 +540,13 @@ function Inventory() {
             }
           }}
         >
+
           <div className="popup-content">
+
             <h2>
-              {editingProductId !== null ? "Edit Product" : "Add Product"}
+              {editingProductId !== null
+                ? "Edit Product"
+                : "Add Product"}
             </h2>
 
             <input
@@ -490,23 +604,41 @@ function Inventory() {
               value={formData.status}
               onChange={handleInputChange}
             >
-              <option value="Available">Available</option>
 
-              <option value="Out of Stock">Out of Stock</option>
+              <option value="Available">
+                Available
+              </option>
+
+              <option value="Out of Stock">
+                Out of Stock
+              </option>
+
             </select>
 
             <div className="popup-buttons">
-              <button type="button" onClick={closePopup}>
+
+              <button
+                type="button"
+                onClick={closePopup}
+              >
                 Close
               </button>
 
-              <button type="button" onClick={addProduct}>
+              <button
+                type="button"
+                onClick={addProduct}
+              >
                 Submit
               </button>
+
             </div>
+
           </div>
+
         </div>
+
       )}
+
     </main>
   );
 }

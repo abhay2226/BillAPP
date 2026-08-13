@@ -1,14 +1,43 @@
 /* =========================================================
-   DASHBOARD CONTENT
+DASHBOARD CONTENT
 ========================================================= */
 
 .main-content {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+
+  box-sizing: border-box;
+
   padding: 1.5rem 2rem;
+
   background-color: #f7f9f8;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  transition:
+    margin-left 0.3s ease,
+    width 0.3s ease;
 }
 
 /* =========================================================
-   WELCOME CARD
+SIDEBAR OPEN - MAIN CONTENT
+========================================================= */
+
+@media screen and (min-width: 769px) {
+
+  .main-content.sidebar-open {
+    margin-left: 6rem;
+    width: calc(100% - 6rem);
+  }
+
+}
+
+
+/* =========================================================
+WELCOME CARD
 ========================================================= */
 
 .card-welcome {
@@ -26,6 +55,7 @@
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
 
   margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .card-content {
@@ -36,6 +66,7 @@
   margin: 0 0 0.75rem;
 
   color: #d9f5ed;
+
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -44,13 +75,15 @@
   margin: 0;
 
   color: #ffffff;
+
   font-size: 2rem;
   font-weight: 700;
   line-height: 1.25;
 }
 
+
 /* =========================================================
-   STAT CARDS
+STAT CARDS
 ========================================================= */
 
 .stats-row {
@@ -103,6 +136,7 @@
 .stat-value-container {
   display: flex;
   align-items: baseline;
+
   gap: 0.4rem;
 }
 
@@ -119,8 +153,9 @@
   font-weight: 500;
 }
 
+
 /* =========================================================
-   QUICK ACTION HEADING
+QUICK ACTION HEADING
 ========================================================= */
 
 .section-heading {
@@ -138,8 +173,9 @@
   font-weight: 700;
 }
 
+
 /* =========================================================
-   ACTION CARDS
+ACTION CARDS
 ========================================================= */
 
 .card-action {
@@ -193,8 +229,9 @@
   min-width: 0;
 }
 
+
 /* =========================================================
-   ACTION ICON
+ACTION ICON
 ========================================================= */
 
 .card-icon {
@@ -225,8 +262,9 @@
   background-color: #fff3dc;
 }
 
+
 /* =========================================================
-   ACTION TEXT
+ACTION TEXT
 ========================================================= */
 
 .card-text {
@@ -254,8 +292,9 @@
   font-weight: 500;
 }
 
+
 /* =========================================================
-   ARROW
+ARROW
 ========================================================= */
 
 .card-arrow {
@@ -276,37 +315,53 @@
   object-fit: contain;
 }
 
-/* =========================================================
-   FOOTER
-========================================================= */
 
-.footer-gap {
-  height: 2rem;
-}
+/* =========================================================
+FOOTER
+========================================================= */
 
 .footer-section {
   width: 100%;
 
-  padding: 1.5rem 0;
-
-  text-align: center;
+  margin-top: auto;
 }
 
 .footer-section footer {
-  color: #8a938f;
+  width: 100%;
+  min-height: 4rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #008f6b;
+}
+
+.footer-section footer small,
+.footer-section footer span {
+  color: #ffffff;
 
   font-size: 0.75rem;
 }
 
+
 /* =========================================================
-   TABLET
+TABLET
 ========================================================= */
 
 @media screen and (max-width: 768px) {
 
   .main-content {
+    width: 100%;
+    margin-left: 0;
+
     padding: 1rem;
     padding-bottom: 1rem;
+  }
+
+  .main-content.sidebar-open {
+    margin-left: 0;
+    width: 100%;
   }
 
   .card-welcome {
@@ -362,13 +417,17 @@
 
 }
 
+
 /* =========================================================
-   SMALL MOBILE
+SMALL MOBILE
 ========================================================= */
 
 @media screen and (max-width: 390px) {
 
   .main-content {
+    width: 100%;
+    margin-left: 0;
+
     padding: 0.75rem;
   }
 

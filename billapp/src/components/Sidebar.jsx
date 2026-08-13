@@ -1,91 +1,73 @@
-import { useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
-import menuIcon from "../assets/icons/menu.png";
 import dashboardIcon from "../assets/icons/dashboard.png";
 import boxIcon from "../assets/icons/box.png";
 import billIcon from "../assets/icons/bill.png";
 import userIcon from "../assets/icons/user.png";
 
-function Sidebar() {
-  const navigate = useNavigate();
+function Sidebar({ isOpen }) {
+  const routes = [
+    {
+      id: 1,
+      path: "/dashboard",
+      label: "Dashboard",
+      icon: dashboardIcon,
+    },
+    {
+      id: 2,
+      path: "/inventory",
+      label: "Inventory",
+      icon: boxIcon,
+    },
+    {
+      id: 3,
+      path: "/billing",
+      label: "Billing",
+      icon: billIcon,
+    },
+    {
+      id: 4,
+      path: "/profile",
+      label: "Profile",
+      icon: userIcon,
+    },
+  ];
 
   return (
-    <aside className="sidebar-desktop" id="sidebar">
+    <aside
+      className={`sidebar-desktop ${
+        isOpen ? "sidebar-open" : "sidebar-closed"
+      }`}
+      id="sidebar"
+    >
 
-      <div className="nav-item">
-        <button type="button">
-          <div className="nav-icon">
-            <img src={menuIcon} alt="Menu" />
-          </div>
+      {routes.map((route) => (
+        <div className="nav-item" key={route.id}>
 
-          <div className="nav-label">
-            Menu
-          </div>
-        </button>
-      </div>
+          <NavLink
+            to={route.path}
+            className={({ isActive }) =>
+              isActive
+                ? "sidebar-link active"
+                : "sidebar-link"
+            }
+          >
 
-      <div className="nav-item">
-        <button
-          className="dashboard-active"
-          type="button"
-          onClick={() => navigate("/dashboard")}
-        >
-          <div className="nav-icon">
-            <img src={dashboardIcon} alt="Dashboard" />
-          </div>
+            <div className="nav-icon">
+              <img
+                src={route.icon}
+                alt={route.label}
+              />
+            </div>
 
-          <div className="nav-label">
-            Dashboard
-          </div>
-        </button>
-      </div>
+            <div className="nav-label">
+              {route.label}
+            </div>
 
-      <div className="nav-item">
-        <button
-          className="inventory"
-          type="button"
-          onClick={() => navigate("/inventory")}
-        >
-          <div className="nav-icon">
-            <img src={boxIcon} alt="Inventory" />
-          </div>
+          </NavLink>
 
-          <div className="nav-label">
-            Inventory
-          </div>
-        </button>
-      </div>
-
-      <div className="nav-item">
-        <button
-          className="billing"
-          type="button"
-          onClick={() => navigate("/billing")}
-        >
-          <div className="nav-icon">
-            <img src={billIcon} alt="Billing" />
-          </div>
-
-          <div className="nav-label">
-            Billing
-          </div>
-        </button>
-      </div>
-
-      <div className="nav-item">
-        <button
-          className="profile"
-          type="button"
-        >
-          <div className="nav-icon">
-            <img src={userIcon} alt="Profile" />
-          </div>
-
-          <div className="nav-label">
-            Profile
-          </div>
-        </button>
-      </div>
+        </div>
+      ))}
 
     </aside>
   );

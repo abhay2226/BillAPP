@@ -558,7 +558,7 @@
   font-size: 0.65rem;
   font-weight: 700;
 
-  text-align: left;
+  text-align: center;
   text-transform: uppercase;
 
   white-space: nowrap;
@@ -892,21 +892,25 @@
    FOOTER
    ============================================================ */
 
-.footer-gap {
-  height: 1rem;
-}
-
 .footer-section {
   width: 100%;
-
-  padding: 1rem 0;
-
-  text-align: center;
+  margin-top: auto;
 }
 
 .footer-section footer {
-  color: #7b847f;
+  width: 100%;
+  min-height: 4rem;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #008f6b;
+}
+
+.footer-section footer small,
+.footer-section footer span {
+  color: #ffffff;
   font-size: 0.75rem;
 }
 

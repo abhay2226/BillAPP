@@ -40,9 +40,9 @@ body {
   overflow: hidden;
 }
 
-/* =========================================================
+/*
    HEADER
-========================================================= */
+*/
 
 .inventory_section {
   width: 100%;
@@ -109,9 +109,9 @@ body {
   color: #0b8a6a;
 }
 
-/* =========================================================
+/* 
    MAIN LAYOUT
-========================================================= */
+= */
 
 .main-container {
   width: 100%;
@@ -135,14 +135,19 @@ body {
 
   scrollbar-width: thin;
 
-  padding-left: var(--sidebar-width);
+  padding-left:0;
+  
 
   transition: padding-left 0.3s ease;
 }
 
-/* =========================================================
+.main-content.sidebar-open {
+  margin-left: 6rem;
+  width: calc(100% - 6rem);
+}
+/* 
    DESKTOP SIDEBAR
-========================================================= */
+ */
 
 .sidebar-desktop {
   position: fixed;
@@ -151,7 +156,7 @@ body {
   top: 4.5rem;
   bottom: 0;
 
-  width: var(--sidebar-width);
+  width: 6rem;
 
   display: flex;
   flex-direction: column;
@@ -167,6 +172,8 @@ body {
 
   z-index: 450;
 }
+
+
 
 .sidebar-desktop .nav-item {
   width: 100%;
@@ -194,6 +201,79 @@ body {
   justify-content: center;
 
   gap: 0.5rem;
+}
+/* 
+   SIDEBAR NAVLINK
+ */
+
+.sidebar-desktop .sidebar-link {
+  width: 100%;
+  min-height: 4.2rem;
+
+  border: none;
+
+  background-color: transparent;
+
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 0.5rem;
+
+  position: relative;
+
+  text-decoration: none;
+
+  color: #53605a;
+}
+
+
+/* 
+   ACTIVE / ACTIVITY SIDEBAR ITEM
+========================================================= */
+
+.sidebar-desktop .sidebar-link.active {
+  background-color: #e8f7f2;
+
+  color: #008f6b;
+
+  border-radius: 0.5rem;
+}
+
+
+/* ACTIVE TEXT */
+
+.sidebar-desktop .sidebar-link.active .nav-label {
+  color: #008f6b;
+
+  font-weight: 600;
+}
+
+
+/* ACTIVE GREEN INDICATOR */
+
+.sidebar-desktop .sidebar-link.active::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 0.25rem;
+
+  height: 2.5rem;
+
+  background-color: #008f6b;
+
+  border-radius: 0 0.25rem 0.25rem 0;
 }
 
 .sidebar-desktop .nav-icon {
@@ -238,18 +318,25 @@ body {
 .sidebar-desktop .profile .nav-label {
   color: #53605a;
 }
+ .sidebar-desktop-open {
+  display:block;
+}
 
-/* =========================================================
+.sidebar-desktop-close {
+  dispLay:none;
+} 
+
+/* 
    BOTTOM NAVIGATION
-========================================================= */
+ */
 
 .bottom-nav {
   display: none;
 }
 
-/* =========================================================
+/* 
    MOBILE
-========================================================= */
+ */
 
 @media screen and (max-width: 768px) {
 
