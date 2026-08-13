@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 
 import Header from "../../components/Header";
@@ -268,7 +267,14 @@ function Inventory() {
       {/* MAIN */}
       <section className="main-container">
 
-        <div className="main-content">
+        {/* MAIN CONTENT */}
+        <div
+          className={
+            sidebarOpen
+              ? "main-content sidebar-open"
+              : "main-content"
+          }
+        >
 
           {/* SEARCH */}
           <div className="search-container">
@@ -638,4 +644,3 @@ function Inventory() {
 }
 
 export default Inventory;
-

@@ -1,10 +1,10 @@
-
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import BottomNav from "../../components/BottomNav";
 import BillSuccess from "../../components/BillSuccess";
+
 import pencilIcon from "../../assets/icons/pencil.png";
 import deleteIcon from "../../assets/icons/delete.png";
 import micIcon from "../../assets/icons/mic.png";
@@ -518,7 +518,11 @@ function Billing() {
 
         {/* ================= MAIN CONTENT ================= */}
 
-        <div className="main-content">
+        <div
+          className={`main-content ${
+            sidebarOpen ? "sidebar-open" : ""
+          }`}
+        >
 
           {!showSuccessScreen ? (
 
@@ -971,9 +975,7 @@ function Billing() {
 
       </section>
 
-      {/*
-          ADD / EDIT ITEM POPUP
-      */}
+      {/* ADD / EDIT ITEM POPUP */}
 
       {showItemPopup && (
 
@@ -1202,4 +1204,3 @@ function Billing() {
 }
 
 export default Billing;
-
