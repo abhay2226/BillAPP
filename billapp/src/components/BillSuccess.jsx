@@ -210,7 +210,7 @@ function BillSuccess({
 
       </div>
 
-       <div className="footer-section">
+       {/* <div className="footer-section">
 
 
             <footer>
@@ -220,7 +220,7 @@ function BillSuccess({
             </footer>
 
 
-          </div>
+          </div> */}
 
 
     </div>
