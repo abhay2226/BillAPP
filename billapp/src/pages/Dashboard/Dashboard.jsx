@@ -49,7 +49,7 @@ export default function Dashboard() {
     <>
 
       {/* ================= MAIN LAYOUT ================= */}
-      <div className="main-container">
+      <div className="main-content">
 
         {/* ================= SIDEBAR ================= */}
         {/* {sidebarOpen && <Sidebar />} */}
