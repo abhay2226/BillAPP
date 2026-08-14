@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 
-import dashboardIcon from "../assets/icons/dashboard.png";
-import boxIcon from "../assets/icons/box.png";
-import billIcon from "../assets/icons/bill.png";
-import userIcon from "../assets/icons/user.png";
+import dashboardIcon from "../../assets/icons/dashboard.png";
+import boxIcon from "../../assets/icons/box.png";
+import billIcon from "../../assets/icons/bill.png";
+import userIcon from "../../assets/icons/user.png";
 
 function BottomNav() {
   const navigate = useNavigate();

@@ -1,0 +1,167 @@
+:root {
+  --sidebar-width: 6rem;
+  --header-height: 4.5rem;
+  --footer-height: 4rem;
+}
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+/* =========================================================
+   APP SHELL
+========================================================= */
+
+.app-shell {
+  width: 100%;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+
+  background-color: #ffffff;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   APP BODY
+========================================================= */
+
+.app-shell-body {
+  width: 100%;
+
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   PAGE CONTENT
+========================================================= */
+
+.app-shell-content {
+  width: 100%;
+  height: 100%;
+
+  padding: 1.5rem 2rem 0 2rem;
+
+  background-color: #f7f9f8;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+
+  transition:
+    margin-left 0.3s ease,
+    width 0.3s ease;
+}
+
+/* =========================================================
+   SIDEBAR OPEN
+========================================================= */
+
+.app-shell-content.sidebar-open {
+  margin-left: var(--sidebar-width);
+
+  width: calc(100% - var(--sidebar-width));
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.app-shell-footer {
+  width: 100%;
+
+  margin-top: 2rem;
+}
+
+.app-shell-footer footer {
+  width: 100%;
+
+  min-height: var(--footer-height);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #008f6b;
+}
+
+.app-shell-footer span {
+  color: #ffffff;
+
+  font-size: 0.75rem;
+}
+
+/* =========================================================
+   SIDEBAR CLOSED
+========================================================= */
+
+.sidebar-desktop.sidebar-closed {
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-desktop.sidebar-open {
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+/* =========================================================
+   TABLET / MOBILE
+========================================================= */
+
+@media screen and (max-width: 768px) {
+
+  .app-shell-content {
+    width: 100%;
+
+    margin-left: 0 !important;
+
+    padding: 1rem;
+
+    padding-bottom: 1rem;
+  }
+
+  .app-shell-content.sidebar-open {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .app-shell-footer {
+    margin-top: 1.5rem;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media screen and (max-width: 390px) {
+
+  .app-shell-content {
+    padding: 0.75rem;
+  }
+}

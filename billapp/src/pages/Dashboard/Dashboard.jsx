@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import Header from "../../components/Header";
-import Sidebar from "../../components/Sidebar";
-import BottomNav from "../../components/BottomNav";
+// import Header from "../../components/layout/Header";
+// import Sidebar from "../../components/layout/Sidebar";
+// import BottomNav from "../../components/layout/BottomNav";
 
 import "./Dashboard.css";
 
@@ -19,11 +19,11 @@ export default function Dashboard() {
   const [lowStockCount, setLowStockCount] = useState(0);
 
   // --------- SIDEBAR STATE ---------
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleMenuToggle = () => {
-    setSidebarOpen((previous) => !previous);
-  };
+  // const handleMenuToggle = () => {
+  //   setSidebarOpen((previous) => !previous);
+  // };
 
   useEffect(() => {
     const options = {
@@ -46,27 +46,22 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="app_container">
-
-      {/* ================= HEADER ================= */}
-      <Header
-        onMenuToggle={handleMenuToggle}
-      />
+    <>
 
       {/* ================= MAIN LAYOUT ================= */}
       <div className="main-container">
 
         {/* ================= SIDEBAR ================= */}
-        {sidebarOpen && <Sidebar />}
+        {/* {sidebarOpen && <Sidebar />} */}
 
         {/* ================= DASHBOARD CONTENT ================= */}
-        <main
+        {/* <main
           className={
             sidebarOpen
               ? "main-content sidebar-open"
               : "main-content"
           }
-        >
+        > */}
 
           {/* Welcome Banner */}
           <div className="card-welcome">
@@ -176,7 +171,7 @@ export default function Dashboard() {
           <button
             type="button"
             className="card-action"
-            onClick={() => navigate("/voicebilling")}
+            onClick={() => navigate("/billing")}
           >
 
             <div className="card-link">
@@ -219,26 +214,13 @@ export default function Dashboard() {
 
           </button>
 
-          {/* ================= FOOTER ================= */}
-          <div className="footer-gap"></div>
-
-          <div className="footer-section">
-
-            <footer>
-              <span>
-                Copyright @2026
-              </span>
-            </footer>
-
-          </div>
-
-        </main>
-
+          
+          
       </div>
 
       {/* ================= MOBILE BOTTOM NAV ================= */}
-      <BottomNav />
+      {/* <BottomNav /> */}
+  </>
 
-    </div>
   );
 }

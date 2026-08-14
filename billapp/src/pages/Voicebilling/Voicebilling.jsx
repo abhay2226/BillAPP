@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import Header from "../../components/Header";
-import Sidebar from "../../components/Sidebar";
-import BottomNav from "../../components/BottomNav";
+// import Header from "../../components/layout/Header";
+// import Sidebar from "../../components/layout/Sidebar";
+// import BottomNav from "../../components/layout/BottomNav";
 import BillSuccess from "../../components/BillSuccess";
 
 import pencilIcon from "../../assets/icons/pencil.png";
@@ -26,11 +26,11 @@ function Billing() {
      SIDEBAR TOGGLE
   */
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleMenuToggle = () => {
-    setSidebarOpen((previous) => !previous);
-  };
+  // const handleMenuToggle = () => {
+  //   setSidebarOpen((previous) => !previous);
+  // };
 
   const recognitionRef = useRef(null);
   const timerRef = useRef(null);
@@ -70,13 +70,13 @@ function Billing() {
      PROFILE POPUP
   */
 
-  const [showProfilePopup, setShowProfilePopup] = useState(false);
+  // const [showProfilePopup, setShowProfilePopup] = useState(false);
 
-  const [userFirstName, setUserFirstName] = useState("");
-  const [userLastName, setUserLastName] = useState("");
-  const [userNumber, setUserNumber] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [gstID, setGstID] = useState("");
+  // const [userFirstName, setUserFirstName] = useState("");
+  // const [userLastName, setUserLastName] = useState("");
+  // const [userNumber, setUserNumber] = useState("");
+  // const [userEmail, setUserEmail] = useState("");
+  // const [gstID, setGstID] = useState("");
 
   /*
      BILL CALCULATIONS
@@ -481,585 +481,315 @@ function Billing() {
      PROFILE
   */
 
-  const openProfilePopup = () => {
-    setShowProfilePopup(true);
-  };
+  // const openProfilePopup = () => {
+  //   setShowProfilePopup(true);
+  // };
 
-  const closeProfilePopup = () => {
-    setShowProfilePopup(false);
-  };
+  // const closeProfilePopup = () => {
+  //   setShowProfilePopup(false);
+  // };
 
-  const handleProfileSubmit = (event) => {
-    event.preventDefault();
-    setShowProfilePopup(false);
-  };
+  // const handleProfileSubmit = (event) => {
+  //   event.preventDefault();
+  //   setShowProfilePopup(false);
+  // };
 
   /*
      RETURN
   */
 
   return (
-    <main className="app_container">
-
-      {/* ================= HEADER ================= */}
-
-      <Header
-        title="Billing"
-        onMenuToggle={handleMenuToggle}
-      />
-
-      {/* ================= MAIN CONTAINER ================= */}
-
-      <section className="main-container">
-
-        {/* ================= SIDEBAR ================= */}
-
-        {sidebarOpen && <Sidebar />}
-
-        {/* ================= MAIN CONTENT ================= */}
-
-        <div
-          className={`main-content ${
-            sidebarOpen ? "sidebar-open" : ""
-          }`}
-        >
-
-          {!showSuccessScreen ? (
-
-            <div
-              id="voiceBillingView"
-              className="voice-billing-view"
-            >
-
-              {/* ----- VOICE SECTION ------ */}
-
-              <section className="voice-section">
-
-                {!isListening ? (
-
-                  <div className="voice-button-container">
-
-                    <button
-                      className="voice-button"
-                      type="button"
-                      onClick={startVoiceBilling}
-                      aria-label="Start voice billing"
-                    >
-
-                      <img
-                        src={micIcon}
-                        alt="Voice"
-                      />
-
-                    </button>
-
-                    <div className="voice-button-static">
-                      <span>Tap to speak</span>
-                    </div>
-
+    <>
+      <div className="main-content">
+        {!showSuccessScreen ? (
+          <div id="voiceBillingView" className="voice-billing-view">
+            {/* ----- VOICE SECTION ------ */}
+            <section className="voice-section">
+              {!isListening ? (
+                <div className="voice-button-container">
+                  <button
+                    className="voice-button"
+                    type="button"
+                    onClick={startVoiceBilling}
+                    aria-label="Start voice billing"
+                  >
+                    <img src={micIcon} alt="Voice" />
+                  </button>
+                  <div className="voice-button-static">
+                    <span>Tap to speak</span>
                   </div>
-
-                ) : (
-
-                  <div className="voice-button-container">
-
-                    <button
-                      className="voice-button"
-                      type="button"
-                      aria-label="Listening"
-                    >
-
-                      <img
-                        src="/assets/icons/microphone.png"
-                        alt="Listening"
-                      />
-
-                    </button>
-
-                    <div className="voice-button-use">
-
-                      <div className="listening-timer-container">
-
-                        <span className="voice-text">
-                          Listening
-                        </span>
-
-                        <span className="listening-timer">
-                          {String(minutes).padStart(2, "0")}
-                        </span>
-
-                        <span>:</span>
-
-                        <span className="listening-timer">
-                          {String(seconds).padStart(2, "0")}
-                        </span>
-
-                      </div>
-
-                      <button
-                        id="stopVoiceButton"
-                        type="button"
-                        onClick={stopVoiceBilling}
-                      >
-                        Stop
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                )}
-
-              </section>
-
-              {/* ================= VOICE OUTPUT ================= */}
-
-              <section className="voice-output-section">
-
-                <div className="voice-output-container">
-
-                  <span className="voice-output-label">
-                    WHAT I HEARD
-                  </span>
-
-                  <p className="voice-output-text">
-                    {voiceOutput}
-                  </p>
-
-                  <div className="inventory-status">
-
-                    <div className="item-found">
-                      <span>
-                        Matched with inventory
+                </div>
+              ) : (
+                <div className="voice-button-container">
+                  <button
+                    className="voice-button"
+                    type="button"
+                    aria-label="Listening"
+                  >
+                    <img src="/assets/icons/microphone.png" alt="Listening" />
+                  </button>
+                  <div className="voice-button-use">
+                    <div className="listening-timer-container">
+                      <span className="voice-text">Listening</span>
+                      <span className="listening-timer">
+                        {String(minutes).padStart(2, "0")}
+                      </span>
+                      <span>:</span>
+                      <span className="listening-timer">
+                        {String(seconds).padStart(2, "0")}
                       </span>
                     </div>
-
-                    <div className="item-not-found">
-                      <span>
-                        Item not found
-                      </span>
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </section>
-
-              {/* ================= BILL CONTAINER ================= */}
-
-              <section className="bill-container">
-
-                {/* BILL HEADER */}
-
-                <div className="bill-header">
-
-                  <h2>Bill Items</h2>
-
-                  <div className="add-item-button-container">
-
-                    <img
-                      src="/assets/icons/plus2.png"
-                      alt=""
-                    />
-
                     <button
-                      className="add-item-button"
+                      id="stopVoiceButton"
                       type="button"
-                      onClick={openAddItemPopup}
+                      onClick={stopVoiceBilling}
                     >
-                      Add Item manually
+                      Stop
                     </button>
-
                   </div>
-
                 </div>
+              )}
+            </section>
 
-                {/* BILL TABLE */}
+            {/* ================= VOICE OUTPUT ================= */}
+            <section className="voice-output-section">
+              <div className="voice-output-container">
+                <span className="voice-output-label">WHAT I HEARD</span>
+                <p className="voice-output-text">{voiceOutput}</p>
+                <div className="inventory-status">
+                  <div className="item-found">
+                    <span>Matched with inventory</span>
+                  </div>
+                  <div className="item-not-found">
+                    <span>Item not found</span>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-                <div className="bill-table-container">
+            {/* ================= BILL CONTAINER ================= */}
+            <section className="bill-container">
+              {/* BILL HEADER */}
+              <div className="bill-header">
+                <h2>Bill Items</h2>
+                <div className="add-item-button-container">
+                  <img src="/assets/icons/plus2.png" alt="" />
+                  <button
+                    className="add-item-button"
+                    type="button"
+                    onClick={openAddItemPopup}
+                  >
+                    Add Item manually
+                  </button>
+                </div>
+              </div>
 
-                  <table className="bill-table">
-
-                    <thead>
-
+              {/* BILL TABLE */}
+              <div className="bill-table-container">
+                <table className="bill-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "12%" }}>Qty</th>
+                      <th style={{ width: "32%" }}>Item</th>
+                      <th style={{ width: "16%" }}>Price</th>
+                      <th style={{ width: "16%" }}>Total</th>
+                      <th style={{ width: "24%" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.length === 0 ? (
                       <tr>
-
-                        <th style={{ width: "12%" }}>
-                          Qty
-                        </th>
-
-                        <th style={{ width: "32%" }}>
-                          Item
-                        </th>
-
-                        <th style={{ width: "16%" }}>
-                          Price
-                        </th>
-
-                        <th style={{ width: "16%" }}>
-                          Total
-                        </th>
-
-                        <th style={{ width: "24%" }}>
-                          Actions
-                        </th>
-
+                        <td colSpan="5" className="empty-bill-cell">
+                          No bill items yet. Use Add Item or voice billing.
+                        </td>
                       </tr>
-
-                    </thead>
-
-                    <tbody>
-
-                      {items.length === 0 ? (
-
-                        <tr>
-
-                          <td
-                            colSpan="5"
-                            className="empty-bill-cell"
-                          >
-                            No bill items yet. Use Add
-                            Item or voice billing.
+                    ) : (
+                      items.map((item) => (
+                        <tr key={item.id}>
+                          <td className="quantity-cell">{item.quantity}</td>
+                          <td>
+                            <strong>{item.name}</strong>
+                            <br />
+                            <span className="item-description">
+                              ({item.type} - {item.brand})
+                            </span>
                           </td>
-
+                          <td className="price-cell">
+                            ₹{item.price.toFixed(2)}
+                          </td>
+                          <td className="total-cell">
+                            ₹{item.total.toFixed(2)}
+                          </td>
+                          <td>
+                            <div className="row-actions">
+                              <button
+                                className="edit-item-button"
+                                type="button"
+                                onClick={() => editItem(item)}
+                                aria-label={`Edit ${item.name}`}
+                              >
+                                <img src={pencilIcon} alt="Edit" />
+                              </button>
+                              <button
+                                className="delete-item-button"
+                                type="button"
+                                onClick={() => deleteItem(item.id)}
+                                aria-label={`Remove ${item.name}`}
+                              >
+                                <img src={deleteIcon} alt="Delete" />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-                      ) : (
-
-                        items.map((item) => (
-
-                          <tr key={item.id}>
-
-                            <td className="quantity-cell">
-                              {item.quantity}
-                            </td>
-
-                            <td>
-
-                              <strong>
-                                {item.name}
-                              </strong>
-
-                              <br />
-
-                              <span className="item-description">
-                                ({item.type} - {item.brand})
-                              </span>
-
-                            </td>
-
-                            <td className="price-cell">
-                              ₹{item.price.toFixed(2)}
-                            </td>
-
-                            <td className="total-cell">
-                              ₹{item.total.toFixed(2)}
-                            </td>
-
-                            <td>
-
-                              <div className="row-actions">
-
-                                <button
-                                  className="edit-item-button"
-                                  type="button"
-                                  onClick={() =>
-                                    editItem(item)
-                                  }
-                                  aria-label={`Edit ${item.name}`}
-                                >
-
-                                  <img
-                                    src={pencilIcon}
-                                    alt="Edit"
-                                  />
-
-                                </button>
-
-                                <button
-                                  className="delete-item-button"
-                                  type="button"
-                                  onClick={() =>
-                                    deleteItem(item.id)
-                                  }
-                                  aria-label={`Remove ${item.name}`}
-                                >
-
-                                  <img
-                                    src={deleteIcon}
-                                    alt="Delete"
-                                  />
-
-                                </button>
-
-                              </div>
-
-                            </td>
-
-                          </tr>
-
-                        ))
-
-                      )}
-
-                    </tbody>
-
-                  </table>
-
+              {/* ------- SUMMARY-------- */}
+              <div className="bill-summary">
+                <div className="summary-row">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
-
-                {/* ------- SUMMARY-------- */}
-
-                <div className="bill-summary">
-
-                  <div className="summary-row">
-
-                    <span>Subtotal</span>
-
-                    <span>
-                      ₹{subtotal.toFixed(2)}
-                    </span>
-
-                  </div>
-
-                  <div className="summary-row">
-
-                    <span>GST (18%)</span>
-
-                    <span>
-                      ₹{gst.toFixed(2)}
-                    </span>
-
-                  </div>
-
-                  <div className="summary-row discount-row">
-
-                    <div className="discount-button">
-
-                      <span>
-                        Discount
-                      </span>
-
-                      <input
-                        id="discount-per"
-                        className="discount-input"
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={discountPercent}
-                        onChange={(event) =>
-                          setDiscountPercent(
-                            Number(event.target.value)
-                          )
-                        }
-                      />
-
-                      <span>%</span>
-
-                      <img
-                        src="/assets/icons/pencil.png"
-                        alt=""
-                      />
-
-                    </div>
-
-                    <span>
-                      ₹{discountAmount.toFixed(2)}
-                    </span>
-
-                  </div>
-
-                  <div className="summary-line"></div>
-
-                  <div className="grand-total-row">
-
-                    <span className="grand-total-label">
-                      Grand Total
-                    </span>
-
-                    <span className="grand-total-price">
-                      ₹{grandTotal.toFixed(2)}
-                    </span>
-
-                  </div>
-
+                <div className="summary-row">
+                  <span>GST (18%)</span>
+                  <span>₹{gst.toFixed(2)}</span>
                 </div>
-
-                {/* ------ ACTIONS ------- */}
-
-                <div className="bill-actions">
-
-                  <button
-                    className="bill-action-button"
-                    type="button"
-                    onClick={printBill}
-                  >
-
-                    <img
-                      src="/assets/icons/printing.png"
-                      alt=""
+                <div className="summary-row discount-row">
+                  <div className="discount-button">
+                    <span>Discount</span>
+                    <input
+                      id="discount-per"
+                      className="discount-input"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={discountPercent}
+                      onChange={(event) =>
+                        setDiscountPercent(Number(event.target.value))
+                      }
                     />
-
-                    <span>Print</span>
-
-                  </button>
-
-                  <button
-                    className="bill-action-button"
-                    type="button"
-                    onClick={shareReceipt}
-                  >
-
-                    <img
-                      src="/assets/icons/share.png"
-                      alt=""
-                    />
-
-                    <span>WhatsApp</span>
-
-                  </button>
-
+                    <span>%</span>
+                    <img src="/assets/icons/pencil.png" alt="" />
+                  </div>
+                  <span>₹{discountAmount.toFixed(2)}</span>
                 </div>
-
-                {/*----- GENERATE BILL ------ */}
-
-                <div className="new-bill-container">
-
-                  <button
-                    className="new-bill"
-                    type="button"
-                    onClick={generateBill}
-                  >
-
-                    <p>Generate Bill</p>
-
-                  </button>
-
+                <div className="summary-line"></div>
+                <div className="grand-total-row">
+                  <span className="grand-total-label">Grand Total</span>
+                  <span className="grand-total-price">
+                    ₹{grandTotal.toFixed(2)}
+                  </span>
                 </div>
+              </div>
 
-                <div className="footer-gap"></div>
+              {/* ------ ACTIONS ------- */}
+              <div className="bill-actions">
+                <button
+                  className="bill-action-button"
+                  type="button"
+                  onClick={printBill}
+                >
+                  <img src="/assets/icons/printing.png" alt="" />
+                  <span>Print</span>
+                </button>
+                <button
+                  className="bill-action-button"
+                  type="button"
+                  onClick={shareReceipt}
+                >
+                  <img src="/assets/icons/share.png" alt="" />
+                  <span>WhatsApp</span>
+                </button>
+              </div>
 
-                <div className="footer-section">
-
-                  <footer>
-
-                    <span>
-                      Copyright @2026
-                    </span>
-
-                  </footer>
-
-                </div>
-
-              </section>
-
-            </div>
-
-          ) : (
-
-            /* BILL SUCCESS COMPONENT */
-
-            <BillSuccess
-              billNumber={billNumber}
-              billDate={billDate}
-              successTotalAmount={successTotalAmount}
-              onShare={shareReceipt}
-              onPrint={printBill}
-              onNewBill={createNewBill}
-            />
-
-          )}
-
-        </div>
-
-      </section>
+              {/*----- GENERATE BILL ------ */}
+              <div className="new-bill-container">
+                <button
+                  className="new-bill"
+                  type="button"
+                  onClick={generateBill}
+                >
+                  <p>Generate Bill</p>
+                </button>
+              </div>
+              {/* <div className="footer-gap"></div>
+              <div className="footer-section">
+                <footer>
+                  <span>Copyright @2026</span>
+                </footer>
+              </div> */}
+            </section>
+          </div>
+        ) : (
+          /* BILL SUCCESS COMPONENT */
+          <BillSuccess
+            billNumber={billNumber}
+            billDate={billDate}
+            successTotalAmount={successTotalAmount}
+            onShare={shareReceipt}
+            onPrint={printBill}
+            onNewBill={createNewBill}
+          />
+        )}
+      </div>
 
       {/* ADD / EDIT ITEM POPUP */}
-
       {showItemPopup && (
-
         <div
           className="billing-popup-overlay"
           onMouseDown={(event) => {
-
-            if (
-              event.target === event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               closeItemPopup();
             }
-
           }}
         >
-
           <div className="pop-up">
-
             <h2>
-              {editingItemId !== null
-                ? "Edit bill item"
-                : "Add bill item"}
+              {editingItemId !== null ? "Edit bill item" : "Add bill item"}
             </h2>
-
-            <form
-              id="addItemForm"
-              onSubmit={handleItemSubmit}
-            >
-
+            <form id="addItemForm" onSubmit={handleItemSubmit}>
               <input
                 type="text"
                 placeholder="Name"
                 value={itemName}
-                onChange={(event) =>
-                  setItemName(event.target.value)
-                }
+                onChange={(event) => setItemName(event.target.value)}
                 required
               />
-
               <input
                 type="number"
                 placeholder="Quantity"
                 min="1"
                 value={itemQuantity}
-                onChange={(event) =>
-                  setItemQuantity(event.target.value)
-                }
+                onChange={(event) => setItemQuantity(event.target.value)}
                 required
               />
-
               <input
                 type="text"
                 placeholder="Type"
                 value={itemType}
-                onChange={(event) =>
-                  setItemType(event.target.value)
-                }
+                onChange={(event) => setItemType(event.target.value)}
                 required
               />
-
               <input
                 type="text"
                 placeholder="Brand"
                 value={itemBrand}
-                onChange={(event) =>
-                  setItemBrand(event.target.value)
-                }
+                onChange={(event) => setItemBrand(event.target.value)}
                 required
               />
-
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 placeholder="Price"
                 value={itemPrice}
-                onChange={(event) =>
-                  setItemPrice(event.target.value)
-                }
+                onChange={(event) => setItemPrice(event.target.value)}
                 required
               />
-
               <div className="popup-actions">
-
                 <button
                   type="button"
                   className="secondary-button"
@@ -1067,109 +797,67 @@ function Billing() {
                 >
                   Cancel
                 </button>
-
-                <button
-                  type="submit"
-                  className="primary-button"
-                >
-                  {editingItemId !== null
-                    ? "Save changes"
-                    : "Add item"}
+                <button type="submit" className="primary-button">
+                  {editingItemId !== null ? "Save changes" : "Add item"}
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </div>
-
       )}
 
       {/* PROFILE POPUP */}
-
-      {showProfilePopup && (
-
+      {/* {showProfilePopup && (
         <div
           className="billing-popup-overlay"
           onMouseDown={(event) => {
-
-            if (
-              event.target === event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               closeProfilePopup();
             }
-
           }}
         >
-
           <div className="pop-up">
-
-            <h2>
-              User Profile
-            </h2>
-
-            <form
-              id="addUserForm"
-              onSubmit={handleProfileSubmit}
-            >
-
+            <h2>User Profile</h2>
+            <form id="addUserForm" onSubmit={handleProfileSubmit}>
               <input
                 type="text"
                 placeholder="FirstName"
                 value={userFirstName}
-                onChange={(event) =>
-                  setUserFirstName(event.target.value)
-                }
+                onChange={(event) => setUserFirstName(event.target.value)}
                 required
               />
-
               <input
                 type="text"
                 placeholder="LastName"
                 value={userLastName}
-                onChange={(event) =>
-                  setUserLastName(event.target.value)
-                }
+                onChange={(event) => setUserLastName(event.target.value)}
                 required
               />
-
               <input
                 type="text"
                 inputMode="numeric"
                 maxLength="10"
                 placeholder="Phone Number"
                 value={userNumber}
-                onChange={(event) =>
-                  setUserNumber(event.target.value)
-                }
+                onChange={(event) => setUserNumber(event.target.value)}
                 required
               />
-
               <input
                 type="email"
                 inputMode="email"
                 placeholder="E-mail"
                 value={userEmail}
-                onChange={(event) =>
-                  setUserEmail(event.target.value)
-                }
+                onChange={(event) => setUserEmail(event.target.value)}
                 required
               />
-
               <input
                 type="text"
                 placeholder="GstID"
                 value={gstID}
-                onChange={(event) =>
-                  setGstID(event.target.value)
-                }
+                onChange={(event) => setGstID(event.target.value)}
                 required
               />
-
               <div className="popup-actions">
-
                 <button
                   type="button"
                   className="secondary-button"
@@ -1177,30 +865,17 @@ function Billing() {
                 >
                   Cancel
                 </button>
-
-                <button
-                  type="submit"
-                  className="primary-button"
-                >
+                <button type="submit" className="primary-button">
                   Edit Details
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </div>
-
-      )}
-
-      {/* ================= MOBILE BOTTOM NAV ================= */}
-
-      <BottomNav />
-
-    </main>
+      )} */}
+    </>
   );
+    
 }
 
 export default Billing;
