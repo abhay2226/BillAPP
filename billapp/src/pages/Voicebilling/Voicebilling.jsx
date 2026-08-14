@@ -531,13 +531,16 @@ function Billing() {
                   <div className="voice-button-use">
                     <div className="listening-timer-container">
                       <span className="voice-text">Listening</span>
-                      <span className="listening-timer">
+                      <div class="listening-timer-content">
+                        <span className="listening-timer">
                         {String(minutes).padStart(2, "0")}
-                      </span>
-                      <span>:</span>
-                      <span className="listening-timer">
-                        {String(seconds).padStart(2, "0")}
-                      </span>
+                        </span>
+                        <span>:</span>
+                        <span className="listening-timer">
+                          {String(seconds).padStart(2, "0")}
+                        </span>
+                      </div>
+                      
                     </div>
                     <button
                       id="stopVoiceButton"

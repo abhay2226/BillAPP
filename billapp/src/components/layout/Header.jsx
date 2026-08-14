@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import menuIcon from "../../assets/icons/menu.png";
 import addIcon from "../../assets/icons/add (2).png";
 
+import "./AppShell.css";
+
 const routeTitles = {
   "/billing": "Voice Billing",
   "/inventory": "Inventory",

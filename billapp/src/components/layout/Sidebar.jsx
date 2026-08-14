@@ -5,7 +5,7 @@ import boxIcon from "../../assets/icons/box.png";
 import billIcon from "../../assets/icons/bill.png";
 import userIcon from "../../assets/icons/user.png";
 
-function Sidebar({ isOpen }) {
+function Sidebar({ isOpen , onProfileClick}) {
   const routes = [
     {
       id: 1,
@@ -25,12 +25,12 @@ function Sidebar({ isOpen }) {
       label: "Billing",
       icon: billIcon,
     },
-    {
-      id: 4,
-      path: "/profile",
-      label: "Profile",
-      icon: userIcon,
-    },
+    // {
+    //   id: 4,
+    //   path: "",
+    //   label: "Profile",
+    //   icon: userIcon,
+    // },
   ];
 
   return (
@@ -68,6 +68,13 @@ function Sidebar({ isOpen }) {
 
         </div>
       ))}
+
+      <div className="nav-item">
+        <button type="button" className="sidebar-link" onClick={onProfileClick}>
+          <div className="nav-icon"><img src={userIcon} alt="Profile" /></div>
+          <div className="nav-label">Profile</div>
+        </button>
+      </div>
 
     </aside>
   );
