@@ -566,6 +566,8 @@
 
 .bill-table td {
   padding: 0.75rem 0.35rem;
+  justify-content: center;
+  text-align: center;
 
   color: #222222;
 
