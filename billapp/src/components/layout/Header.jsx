@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 
-import menuIcon from "../assets/icons/menu.png";
-import addIcon from "../assets/icons/add (2).png";
+import menuIcon from "../../assets/icons/menu.png";
+import addIcon from "../../assets/icons/add (2).png";
 
 const routeTitles = {
   "/billing": "Voice Billing",
@@ -12,7 +12,7 @@ const routeTitles = {
 
 function Header({ onMenuToggle, onAddProduct }) {
   const location = useLocation();
-  const title = routeTitles[location.pathname];
+  const title = routeTitles[location.pathname] || "ProShop";
 
   return (
     <header className="inventory_section">
@@ -34,13 +34,26 @@ function Header({ onMenuToggle, onAddProduct }) {
 
       <div className="right_inventory_section">
 
-        <button
+        {/* <button
           type="button"
           className="header-icon-button"
           onClick={onAddProduct}
         >
           <img src={addIcon} alt="Add Product" />
-        </button>
+        </button> */}
+
+        {onAddProduct && (
+          <button
+            type="button"
+            className="header-icon-button"
+            onClick={onAddProduct}
+          >
+            <img
+              src={addIcon}
+              alt="Add Product"
+            />
+          </button>
+        )}
 
       </div>
 

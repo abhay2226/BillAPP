@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import Header from "../../components/Header";
-import Sidebar from "../../components/Sidebar";
-import BottomNav from "../../components/BottomNav";
+import { useOutletContext } from "react-router-dom"; 
 
 import searchIcon from "../../assets/icons/search.png";
 import leftIcon from "../../assets/icons/left.png";
@@ -20,8 +18,8 @@ function Inventory() {
 
   const [showPopup, setShowPopup] = useState(false);
 
-  // SIDEBAR TOGGLE
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // // SIDEBAR TOGGLE
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // EDIT
   const [editingProductId, setEditingProductId] = useState(null);
@@ -45,9 +43,9 @@ function Inventory() {
   };
 
   // SIDEBAR TOGGLE FUNCTION
-  const handleMenuToggle = () => {
-    setSidebarOpen((previous) => !previous);
-  };
+  // const handleMenuToggle = () => {
+  //   setSidebarOpen((previous) => !previous);
+  // };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -61,6 +59,14 @@ function Inventory() {
   const openPopup = () => {
     setShowPopup(true);
   };
+
+//   useEffect(() => {
+//   setHeaderAction(() => openPopup);
+
+//   return () => {
+//     setHeaderAction(null);
+//   };
+// }, [setHeaderAction]);
 
   const closePopup = () => {
     setShowPopup(false);
@@ -255,25 +261,25 @@ function Inventory() {
   }
 
   return (
-    <main className="app_container">
+    <>
 
-      {/* HEADER */}
+      {/* HEADER
       <Header
         onBack={goBack}
         onAddProduct={openPopup}
         onMenuToggle={handleMenuToggle}
-      />
+      /> */}
 
       {/* MAIN */}
       <section className="main-container">
 
         {/* MAIN CONTENT */}
         <div
-          className={
-            sidebarOpen
-              ? "main-content sidebar-open"
-              : "main-content"
-          }
+          // className={
+          //   sidebarOpen
+          //     ? "main-content sidebar-open"
+          //     : "main-content"
+          // }
         >
 
           {/* SEARCH */}
@@ -507,27 +513,15 @@ function Inventory() {
 
           </div>
 
-          <div className="footer-gap"></div>
-
-          <div className="footer-section">
-
-            <footer>
-              <small>
-                Copyright @2026
-              </small>
-            </footer>
-
-          </div>
-
         </div>
 
         {/* SIDEBAR */}
-        {sidebarOpen && <Sidebar />}
+        {/* {sidebarOpen && <Sidebar />} */}
 
       </section>
 
       {/* BOTTOM NAV */}
-      <BottomNav />
+      {/* <BottomNav /> */}
 
       {/* ADD PRODUCT POPUP */}
       {showPopup && (
@@ -639,7 +633,7 @@ function Inventory() {
 
       )}
 
-    </main>
+    </>
   );
 }
 
