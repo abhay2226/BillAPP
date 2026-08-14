@@ -130,11 +130,10 @@ body {
   width: 100%;
   height: 100%;
 
-  overflow-y: auto;
+ /* overflow-y: auto;
   overflow-x: hidden;
 
-  /* scrollbar-width: thin; */
-
+  scrollbar-width: thin; */
   padding-left:0;
   
 
@@ -234,7 +233,7 @@ body {
 
 /* 
    ACTIVE / ACTIVITY SIDEBAR ITEM
-========================================================= */
+= */
 
 .sidebar-desktop .sidebar-link.active {
   background-color: #e8f7f2;
