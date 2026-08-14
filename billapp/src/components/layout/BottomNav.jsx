@@ -5,7 +5,7 @@ import boxIcon from "../../assets/icons/box.png";
 import billIcon from "../../assets/icons/bill.png";
 import userIcon from "../../assets/icons/user.png";
 
-function BottomNav() {
+function BottomNav({onProfileClick}) {
   const navigate = useNavigate();
 
   return (
@@ -63,7 +63,7 @@ function BottomNav() {
         <button
           className="profile"
           type="button"
-        >
+          onClick={onProfileClick}>
           <div className="nav-icon">
             <img src={userIcon} alt="Profile" />
           </div>

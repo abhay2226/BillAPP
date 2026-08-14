@@ -1,15 +1,20 @@
-import React ,{useState} from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import Header from "../../components/layout/Header";
 import Sidebar from "../../components/layout/Sidebar";
 import BottomNav from "../../components/layout/BottomNav";
+import UserProfile from "../ProfilePopup";
 
 import "./AppShell.css";
 
 function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [headerAction, setHeaderAction] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const openProfile = () => setProfileOpen(true);
+  const closeProfile = () => setProfileOpen(false);
 
   const handleMenuToggle = () => {
     setSidebarOpen((previous) => !previous);
@@ -18,33 +23,17 @@ function AppShell() {
   return (
     <div className="app-shell">
 
-      {/* ================= HEADER ================= */}
-      <Header
-        onMenuToggle={handleMenuToggle}
-        onAddProduct={headerAction}
-      />
+      <Header onMenuToggle={handleMenuToggle} onAddProduct={headerAction} />
 
-      {/* ================= BODY ================= */}
       <div className="app-shell-body">
 
-        {/* ================= SIDEBAR ================= */}
-        <Sidebar isOpen={sidebarOpen} />
+        <Sidebar isOpen={sidebarOpen} onProfileClick={openProfile} />
 
-        {/* ================= PAGE CONTENT ================= */}
         <main
-          className={
-            sidebarOpen
-              ? "app-shell-content sidebar-open"
-              : "app-shell-content"
-          }
+          className={sidebarOpen ? "app-shell-content sidebar-open" : "app-shell-content"}
         >
-          <Outlet
-            context={{
-              setHeaderAction,
-            }}
-          />
+          <Outlet context={{ setHeaderAction }} />
 
-          {/* ================= FOOTER ================= */}
           <div className="app-shell-footer">
             <footer>
               <span>Copyright @2026</span>
@@ -54,11 +43,11 @@ function AppShell() {
 
       </div>
 
-      {/* ================= MOBILE NAV ================= */}
-      <BottomNav />
+      <BottomNav onProfileClick={openProfile} />
+
+      <UserProfile isOpen={profileOpen} onClose={closeProfile} />
     </div>
   );
 }
 
 export default AppShell;
-
