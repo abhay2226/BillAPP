@@ -63,14 +63,15 @@ body,
   width: 100%;
   height: 100%;
 
-  padding: 1.5rem 2rem 0 2rem;
-  margin-top: var(--header-height);
+  padding: calc(var(--header-height) + 1.5rem) 2rem 0 2rem;
 
   background-color: #f7f9f8;
 
+  display: flex;
+  flex-direction: column;
+
   overflow-y: auto;
   overflow-x: auto;
-
   scrollbar-width: none;
 
   transition:
@@ -91,7 +92,7 @@ body,
 /* =========================================================
    FOOTER
 ========================================================= */
-
+/* 
 .app-shell-footer {
   width: 100%;
 
@@ -114,6 +115,27 @@ body,
 .app-shell-footer span {
   color: #ffffff;
 
+  font-size: 0.75rem;
+} */
+
+.app-shell-footer {
+  width: 100%;
+  /* Automatically pushes footer to the bottom when content is short */
+  margin-top: auto;
+  padding-top: 2rem;
+}
+
+.app-shell-footer footer {
+  width: 100%;
+  min-height: var(--footer-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #008f6b;
+}
+
+.app-shell-footer span {
+  color: #ffffff;
   font-size: 0.75rem;
 }
 
@@ -533,7 +555,7 @@ body {
 }
 
 .app-shell-content {
-  padding-bottom: var(--footer-height);
+  padding-bottom: calc(var(--footer-height) + 4.5rem);
 }
 
 
