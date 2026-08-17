@@ -117,8 +117,93 @@ body,
 }
 
 /* =========================================================
-   SIDEBAR CLOSED
+   LEGACY HEADER / SIDEBAR STYLES
+   Used by Header.jsx, Sidebar.jsx, BottomNav.jsx
 ========================================================= */
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #ffffff;
+}
+
+.inventory_section {
+  width: 100%;
+  min-height: var(--header-height);
+  height: var(--header-height);
+
+  padding: 0 1.5rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: #ffffff;
+
+  border-bottom: 0.0625rem solid #e5e7eb;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
+
+  position: sticky;
+  top: 0;
+  z-index: 500;
+}
+
+.left_inventory_section {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.right_inventory_section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-icon-button {
+  width: 2.8rem;
+  height: 2.8rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.header-icon-button img {
+  width: 2rem;
+  height: 1.8rem;
+  object-fit: contain;
+}
+
+.left_inventory_section h4 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0b8a6a;
+}
+
+.sidebar-desktop {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  padding: 1.5rem 0;
+
+  background-color: #ffffff;
+  border-right: 0.0625rem solid #e5e7eb;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+
+  z-index: 450;
+}
 
 .sidebar-desktop.sidebar-closed {
   transform: translateX(-100%);
@@ -130,11 +215,108 @@ body,
   transition: transform 0.3s ease;
 }
 
+.sidebar-desktop .nav-item {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.sidebar-desktop .sidebar-link {
+  width: 100%;
+  min-height: 4.2rem;
+
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  position: relative;
+  text-decoration: none;
+  color: #53605a;
+}
+
+.sidebar-desktop .sidebar-link.active {
+  background-color: #e8f7f2;
+  color: #008f6b;
+  border-radius: 0.5rem;
+}
+
+.sidebar-desktop .sidebar-link.active .nav-label {
+  color: #008f6b;
+  font-weight: 600;
+}
+
+.sidebar-desktop .sidebar-link.active::before {
+  content: "";
+
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 0.25rem;
+  height: 2.5rem;
+  background-color: #008f6b;
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.sidebar-desktop .nav-icon {
+  width: 2rem;
+  height: 2rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-desktop .nav-icon img {
+  width: 1.8rem;
+  height: 1.8rem;
+  object-fit: contain;
+}
+
+.sidebar-desktop .nav-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #53605a;
+}
+
+.sidebar-desktop .dashboard,
+.sidebar-desktop .dashboard .nav-label,
+.sidebar-desktop .billing,
+.sidebar-desktop .billing .nav-label,
+.sidebar-desktop .inventory,
+.sidebar-desktop .inventory .nav-label,
+.sidebar-desktop .profile,
+.sidebar-desktop .profile .nav-label {
+  color: #53605a;
+}
+
+.bottom-nav {
+  display: none;
+}
+
+
+
+
+
+
+
 /* =========================================================
    TABLET / MOBILE
 ========================================================= */
 
 @media screen and (max-width: 768px) {
+
+  .sidebar-desktop {
+    display: none;
+  }
 
   .app-shell-content {
     width: 100%;
@@ -155,8 +337,71 @@ body,
     margin-top: 1.5rem;
   }
 
-  .header-icon-button{
-    display:none;
+  .header-icon-button {
+    display: none;
+  }
+
+  .bottom-nav {
+    width: 100%;
+    height: 4.5rem;
+    min-height: 4.5rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+
+    background-color: #ffffff;
+    border-top: 0.0625rem solid #e5e7eb;
+    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+
+    z-index: 600;
+  }
+
+  .bottom-nav .nav-item {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .bottom-nav button {
+    width: 100%;
+    height: 4rem;
+
+    border: none;
+    background-color: transparent;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+
+    cursor: pointer;
+  }
+
+  .bottom-nav .nav-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bottom-nav .nav-icon img {
+    width: 1.4rem;
+    height: 1.4rem;
+    object-fit: contain;
+  }
+
+  .bottom-nav .nav-label {
+    font-size: 0.7rem;
+    color: #53605a;
+  }
+
+  .bottom-nav .active,
+  .bottom-nav .active .nav-label {
+    color: #008f6b;
   }
 }
 
@@ -170,7 +415,108 @@ body,
     padding: 0.75rem;
   }
 
-  .header-icon-button{
-    display:none;
+  .inventory_section {
+    height: 3.75rem;
+    min-height: 3.75rem;
+    padding: 0 0.75rem;
+  }
+
+  .left_inventory_section {
+    gap: 0.6rem;
+  }
+
+  .left_inventory_section h4 {
+    font-size: 1.1rem;
+  }
+
+  .header-icon-button {
+    display: none;
   }
 }
+
+
+/* =========================================================
+   PROFILE INPUT BOXES
+========================================================= */
+
+.profile-card input {
+  width: 100%;
+  height: 2.75rem;
+
+  padding: 0 0.75rem;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #dfe5e2;
+  border-radius: 0.4rem;
+
+  outline: none;
+
+  color: #22272b;
+  font-size: 0.85rem;
+}
+
+.profile-card input::placeholder {
+  color: #7a8580;
+}
+
+.profile-card input:focus {
+  border-color: #008f6b;
+}
+
+
+/* =========================================================
+   PROFILE BUTTONS
+========================================================= */
+
+.profile-buttons {
+  display: flex;
+
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 0.75rem;
+
+  margin-top: 0.5rem;
+}
+
+.profile-buttons button {
+  min-width: 8rem;
+
+  height: 2.5rem;
+
+  padding: 0 1rem;
+
+  border: none;
+  border-radius: 0.4rem;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+/* CANCEL */
+
+.profile-buttons button:first-child {
+  background-color: #f1f3f2;
+
+  color: #53605a;
+}
+
+
+/* EDIT DETAILS */
+
+.profile-buttons button:last-child {
+  background-color: #008f6b;
+
+  color: #ffffff;
+}
+
+
+/* HOVER */
+
+.profile-buttons button:hover {
+  opacity: 0.85;
+} 
