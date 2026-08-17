@@ -155,7 +155,7 @@ body,
     margin-top: 1.5rem;
   }
 
-  .header-icon-button{
+  .left_inventory_section .header-icon-button{
     display:none;
   }
 }
@@ -170,7 +170,35 @@ body,
     padding: 0.75rem;
   }
 
-  .header-icon-button{
+  .left_inventory_section .header-icon-button{
     display:none;
   }
+}
+
+:root {
+  --sidebar-width: 6rem;
+  font-size: 16px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #ffffff;
+}
+
+/* =========================================================
+   APP CONTAINER
 }

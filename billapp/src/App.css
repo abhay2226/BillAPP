@@ -413,10 +413,87 @@ body {
     color: #53605a;
   }
 
-  .bottom-nav .active,
-  .bottom-nav .active .nav-label {
+  .bottom-nav .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  
+    text-decoration: none;
+    color: #53605a;
+  
+    position: relative;
+  }
+
+  
+  .bottom-nav .nav-link.active {
+    background-color: #e8f7f2;
+  
+    color: #008f6b;
+
+    width: 6rem;
+    height: 4rem;
+  
+    border-radius: 0.5rem;
+  }
+  
+  
+  /* ACTIVE TEXT */
+  
+  .bottom-nav .nav-link.active .nav-label {
+    color: #008f6b;
+  
+    font-weight: 600;
+  }
+  
+  
+  /* ACTIVE GREEN INDICATOR */
+  
+  .bottom-nav .nav-link.active::before {
+    content: "";
+  
+    position: absolute;
+    align-content: center;
+  
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* top: 50%; */
+  
+    /* transform: translateY(-50%); */
+  
+    width: 6rem;
+  
+    height: 0.25rem;
+  
+    background-color: #008f6b;
+  
+    border-radius: 0 0.25rem 0.25rem 0;
+  }
+  
+  
+  .bottom-nav .dashboard-active,
+  .bottom-nav .dashboard-active .nav-label {
     color: #008f6b;
   }
+  
+  .bottom-nav .inventory,
+  .bottom-nav .inventory .nav-label {
+    color: #53605a;
+  }
+  
+  .bottom-nav .billing,
+  .bottom-nav .billing .nav-label {
+    color: #53605a;
+  }
+  
+  .bottom-nav .profile,
+  .bottom-nav .profile .nav-label {
+    color: #53605a;
+  }
+
+
 }
 
 /* =========================================================
