@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+
+import { useOutletContext } from "react-router-dom"; 
 
 import searchIcon from "../../assets/icons/search.png";
 import leftIcon from "../../assets/icons/left.png";
@@ -16,6 +17,9 @@ function Inventory() {
   const [searchValue, setSearchValue] = useState("");
 
   const [showPopup, setShowPopup] = useState(false);
+
+  // // SIDEBAR TOGGLE
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // EDIT
   const [editingProductId, setEditingProductId] = useState(null);
@@ -38,6 +42,11 @@ function Inventory() {
     window.history.back();
   };
 
+  // SIDEBAR TOGGLE FUNCTION
+  // const handleMenuToggle = () => {
+  //   setSidebarOpen((previous) => !previous);
+  // };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
@@ -47,12 +56,18 @@ function Inventory() {
     }));
   };
 
-  // OPEN ADD PRODUCT POPUP
   const openPopup = () => {
     setShowPopup(true);
   };
 
-  // CLOSE ADD PRODUCT POPUP
+//   useEffect(() => {
+//   setHeaderAction(() => openPopup);
+
+//   return () => {
+//     setHeaderAction(null);
+//   };
+// }, [setHeaderAction]);
+
   const closePopup = () => {
     setShowPopup(false);
 
@@ -69,7 +84,6 @@ function Inventory() {
     });
   };
 
-  // ADD / EDIT PRODUCT
   const addProduct = () => {
     const product = formData.product.trim();
     const productCost = Number(formData.cost);
@@ -145,14 +159,12 @@ function Inventory() {
     closePopup();
   };
 
-  // DELETE PRODUCT
   const deleteRow = (id) => {
     setProducts((previousProducts) =>
       previousProducts.filter((product) => product.id !== id),
     );
   };
 
-  // EDIT PRODUCT
   const editRow = (product) => {
     setFormData({
       product: product.product,
@@ -169,7 +181,6 @@ function Inventory() {
     setShowPopup(true);
   };
 
-  // SEARCH
   const filteredProducts = useMemo(() => {
     const search = searchValue.toLowerCase().trim();
 
@@ -187,6 +198,7 @@ function Inventory() {
   }, [searchValue]);
 
   // PAGINATION
+
   const totalProducts = filteredProducts.length;
 
   const totalPages = Math.ceil(totalProducts / rowsPerPage);
@@ -209,6 +221,7 @@ function Inventory() {
   );
 
   // PREVIOUS PAGE
+
   const previousPage = () => {
     if (currentPage > 1) {
       setCurrentPage((previous) => previous - 1);
@@ -216,6 +229,7 @@ function Inventory() {
   };
 
   // NEXT PAGE
+
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage((previous) => previous + 1);
@@ -223,6 +237,7 @@ function Inventory() {
   };
 
   // CARD COUNTS
+
   const itemsIn = products.filter(
     (product) => product.status === "Available",
   ).length;
@@ -247,15 +262,30 @@ function Inventory() {
 
   return (
     <>
+
+      {/* HEADER
+      <Header
+        onBack={goBack}
+        onAddProduct={openPopup}
+        onMenuToggle={handleMenuToggle}
+      /> */}
+
       {/* MAIN */}
       <section className="main-container">
 
         {/* MAIN CONTENT */}
-        <div>
+        <div
+          // className={
+          //   sidebarOpen
+          //     ? "main-content sidebar-open"
+          //     : "main-content"
+          // }
+        >
 
           {/* SEARCH */}
           <div className="search-container">
             <div className="search-input-wrapper">
+
               <img
                 className="search-icon"
                 src={searchIcon}
@@ -271,6 +301,7 @@ function Inventory() {
                   setSearchValue(event.target.value)
                 }
               />
+
             </div>
           </div>
 
@@ -309,20 +340,9 @@ function Inventory() {
 
           </div>
 
-          {/* ADD PRODUCT BUTTON */}
-          <div className="add-product-container">
-            <button
-              className="add-product-button"
-              type="button"
-              onClick={openPopup}
-            >
-              <span>+</span>
-              Add Product
-            </button>
-          </div>
-
           {/* TABLE */}
           <div className="table-container">
+
             <table>
 
               <thead>
@@ -337,8 +357,8 @@ function Inventory() {
               </thead>
 
               <tbody>
-                {currentProducts.length === 0 ? (
 
+                {currentProducts.length === 0 ? (
                   <tr>
                     <td
                       colSpan="6"
@@ -347,15 +367,14 @@ function Inventory() {
                       Add Items to Inventory
                     </td>
                   </tr>
-
                 ) : (
-
                   currentProducts.map((product) => (
 
                     <tr key={product.id}>
 
                       <td>
                         <div className="item">
+
                           <strong>
                             {product.product}
                           </strong>
@@ -363,6 +382,7 @@ function Inventory() {
                           <small>
                             ({product.type} - {product.brand})
                           </small>
+
                         </div>
                       </td>
 
@@ -388,10 +408,12 @@ function Inventory() {
                               : "outOfStock"
                         }
                       >
+
                         <button
                           className="status-btn"
                           type="button"
                         >
+
                           <img
                             src={
                               product.status === "Out of Stock"
@@ -400,7 +422,9 @@ function Inventory() {
                             }
                             alt={product.status}
                           />
+
                         </button>
+
                       </td>
 
                       <td className="action-buttons">
@@ -434,11 +458,94 @@ function Inventory() {
                     </tr>
 
                   ))
-
                 )}
+
               </tbody>
 
             </table>
+
+          </div>
+
+          {/* BILL CARDS (mobile) */}
+          <div className="bill-cards-container">
+            {currentProducts.length === 0 ? (
+              <div className="empty-bill-cell">
+                Add Items to Inventory.
+              </div>
+            ) : (
+              currentProducts.map((product) => (
+                <div className="bill-card" key={product.id}>
+                  <div className="bill-card-header">
+                    <strong>{product.product}</strong>
+                    <div className="row-actions">
+                      <button
+                        className="edit-item-button"
+                        type="button"
+                        onClick={() => editRow(product)}
+                        aria-label={`Edit ${product.product}`}
+                      >
+                        <img src={pencilIcon} alt="Edit" />
+                      </button>
+                      <button
+                        className="delete-item-button"
+                        type="button"
+                        onClick={() => deleteRow(product.id)}
+                        aria-label={`Remove ${product.product}`}
+                      >
+                        <img src={deleteIcon} alt="Delete" />
+                      </button>
+                    </div>
+                  </div>
+          
+                  <div className="bill-card-row">
+                    <span className="bill-card-label">Type / Brand</span>
+                    <span className="bill-card-value">
+                      {product.type} - {product.brand}
+                    </span>
+                  </div>
+          
+                  <div className="bill-card-row">
+                    <span className="bill-card-label">Price</span>
+                    <span className="bill-card-value">₹{product.cost.toFixed(2)}</span>
+                  </div>
+                  <div className="bill-card-row bill-card-total">
+                    <span className="bill-card-label">Weight</span>
+                    <span className="bill-card-value">
+                      {product.weight}
+                    </span>
+                  </div>
+          
+                  <div className="bill-card-row">
+                    <span className="bill-card-label">Qty</span>
+                    <span className="bill-card-value">
+                      {product.quantity}
+                    </span>
+                  </div>
+
+                  <div className="bill-card-row bill-card-status">
+                    <span className="bill-card-label">Status</span>
+                    <span
+                      className="bill-card-value"
+                      id={
+                        product.status === "Available"
+                          ? "available"
+                          : product.status === "Low Stock"
+                          ? "lowStock"
+                          : "outOfStock"
+                      }
+                    >
+                      <button className="status-btn" type="button">
+                        <img
+                          src={product.status === "Out of Stock" ? removeIcon : tickIcon}
+                          alt={product.status}
+                        />
+                      </button>
+                    </span>
+                  </div>
+          
+                </div>
+              ))
+            )}
           </div>
 
           {/* PAGINATION */}
@@ -459,10 +566,12 @@ function Inventory() {
                   totalProducts === 0
                 }
               >
+
                 <img
                   src={leftIcon}
                   alt="Previous"
                 />
+
               </button>
 
               <button
@@ -474,19 +583,28 @@ function Inventory() {
                   totalProducts === 0
                 }
               >
+
                 <img
                   src={chevronIcon}
                   alt="Next"
                 />
+
               </button>
 
             </div>
 
           </div>
 
+
         </div>
 
+        {/* SIDEBAR */}
+        {/* {sidebarOpen && <Sidebar />} */}
+
       </section>
+
+      {/* BOTTOM NAV */}
+      {/* <BottomNav /> */}
 
       {/* ADD PRODUCT POPUP */}
       {showPopup && (
@@ -563,6 +681,7 @@ function Inventory() {
               value={formData.status}
               onChange={handleInputChange}
             >
+
               <option value="Available">
                 Available
               </option>
@@ -570,6 +689,7 @@ function Inventory() {
               <option value="Out of Stock">
                 Out of Stock
               </option>
+
             </select>
 
             <div className="popup-buttons">

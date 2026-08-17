@@ -650,6 +650,67 @@ function Billing() {
                 </table>
               </div>
 
+              {/* BILL CARDS (mobile) */}
+              <div className="bill-cards-container">
+                {items.length === 0 ? (
+                  <div className="empty-bill-cell">
+                    No bill items yet. Use Add Item or voice billing.
+                  </div>
+                ) : (
+                  items.map((item) => (
+                    <div className="bill-card" key={item.id}>
+                      <div className="bill-card-header">
+                        <strong>{item.name}</strong>
+                        <div className="row-actions">
+                          <button
+                            className="edit-item-button"
+                            type="button"
+                            onClick={() => editItem(item)}
+                            aria-label={`Edit ${item.name}`}
+                          >
+                            <img src={pencilIcon} alt="Edit" />
+                          </button>
+                          <button
+                            className="delete-item-button"
+                            type="button"
+                            onClick={() => deleteItem(item.id)}
+                            aria-label={`Remove ${item.name}`}
+                          >
+                            <img src={deleteIcon} alt="Delete" />
+                          </button>
+                        </div>
+                      </div>
+              
+                      <div className="bill-card-row">
+                        <span className="bill-card-label">Type / Brand</span>
+                        <span className="bill-card-value">
+                          {item.type} - {item.brand}
+                        </span>
+                      </div>
+              
+                      <div className="bill-card-row">
+                        <span className="bill-card-label">Qty</span>
+                        <span className="bill-card-value">{item.quantity}</span>
+                      </div>
+              
+                      <div className="bill-card-row">
+                        <span className="bill-card-label">Price</span>
+                        <span className="bill-card-value">
+                          ₹{item.price.toFixed(2)}
+                        </span>
+                      </div>
+              
+                      <div className="bill-card-row bill-card-total">
+                        <span className="bill-card-label">Total</span>
+                        <span className="bill-card-value">
+                          ₹{item.total.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
               {/* ------- SUMMARY-------- */}
               <div className="bill-summary">
                 <div className="summary-row">

@@ -196,14 +196,63 @@
   border-radius: 0.75rem;
 
   scrollbar-width: thin;
-
-  /*
-    Prevents flex/grid parents from forcing
-    the container to expand.
-  */
   flex-shrink: 1;
 }
 
+/* =========================================================
+   PRODUCT CARDS (mobile view)
+   ========================================================= */
+
+.bill-cards-container {
+  display: none;
+}
+
+.bill-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  padding: 0.9rem;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #e5e7eb;
+  border-radius: 0.75rem;
+}
+
+.bill-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 0.4rem;
+
+  border-bottom: 0.0625rem solid #e5e7eb;
+
+  font-size: 0.9rem;
+}
+
+.bill-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 0.82rem;
+}
+
+.bill-card-label {
+  color: #7a8580;
+}
+
+.bill-card-value {
+  color: #22272b;
+  font-weight: 600;
+}
+
+.bill-card-status .bill-card-value {
+  display: flex;
+  align-items: center;
+}
 
 /* =========================================================
    TABLE
@@ -860,6 +909,18 @@
 ========================================================= */
 
 @media screen and (min-width: 769px) and (max-width: 1199px) {
+
+  .table-container {
+    display: none;
+  }
+
+  .bill-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    margin-top: 0.4rem;
+  }
 
   .search-container {
     width: 100%;
