@@ -545,11 +545,12 @@
    BILL CARDS (mobile view)
    ============================================================ */
 
-.bill-cards-container {
+
+.voice-bill-cards-container {
   display: none; /* hidden by default; table shows on desktop */
 }
 
-.bill-card {
+.voice-bill-card {
   display: flex;
   flex-direction: column;
 
@@ -563,7 +564,7 @@
   border-radius: 0.65rem;
 }
 
-.bill-card-header {
+.voice-bill-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -575,7 +576,7 @@
   font-size: 0.95rem;
 }
 
-.bill-card-row {
+.voice-bill-card-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -583,16 +584,16 @@
   font-size: 0.85rem;
 }
 
-.bill-card-label {
+.voice-bill-card-label {
   color: #6b7470;
 }
 
-.bill-card-value {
+.voice-bill-card-value {
   color: #222222;
   font-weight: 600;
 }
 
-.bill-card-total {
+.voice-bill-card-total {
   padding-top: 0.4rem;
 
   border-top: 0.0625rem solid #f0f0f0;
@@ -600,8 +601,61 @@
   font-size: 0.95rem;
 }
 
-.bill-card-total .bill-card-value {
+.voice-bill-card-total .voice-bill-card-value {
   color: #007b5a;
+}
+
+.voice-empty-bill-cell {
+  padding: 1rem;
+
+  color: #6b7470;
+
+  font-size: 0.9rem;
+
+  text-align: center;
+}
+
+.voice-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 1rem;
+}
+
+.voice-edit-item-button,
+.voice-delete-item-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 2rem;
+  height: 2rem;
+
+  padding: 0;
+
+  background-color: transparent;
+
+  border: none;
+  border-radius: 50%;
+
+  cursor: pointer;
+}
+
+.voice-edit-item-button:hover {
+  background-color: #e7f5f0;
+}
+
+.voice-delete-item-button:hover {
+  background-color: #fde5e5;
+}
+
+.voice-edit-item-button img,
+.voice-delete-item-button img {
+  width: 1.1rem;
+  height: 1.1rem;
+
+  object-fit: contain;
 }
 
 .bill-table {
@@ -1047,7 +1101,7 @@
     display: none;
   }
 
-  .bill-cards-container {
+  .voice-bill-cards-container {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;

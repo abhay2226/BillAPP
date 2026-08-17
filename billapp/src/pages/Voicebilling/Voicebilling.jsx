@@ -651,19 +651,19 @@ function Billing() {
               </div>
 
               {/* BILL CARDS (mobile) */}
-              <div className="bill-cards-container">
+              <div className="voice-bill-cards-container">
                 {items.length === 0 ? (
-                  <div className="empty-bill-cell">
+                  <div className="voice-empty-bill-cell">
                     No bill items yet. Use Add Item or voice billing.
                   </div>
                 ) : (
                   items.map((item) => (
-                    <div className="bill-card" key={item.id}>
-                      <div className="bill-card-header">
+                    <div className="voice-bill-card" key={item.id}>
+                      <div className="voice-bill-card-header">
                         <strong>{item.name}</strong>
-                        <div className="row-actions">
+                        <div className="voice-row-actions">
                           <button
-                            className="edit-item-button"
+                            className="voice-edit-item-button"
                             type="button"
                             onClick={() => editItem(item)}
                             aria-label={`Edit ${item.name}`}
@@ -671,7 +671,7 @@ function Billing() {
                             <img src={pencilIcon} alt="Edit" />
                           </button>
                           <button
-                            className="delete-item-button"
+                            className="voice-delete-item-button"
                             type="button"
                             onClick={() => deleteItem(item.id)}
                             aria-label={`Remove ${item.name}`}
@@ -681,28 +681,28 @@ function Billing() {
                         </div>
                       </div>
               
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Type / Brand</span>
-                        <span className="bill-card-value">
+                      <div className="voice-bill-card-row">
+                        <span className="voice-bill-card-label">Type / Brand</span>
+                        <span className="voice-bill-card-value">
                           {item.type} - {item.brand}
                         </span>
                       </div>
               
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Qty</span>
-                        <span className="bill-card-value">{item.quantity}</span>
+                      <div className="voice-bill-card-row">
+                        <span className="voice-bill-card-label">Qty</span>
+                        <span className="voice-bill-card-value">{item.quantity}</span>
                       </div>
               
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Price</span>
-                        <span className="bill-card-value">
+                      <div className="voice-bill-card-row">
+                        <span className="voice-bill-card-label">Price</span>
+                        <span className="voice-bill-card-value">
                           ₹{item.price.toFixed(2)}
                         </span>
                       </div>
               
-                      <div className="bill-card-row bill-card-total">
-                        <span className="bill-card-label">Total</span>
-                        <span className="bill-card-value">
+                      <div className="voice-bill-card-row voice-bill-card-total">
+                        <span className="voice-bill-card-label">Total</span>
+                        <span className="voice-bill-card-value">
                           ₹{item.total.toFixed(2)}
                         </span>
                       </div>

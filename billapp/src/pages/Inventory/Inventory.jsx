@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { useOutletContext } from "react-router-dom"; 
+// import { useOutletContext } from "react-router-dom"; 
 
 import searchIcon from "../../assets/icons/search.png";
 import leftIcon from "../../assets/icons/left.png";
@@ -338,6 +338,12 @@ function Inventory() {
               </div>
             </div>
 
+          </div>
+
+          <div className="add-product-container">
+              <button  className="add-product-button" type="button" onClick={openPopup}>
+                Add Product to Inventory
+              </button>
           </div>
 
           {/* TABLE */}
