@@ -136,6 +136,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  
+  position: fixed;
 
   background-color: #ffffff;
 
@@ -144,7 +146,7 @@ body {
 
   position: sticky;
   top: 0;
-  z-index: 500;
+  z-index: 1000;
 }
 
 .left_inventory_section {
@@ -368,13 +370,17 @@ body {
     align-items: center;
     justify-content: space-around;
 
+    position: fixed;
+
     background-color: #ffffff;
 
     border-top: 0.0625rem solid #e5e7eb;
 
     box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);
 
-    z-index: 600;
+    z-index: 1000;
+
+    bottom:0;
   }
 
   .bottom-nav .nav-item {
@@ -543,13 +549,17 @@ body {
     align-items: center;
     justify-content: space-around;
 
+    position: fixed;
+
     background-color: #ffffff;
 
     border-top: 0.0625rem solid #e5e7eb;
 
     box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);
 
-    z-index: 600;
+    z-index: 1000;
+
+    bottom:0;
   }
 
   .bottom-nav .nav-item {
