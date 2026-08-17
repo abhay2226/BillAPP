@@ -30,7 +30,6 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Inventory from "./pages/Inventory/Inventory";
 import Voicebilling from "./pages/Voicebilling/Voicebilling";
 
-import "./App.css";
 
 function App() {
   return (
