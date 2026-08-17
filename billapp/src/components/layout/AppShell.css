@@ -316,7 +316,6 @@ body {
 
 /* =========================================================
    TABLET / MOBILE
-========================================================= */
 @media screen and (max-width: 768px) {
 
   .app-shell {
@@ -498,7 +497,6 @@ body {
 
 /* =========================================================
    SMALL MOBILE
-========================================================= */
 
 @media screen and (max-width: 390px) {
 
@@ -555,127 +553,9 @@ body {
 
     border-top: 0.0625rem solid #e5e7eb;
 
-    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);
 
-    z-index: 1000;
 
-    bottom:0;
-  }
 
-  .bottom-nav .nav-item {
-    flex: 1;
-
-    display: flex;
-    justify-content: center;
-  }
-
-  .bottom-nav button {
-    width: 100%;
-    height: 4rem;
-
-    border: none;
-
-    background-color: transparent;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 0.35rem;
-
-    cursor: pointer;
-  }
-
-  .bottom-nav .nav-icon {
-    width: 1.8rem;
-    height: 1.8rem;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bottom-nav .nav-icon img {
-    width: 1.4rem;
-    height: 1.4rem;
-
-    object-fit: contain;
-  }
-
-  .bottom-nav .nav-label {
-    font-size: 0.7rem;
-    color: #53605a;
-  }
-
-  .bottom-nav .nav-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-  
-    text-decoration: none;
-    color: #53605a;
-  
-    position: relative;
-  }
-
-  
-  .bottom-nav .nav-link.active {
-    background-color: #e8f7f2;
-  
-    color: #008f6b;
-
-    width: 6rem;
-    height: 4rem;
-  
-    border-radius: 0.5rem;
-  }
-  
-  
-  /* ACTIVE TEXT */
-  
-  .bottom-nav .nav-link.active .nav-label {
-    color: #008f6b;
-  
-    font-weight: 600;
-  }
-  
-  
-  /* ACTIVE GREEN INDICATOR */
-  
-  .bottom-nav .nav-link.active::before {
-    content: "";
-  
-    position: absolute;
-    align-content: center;
-  
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* top: 50%; */
-  
-    /* transform: translateY(-50%); */
-  
-    width: 6rem;
-  
-    height: 0.25rem;
-  
-    background-color: #008f6b;
-  
-    border-radius: 0 0.25rem 0.25rem 0;
-  }
-  
-  
-  .bottom-nav .dashboard-active,
-  .bottom-nav .dashboard-active .nav-label {
-    color: #008f6b;
-  }
-
-  
-}
 
 
 /* =========================================================
@@ -763,3 +643,69 @@ body {
 .profile-buttons button:hover {
   opacity: 0.85;
 } 
+
+
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+@media screen and (min-width: 375px) and (max-width: 767px){
+
+  .sidebar-desktop {
+    display: none;
+  }
+
+  .left_inventory_section .header-icon-button{
+    display: none;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+}
+
+@media screen and (min-width: 768px) and (max-width: 2000px){
+
+  .bottom-nav {
+    display: none;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+}
+
+@media screen and (max-width: 375px){
+
+  .sidebar-desktop {
+    display: none;
+  }
+
+  .left_inventory_section .header-icon-button{
+    display: none;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+}
+
+@media screen and (max-width: 415px) and (max-height: 900px){
+
+  .sidebar-desktop {
+    display: none;
+  }
+
+  .left_inventory_section .header-icon-button{
+    display: none;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+}
