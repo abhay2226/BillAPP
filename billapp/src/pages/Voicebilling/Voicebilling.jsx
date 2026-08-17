@@ -616,7 +616,7 @@ function Billing() {
 
               {/* ACTIONS */}
               <div className="bill-actions">
-                <button
+                {/* <button
                   className="bill-action-button"
                   type="button"
                   onClick={printBill}
@@ -631,7 +631,7 @@ function Billing() {
                 >
                   <img src="/assets/icons/share.png" alt="" />
                   <span>WhatsApp</span>
-                </button>
+                </button> */}
               </div>
 
               {/* GENERATE BILL */}

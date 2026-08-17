@@ -64,6 +64,7 @@ body,
   height: 100%;
 
   padding: 1.5rem 2rem 0 2rem;
+  margin-top: var(--header-height);
 
   background-color: #f7f9f8;
 
@@ -144,7 +145,6 @@ body {
   border-bottom: 0.0625rem solid #e5e7eb;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
 
-  position: sticky;
   top: 0;
   z-index: 1000;
 }
@@ -520,85 +520,43 @@ body {
   opacity: 0.85;
 } 
 
-
-.profile-card input {
-  width: 100%;
-  height: 2.75rem;
-
-  padding: 0 0.75rem;
-
-  background-color: #ffffff;
-
-  border: 0.0625rem solid #dfe5e2;
-  border-radius: 0.4rem;
-
-  outline: none;
-
-  color: #22272b;
-  font-size: 0.85rem;
+.sidebar-desktop {
+  display: none !important;
 }
 
-.profile-card input::placeholder {
-  color: #7a8580;
+.left_inventory_section .header-icon-button {
+  display: none !important;
 }
 
-.profile-card input:focus {
-  border-color: #008f6b;
+.bottom-nav {
+  display: flex !important;
+}
+
+.app-shell-content {
+  padding-bottom: var(--footer-height);
 }
 
 
-/* =========================================================
-   PROFILE BUTTONS
-========================================================= */
+/* 2. DESKTOP & TABLET AIR AND UP (>= 820px: iPad Air, iPad Pro, Laptops) */
+@media screen and (min-width: 820px) {
+  
+  /* Show sidebar (visibility controlled via .sidebar-open / .sidebar-closed transform) */
+  .sidebar-desktop {
+    display: flex !important;
+  }
 
-.profile-buttons {
-  display: flex;
+  /* Show the header menu toggle button to open/close the sidebar */
+  .left_inventory_section .header-icon-button {
+    display: flex !important;
+  }
 
-  align-items: center;
-  justify-content: flex-end;
+  /* Hide mobile bottom navigation */
+  .bottom-nav {
+    display: none !important;
+  }
 
-  gap: 0.75rem;
-
-  margin-top: 0.5rem;
+  /* Remove mobile bottom padding since bottom nav is gone */
+  .app-shell-content {
+    padding-bottom: 0;
+  }
 }
-
-.profile-buttons button {
-  min-width: 8rem;
-
-  height: 2.5rem;
-
-  padding: 0 1rem;
-
-  border: none;
-  border-radius: 0.4rem;
-
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-
-/* CANCEL */
-
-.profile-buttons button:first-child {
-  background-color: #f1f3f2;
-
-  color: #53605a;
-}
-
-
-/* EDIT DETAILS */
-
-.profile-buttons button:last-child {
-  background-color: #008f6b;
-
-  color: #ffffff;
-}
-
-
-/* HOVER */
-
-.profile-buttons button:hover {
-  opacity: 0.85;
-} 
