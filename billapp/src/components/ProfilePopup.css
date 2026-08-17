@@ -1,0 +1,232 @@
+/* Profile */
+
+/* =========================================================
+   PROFILE CARD
+========================================================= */
+
+.profile-container {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 28rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   PROFILE TITLE
+========================================================= */
+
+.profile-card h2 {
+  margin-bottom: 1.25rem;
+
+  text-align: center;
+
+  color: #008f6b;
+
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   PROFILE FORM
+========================================================= */
+
+.profile-form {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.75rem;
+}
+
+
+/* =========================================================
+   PROFILE INPUT BOXES
+========================================================= */
+
+.profile-form input {
+  width: 100%;
+  height: 2.75rem;
+
+  padding: 0 0.75rem;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #dfe5e2;
+  border-radius: 0.4rem;
+
+  outline: none;
+
+  color: #22272b;
+
+  font-size: 0.85rem;
+}
+
+.profile-form input::placeholder {
+  color: #7a8580;
+}
+
+.profile-form input:focus {
+  border-color: #008f6b;
+}
+
+
+/* =========================================================
+   PROFILE BUTTONS
+========================================================= */
+
+.profile-buttons {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 0.75rem;
+
+  margin-top: 0.5rem;
+}
+
+.profile-buttons button {
+  flex: 1;
+
+  height: 2.5rem;
+
+  padding: 0 1rem;
+
+  border: none;
+  border-radius: 0.4rem;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+/* CANCEL */
+
+.profile-buttons button:first-child {
+  background-color: #f1f3f2;
+
+  color: #53605a;
+}
+
+
+/* EDIT DETAILS */
+
+.profile-buttons button:last-child {
+  background-color: #008f6b;
+
+  color: #ffffff;
+}
+
+
+/* HOVER */
+
+.profile-buttons button:hover {
+  opacity: 0.85;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media screen and (max-width: 768px) {
+
+  .profile-container {
+    padding: 1rem;
+  }
+
+  .profile-card {
+    width: 100%;
+    max-width: 28rem;
+
+    padding: 1.25rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.5rem;
+
+    margin-bottom: 1rem;
+  }
+
+  .profile-form {
+    gap: 0.65rem;
+  }
+
+  .profile-form input {
+    height: 2.65rem;
+
+    font-size: 0.8rem;
+  }
+
+  .profile-buttons {
+    gap: 0.65rem;
+
+    margin-top: 0.4rem;
+  }
+
+  .profile-buttons button {
+    height: 2.4rem;
+
+    font-size: 0.85rem;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media screen and (max-width: 390px) {
+
+  .profile-container {
+    padding: 0.75rem;
+  }
+
+  .profile-card {
+    padding: 1rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.35rem;
+
+    margin-bottom: 0.9rem;
+  }
+
+  .profile-form {
+    gap: 0.55rem;
+  }
+
+  .profile-form input {
+    height: 2.5rem;
+
+    padding: 0 0.65rem;
+
+    font-size: 0.78rem;
+  }
+
+  .profile-buttons {
+    gap: 0.5rem;
+  }
+
+  .profile-buttons button {
+    height: 2.3rem;
+
+    font-size: 0.8rem;
+  }
+}

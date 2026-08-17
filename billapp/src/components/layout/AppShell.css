@@ -303,12 +303,12 @@ body {
 }
 
 @media screen and (min-width: 769px) {
-  .bottom-nav {
-    display: none !important;
-  }
-
   .sidebar-desktop {
     display: flex;
+  }
+
+  .bottom-nav {
+    display: none;
   }
 }
 
@@ -318,8 +318,18 @@ body {
 
 @media screen and (max-width: 768px) {
 
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
   .sidebar-desktop {
     display: none;
+  }
+
+  .bottom-nav {
+    display: flex;
   }
 
   .app-shell-content {
@@ -329,7 +339,7 @@ body {
 
     padding: 1rem;
 
-    padding-bottom: 1rem;
+    padding-bottom: 5rem;
   }
 
   .app-shell-content.sidebar-open {
@@ -418,6 +428,12 @@ body {
 
 @media screen and (max-width: 390px) {
 
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
   .sidebar-desktop {
     display: none;
   }
@@ -429,7 +445,7 @@ body {
 
     padding: 1rem;
 
-    padding-bottom: 1rem;
+    padding-bottom: 5rem;
   }
 
   .app-shell-content.sidebar-open {
