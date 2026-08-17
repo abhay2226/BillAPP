@@ -436,7 +436,7 @@ function Billing() {
               </div>
             </section>
 
-            {/* ================= BILL CONTAINER ================= */}
+            {/* ------------ BILL CONTAINER ---------- */}
             <section className="bill-container">
               <div className="bill-header">
                 <h2>Bill Items</h2>
