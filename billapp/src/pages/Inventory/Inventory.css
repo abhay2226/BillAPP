@@ -1,117 +1,16 @@
 /* =========================================================
-ROOT
-========================================================= */
-
-:root {
-  --sidebar-width: 6rem;
-  font-size: 16px;
-}
-
-/* =========================================================
-RESET
-========================================================= */
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html,
-body,
-#root {
-  width: 100%;
-  min-height: 100%;
-  margin: 0;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: #ffffff;
-}
-
-/* =========================================================
-APP CONTAINER
-========================================================= */
-
-.app_container {
-  width: 100%;
-  height: 100vh;
-
-  display: flex;
-  flex-direction: column;
-
-  position: relative;
-
-  background-color: #ffffff;
-
-  overflow: hidden;
-}
-
-/* =========================================================
-MAIN CONTAINER
-========================================================= */
-
-.main-container {
-  width: 100%;
-
-  flex: 1;
-  min-height: 0;
-
-  display: flex;
-
-  position: relative;
-
-  overflow: hidden;
-}
-
-/* =========================================================
-MAIN CONTENT
-========================================================= */
-
-.main-content {
-  width: 100%;
-  height: 100%;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  scrollbar-width: thin;
-
-  padding: 1.5rem 2rem 0 2rem;
-
-  background-color: #f7f9f8;
-
-  margin-left: 0;
-
-  transition:
-    margin-left 0.3s ease,
-    width 0.3s ease;
-}
-
-/* =========================================================
-MAIN CONTENT WHEN SIDEBAR IS OPEN
-========================================================= */
-
-.main-content.sidebar-open {
-  margin-left: var(--sidebar-width);
-
-  width: calc(100% - var(--sidebar-width));
-}
-
-/* =========================================================
-SEARCH
+   SEARCH
 ========================================================= */
 
 .search-container {
   width: 100%;
+  position: sticky;
 
   margin-bottom: 1rem;
 }
 
 .search-input-wrapper {
   width: 100%;
-
   height: 3rem;
 
   display: flex;
@@ -120,7 +19,6 @@ SEARCH
   background-color: #ffffff;
 
   border: 0.0625rem solid #e5e7eb;
-
   border-radius: 0.75rem;
 
   padding: 0 1rem;
@@ -137,7 +35,6 @@ SEARCH
 
 .search-input {
   width: 100%;
-
   height: 100%;
 
   border: none;
@@ -146,7 +43,6 @@ SEARCH
   background-color: transparent;
 
   font-size: 0.9rem;
-
   color: #22272b;
 }
 
@@ -154,15 +50,15 @@ SEARCH
   color: #9ca3af;
 }
 
+
 /* =========================================================
-CARDS
+   CARDS
 ========================================================= */
 
 .card_section {
   width: 100%;
 
   display: grid;
-
   grid-template-columns: repeat(3, minmax(0, 1fr));
 
   gap: 1.25rem;
@@ -184,7 +80,6 @@ CARDS
   background-color: #ffffff;
 
   border: 0.0625rem solid #e5e7eb;
-
   border-radius: 0.9rem;
 
   box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.05);
@@ -196,7 +91,6 @@ CARDS
   color: #53605a;
 
   font-size: 0.8rem;
-
   font-weight: 600;
 
   text-transform: uppercase;
@@ -206,9 +100,9 @@ CARDS
   color: #008f6b;
 
   font-size: 1.5rem;
-
   font-weight: 700;
 }
+
 
 /* LOW STOCK */
 
@@ -216,15 +110,17 @@ CARDS
   color: #f28c00;
 }
 
+
 /* OUT OF STOCK */
 
 .card_box:nth-child(3) .card_box_count {
   color: #e00000;
 }
 
+
 /* =========================================================
    ADD PRODUCT BUTTON
-   ========================================================= */
+========================================================= */
 
 .add-product-container {
   width: 100%;
@@ -252,7 +148,6 @@ CARDS
   color: #008f6b;
 
   font-size: 0.8rem;
-
   font-weight: 600;
 
   cursor: pointer;
@@ -269,12 +164,28 @@ CARDS
 .add-product-button:hover {
   color: #007a5c;
 }
+
+
 /* =========================================================
-TABLE CONTAINER
+   TABLE CONTAINER
+   ONLY THIS AREA WILL SCROLL
 ========================================================= */
 
 .table-container {
   width: 100%;
+  max-width: 100%;
+
+  /*
+    Important:
+    Allows the table to become horizontally scrollable
+    without making the complete page scroll.
+  */
+  min-width: 0;
+
+  /*
+    Vertical scrolling only inside table container.
+  */
+  max-height: 25rem;
 
   overflow-x: auto;
   overflow-y: auto;
@@ -282,10 +193,10 @@ TABLE CONTAINER
   background-color: #ffffff;
 
   border: 0.0625rem solid #e5e7eb;
-
   border-radius: 0.75rem;
 
   scrollbar-width: thin;
+  flex-shrink: 1;
 }
 
 /* =========================================================
@@ -344,12 +255,16 @@ TABLE CONTAINER
 }
 
 /* =========================================================
-TABLE
+   TABLE
 ========================================================= */
 
 .table-container table {
   width: 100%;
 
+  /*
+    Keeps the table wide enough so that
+    horizontal scrolling appears on smaller screens.
+  */
   min-width: 55rem;
 
   border-collapse: collapse;
@@ -359,11 +274,21 @@ TABLE
   background-color: #ffffff;
 }
 
+
 /* =========================================================
-TABLE HEADER
+   TABLE HEADER
 ========================================================= */
 
 .table-container thead {
+  /*
+    Header stays visible when table body
+    is vertically scrolled.
+  */
+  position: sticky;
+  top: 0;
+
+  z-index: 10;
+
   background-color: #f8fafc;
 }
 
@@ -383,14 +308,17 @@ TABLE HEADER
   text-align: center;
 
   text-transform: uppercase;
+
+  background-color: #f8fafc;
 }
 
 .table-container th:first-child {
   text-align: left;
 }
 
+
 /* =========================================================
-TABLE BODY
+   TABLE BODY
 ========================================================= */
 
 .table-container td {
@@ -407,18 +335,22 @@ TABLE BODY
   text-align: center;
 
   vertical-align: middle;
+
+  background-color: #ffffff;
 }
 
 .table-container tbody tr:last-child td {
   border-bottom: none;
 }
 
+
 /* =========================================================
-ITEM
+   ITEM
 ========================================================= */
 
 .item {
   display: flex;
+
   flex-direction: column;
 
   align-items: flex-start;
@@ -440,8 +372,9 @@ ITEM
   font-size: 0.7rem;
 }
 
+
 /* =========================================================
-PRICE
+   PRICE
 ========================================================= */
 
 .price {
@@ -450,8 +383,9 @@ PRICE
   font-weight: 600;
 }
 
+
 /* =========================================================
-META TEXT
+   META TEXT
 ========================================================= */
 
 .meta-text {
@@ -460,8 +394,9 @@ META TEXT
   font-weight: 500;
 }
 
+
 /* =========================================================
-STATUS CELL
+   STATUS CELL
 ========================================================= */
 
 .status-cell {
@@ -470,8 +405,9 @@ STATUS CELL
   vertical-align: middle !important;
 }
 
+
 /* =========================================================
-STATUS BUTTON
+   STATUS BUTTON
 ========================================================= */
 
 .status-btn {
@@ -501,8 +437,9 @@ STATUS BUTTON
   object-fit: contain;
 }
 
+
 /* =========================================================
-AVAILABLE STATUS
+   AVAILABLE STATUS
 ========================================================= */
 
 #available .status-btn {
@@ -511,8 +448,9 @@ AVAILABLE STATUS
   border-radius: 50%;
 }
 
+
 /* =========================================================
-LOW STOCK STATUS
+   LOW STOCK STATUS
 ========================================================= */
 
 #lowStock .status-btn {
@@ -521,8 +459,9 @@ LOW STOCK STATUS
   border-radius: 50%;
 }
 
+
 /* =========================================================
-OUT OF STOCK STATUS
+   OUT OF STOCK STATUS
 ========================================================= */
 
 #outOfStock .status-btn {
@@ -531,8 +470,9 @@ OUT OF STOCK STATUS
   border-radius: 50%;
 }
 
+
 /* =========================================================
-ACTION BUTTONS
+   ACTION BUTTONS
 ========================================================= */
 
 .action-buttons {
@@ -573,8 +513,9 @@ ACTION BUTTONS
   opacity: 0.7;
 }
 
+
 /* =========================================================
-EMPTY TABLE
+   EMPTY TABLE
 ========================================================= */
 
 .empty-bill-cell {
@@ -587,8 +528,9 @@ EMPTY TABLE
   text-align: center !important;
 }
 
+
 /* =========================================================
-PAGINATION
+   PAGINATION
 ========================================================= */
 
 .pagination-container {
@@ -631,7 +573,7 @@ PAGINATION
 
   border-radius: 0.5rem;
 
-  background-color: #00000000;
+  background-color: transparent;
 
   cursor: pointer;
 }
@@ -641,50 +583,20 @@ PAGINATION
   height: 0.9rem;
 
   object-fit: contain;
+
   filter: brightness(0);
 }
 
-/* .pagination-btn:disabled {
+.pagination-btn:disabled {
   opacity: 0.4;
 
   cursor: not-allowed;
-} */
-
-
-
- 
-/* =========================================================
-FOOTER
-========================================================= */
-
-/* .footer-section {
-  width: 100%;
-
-  margin-top: auto;
 }
 
-.footer-section footer {
-  width: 100%;
-
-  min-height: 4rem;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  background-color: #008f6b;
-}
-
-.footer-section footer small {
-  color: #ffffff;
-
-  font-size: 0.75rem;
-}  */
 
 /* =========================================================
    ADD PRODUCT POPUP
-   ========================================================= */
+========================================================= */
 
 .popup {
   position: fixed;
@@ -696,6 +608,7 @@ FOOTER
   height: 100%;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -707,9 +620,12 @@ FOOTER
 .popup-content {
   width: 28rem;
 
+  max-width: calc(100% - 2rem);
+
   padding: 1.5rem;
 
   display: flex;
+
   flex-direction: column;
 
   gap: 0.8rem;
@@ -723,6 +639,7 @@ FOOTER
 
 .popup-content h2 {
   margin-bottom: 0.5rem;
+
   text-align: center;
 
   color: #008f6b;
@@ -770,7 +687,7 @@ FOOTER
 }
 
 .popup-buttons button {
-  min-width: 12rem;
+  min-width: 11rem;
 
   height: 2.5rem;
 
@@ -802,8 +719,12 @@ FOOTER
 .popup-buttons button:hover {
   opacity: 0.85;
 }
+
+
 /* =========================================================
-DESKTOP SIDEBAR
+   DESKTOP SIDEBAR
+   Visual styling only.
+   Open / close is handled by AppShell.css
 ========================================================= */
 
 .sidebar-desktop {
@@ -834,8 +755,9 @@ DESKTOP SIDEBAR
   z-index: 450;
 }
 
+
 /* =========================================================
-SIDEBAR ITEMS
+   SIDEBAR ITEMS
 ========================================================= */
 
 .sidebar-desktop .nav-item {
@@ -929,19 +851,64 @@ SIDEBAR ITEMS
   color: #53605a;
 }
 
+
 /* =========================================================
-BOTTOM NAV
+   BOTTOM NAV
 ========================================================= */
 
 .bottom-nav {
   display: none;
 }
 
+
 /* =========================================================
-TABLET
+   RESPONSIVE MEDIA QUERIES
 ========================================================= */
 
-@media screen and (max-width: 768px) {
+
+/* =========================================================
+   LARGE DESKTOP
+   1200px and above
+========================================================= */
+
+@media screen and (min-width: 1200px) {
+
+  .search-container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .card_section {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+
+    max-height: 25rem;
+
+    overflow-x: auto;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+  }
+
+  .table-container table {
+    width: 100%;
+    min-width: 55rem;
+  }
+}
+
+
+/* =========================================================
+   DESKTOP
+   769px - 1199px
+========================================================= */
+
+@media screen and (min-width: 769px) and (max-width: 1199px) {
 
   .table-container {
     display: none;
@@ -955,31 +922,130 @@ TABLET
     margin-top: 0.4rem;
   }
 
-  .main-content {
-    padding: 1rem;
-
-    margin-left: 0 !important;
-
-    width: 100% !important;
-  }
-
-  .main-content.sidebar-open {
-    margin-left: 0;
-
+  .search-container {
     width: 100%;
-  }
-
-  .sidebar-desktop {
-    display: none;
+    max-width: 100%;
   }
 
   .card_section {
+    width: 100%;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 1rem;
+  }
+
+  .card_box {
+    min-width: 0;
+    padding: 1rem;
+  }
+
+  .card_box_header {
+    font-size: 0.75rem;
+  }
+
+  .card_box_count {
+    font-size: 1.4rem;
+  }
+
+  /*
+     ONLY TABLE SCROLLS
+  */
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    max-height: 25rem;
+
+    overflow-x: auto;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-container table {
+    width: 100%;
+    min-width: 55rem;
+  }
+
+  .pagination-container {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+
+/* =========================================================
+   TABLET
+   481px - 768px
+========================================================= */
+
+@media screen and (min-width: 481px) and (max-width: 768px) {
+
+  /*
+     Inventory page itself must NOT scroll horizontally.
+  */
+
+  .main-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+  /*
+     The direct content wrapper must also be restricted.
+  */
+
+  .main-container > div {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+
+  /* =====================================================
+     SEARCH
+  ===================================================== */
+
+  .search-container {
+    width: 100%;
+    max-width: 100%;
+
+    margin-bottom: 1rem;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+
+  /* =====================================================
+     CARDS
+  ===================================================== */
+
+  .card_section {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
     grid-template-columns: repeat(3, minmax(0, 1fr));
 
     gap: 0.75rem;
   }
 
   .card_box {
+    width: 100%;
+    min-width: 0;
+
     min-height: 6rem;
 
     padding: 1rem;
@@ -993,15 +1059,72 @@ TABLET
     font-size: 1.3rem;
   }
 
+
+  /* =====================================================
+     ADD PRODUCT
+  ===================================================== */
+
+  .add-product-container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+
+  /* =====================================================
+     TABLE
+     ONLY TABLE SCROLLS
+  ===================================================== */
+
   .table-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    max-height: 25rem;
+
+    overflow-x: auto;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+
+    -webkit-overflow-scrolling: touch;
+
     border-radius: 0.6rem;
   }
 
-  .bottom-nav {
+  .table-container table {
     width: 100%;
 
-    height: 4.5rem;
+    min-width: 55rem;
 
+    table-layout: fixed;
+  }
+
+
+  /* =====================================================
+     PAGINATION
+  ===================================================== */
+
+  .pagination-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .pagination-text {
+    white-space: nowrap;
+  }
+
+
+  /* =====================================================
+     BOTTOM NAV
+  ===================================================== */
+
+  .bottom-nav {
+    width: 100%;
+    max-width: 100%;
+
+    height: 4.5rem;
     min-height: 4.5rem;
 
     display: flex;
@@ -1019,56 +1142,427 @@ TABLET
   }
 }
 
+
 /* =========================================================
-SMALL MOBILE
+   MOBILE
+   391px - 480px
 ========================================================= */
 
-@media screen and (max-width: 390px) {
+@media screen and (min-width: 391px) and (max-width: 480px) {
 
-  .main-content {
-    padding: 0.75rem;
+  /*
+     Prevent the entire page from becoming wider
+     than the mobile screen.
+  */
+
+  .main-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+  .main-container > div {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+
+  /* =====================================================
+     SEARCH
+  ===================================================== */
+
+  .search-container {
+    width: 100%;
+    max-width: 100%;
+
+    margin-bottom: 0.9rem;
   }
 
   .search-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+
     height: 2.75rem;
 
     padding: 0 0.75rem;
   }
 
   .search-input {
+    width: 100%;
+
     font-size: 0.8rem;
   }
 
-  .card_section {
-    grid-template-columns: 1fr;
 
-    gap: 0.75rem;
+  /* =====================================================
+     CARDS
+  ===================================================== */
+
+  .card_section {
+    width: 100%;
+    max-width: 100%;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 0.6rem;
   }
 
   .card_box {
-    min-height: 5rem;
+    width: 100%;
+    min-width: 0;
 
-    padding: 0.9rem;
+    min-height: 5.5rem;
+
+    padding: 0.75rem;
   }
 
   .card_box_header {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
+
+    white-space: nowrap;
   }
 
   .card_box_count {
     font-size: 1.2rem;
   }
 
+
+  /* =====================================================
+     ADD PRODUCT
+  ===================================================== */
+
+  .add-product-container {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .add-product-button {
+    font-size: 0.75rem;
+  }
+
+
+  /* =====================================================
+     TABLE
+     ONLY TABLE SCROLLS
+  ===================================================== */
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    max-height: 22rem;
+
+    overflow-x: auto;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+
+    -webkit-overflow-scrolling: touch;
+
+    border-radius: 0.6rem;
+  }
+
+  .table-container table {
+    width: 100%;
+
+    min-width: 55rem;
+
+    table-layout: fixed;
+  }
+
+
+  /* =====================================================
+     PAGINATION
+  ===================================================== */
+
   .pagination-container {
+    width: 100%;
+    max-width: 100%;
+
     min-height: 3.5rem;
+
+    padding: 0.6rem 0;
   }
 
   .pagination-text {
     font-size: 0.7rem;
+
+    white-space: nowrap;
+  }
+
+  .pagination-buttons {
+    gap: 0.35rem;
   }
 
   .pagination-btn {
     width: 2rem;
     height: 2rem;
+  }
+
+
+  /* =====================================================
+     BOTTOM NAV
+  ===================================================== */
+
+  .bottom-nav {
+    width: 100%;
+    max-width: 100%;
+
+    height: 4.5rem;
+    min-height: 4.5rem;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-around;
+
+    background-color: #ffffff;
+
+    border-top: 0.0625rem solid #e5e7eb;
+
+    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+
+    z-index: 600;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   390px and below
+========================================================= */
+
+@media screen and (max-width: 390px) {
+
+  /*
+     Prevent page-level horizontal overflow.
+  */
+
+  .main-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+  .main-container > div {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    overflow: hidden;
+  }
+
+
+  /* =====================================================
+     SEARCH
+  ===================================================== */
+
+  .search-container {
+    width: 100%;
+    max-width: 100%;
+
+    margin-bottom: 0.75rem;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+
+    height: 2.6rem;
+
+    padding: 0 0.65rem;
+  }
+
+  .search-icon {
+    width: 1rem;
+    height: 1rem;
+
+    margin-right: 0.5rem;
+  }
+
+  .search-input {
+    width: 100%;
+
+    font-size: 0.75rem;
+  }
+
+
+  /* =====================================================
+     CARDS
+  ===================================================== */
+
+  .card_section {
+    width: 100%;
+    max-width: 100%;
+
+    /*
+       Keep all three cards on one row
+       so they don't push the page vertically.
+    */
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 0.45rem;
+  }
+
+  .card_box {
+    width: 100%;
+    min-width: 0;
+
+    min-height: 4.75rem;
+
+    padding: 0.65rem;
+  }
+
+  .card_box_header {
+    font-size: 0.55rem;
+
+    margin-bottom: 0.35rem;
+
+    white-space: nowrap;
+  }
+
+  .card_box_count {
+    font-size: 1rem;
+  }
+
+
+  /* =====================================================
+     ADD PRODUCT
+  ===================================================== */
+
+  .add-product-container {
+    width: 100%;
+    max-width: 100%;
+
+    margin-bottom: 0.4rem;
+  }
+
+  .add-product-button {
+    font-size: 0.7rem;
+
+    padding: 0.3rem 0.4rem;
+  }
+
+  .add-product-button span {
+    font-size: 1.1rem;
+  }
+
+
+  /* =====================================================
+     TABLE
+     ONLY TABLE SCROLLS
+  ===================================================== */
+
+  .table-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    height: auto;
+
+    max-height: 20rem;
+
+    overflow-x: auto;
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+
+    -webkit-overflow-scrolling: touch;
+
+    border-radius: 0.5rem;
+  }
+
+  /*
+     Keep table wide.
+     The width is contained by table-container.
+  */
+
+  .table-container table {
+    width: 100%;
+
+    min-width: 55rem;
+
+    table-layout: fixed;
+  }
+
+  .table-container th {
+    height: 3rem;
+
+    padding: 0.6rem 0.75rem;
+
+    font-size: 0.7rem;
+  }
+
+  .table-container td {
+    height: 3.5rem;
+
+    padding: 0.6rem 0.75rem;
+
+    font-size: 0.75rem;
+  }
+
+
+  /* =====================================================
+     PAGINATION
+  ===================================================== */
+
+  .pagination-container {
+    width: 100%;
+    max-width: 100%;
+
+    min-height: 3.5rem;
+
+    padding: 0.5rem 0;
+  }
+
+  .pagination-text {
+    font-size: 0.65rem;
+
+    white-space: nowrap;
+  }
+
+  .pagination-buttons {
+    gap: 0.3rem;
+  }
+
+  .pagination-btn {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+
+
+  /* =====================================================
+     POPUP
+  ===================================================== */
+
+  .popup-content {
+    width: calc(100% - 1.5rem);
+
+    max-width: calc(100% - 1.5rem);
+
+    padding: 1rem;
+  }
+
+  .popup-content h2 {
+    font-size: 1.4rem;
+  }
+
+  .popup-buttons {
+    flex-direction: column;
+  }
+
+  .popup-buttons button {
+    width: 100%;
+
+    min-width: 0;
   }
 }
