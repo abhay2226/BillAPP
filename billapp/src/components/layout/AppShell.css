@@ -301,6 +301,65 @@ body {
 }
 
 .bottom-nav {
+  display: none;
+}
+
+@media screen and (min-width: 769px) {
+  .sidebar-desktop {
+    display: flex;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+}
+
+/* =========================================================
+   TABLET / MOBILE
+@media screen and (max-width: 768px) {
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .sidebar-desktop {
+    display: none;
+  }
+
+  .bottom-nav {
+    display: flex;
+  }
+
+  .app-shell-content {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding: 1rem;
+
+    padding-bottom: 1rem;
+  }
+
+  .app-shell-content.sidebar-open {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .app-shell-footer {
+    margin-top: 1.5rem;
+  }
+
+  .header-icon-button {
+    display: none;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+  .bottom-nav {
     width: 100%;
     height: 4.5rem;
     min-height: 4.5rem;
@@ -434,6 +493,65 @@ body {
   .bottom-nav .dashboard-active .nav-label {
     color: #008f6b;
   }
+}
+
+/* =========================================================
+   SMALL MOBILE
+
+@media screen and (max-width: 390px) {
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .sidebar-desktop {
+    display: none;
+  }
+
+  .app-shell-content {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding: 1rem;
+
+    padding-bottom: 1rem;
+  }
+
+  .app-shell-content.sidebar-open {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .app-shell-footer {
+    margin-top: 1.5rem;
+  }
+
+  .left_inventory_section .header-icon-button {
+    display: none;
+  }
+
+  .main-content {
+    padding-left: 0;
+  }
+
+  .bottom-nav {
+    width: 100%;
+    height: 4.5rem;
+    min-height: 4.5rem;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-around;
+
+    position: fixed;
+
+    background-color: #ffffff;
+
+    border-top: 0.0625rem solid #e5e7eb;
 
 
 
