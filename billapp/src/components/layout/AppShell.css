@@ -117,7 +117,7 @@ body,
 }
 
 /* =========================================================
-   LEGACY HEADER / SIDEBAR STYLES
+    HEADER / SIDEBAR STYLES
    Used by Header.jsx, Sidebar.jsx, BottomNav.jsx
 ========================================================= */
 
@@ -309,22 +309,12 @@ body {
     display: flex;
   }
 
-  .bottom-nav {
+  /* .bottom-nav {
     display: none;
-  }
+  } */
 }
 
-/* =========================================================
-   TABLET / MOBILE
-========================================================= */
 @media screen and (max-width: 768px) {
-
-  .app-shell {
-    height: auto;
-    min-height: 100vh;
-    overflow: visible;
-  }
-
   .sidebar-desktop {
     display: none;
   }
@@ -496,270 +486,354 @@ body {
   }
 }
 
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
+
 
 @media screen and (max-width: 390px) {
 
+  /* ---------------------------------------------------------
+     APP SHELL
+  --------------------------------------------------------- */
+
   .app-shell {
     height: auto;
+
     min-height: 100vh;
+
     overflow: visible;
   }
+
+
+  /* ---------------------------------------------------------
+     SIDEBAR
+  --------------------------------------------------------- */
 
   .sidebar-desktop {
     display: none;
   }
 
+
+  /* ---------------------------------------------------------
+     MAIN CONTENT
+  --------------------------------------------------------- */
+
   .app-shell-content {
     width: 100%;
 
-    margin-left: 0;
+    margin-left: 0 ;
 
-    padding: 1rem;
+    padding: 0.75rem;
 
-    padding-bottom: 1rem;
+    padding-bottom: 5.5rem;
   }
 
   .app-shell-content.sidebar-open {
     width: 100%;
+
     margin-left: 0;
   }
 
-  .app-shell-footer {
-    margin-top: 1.5rem;
+
+  .main-content {
+    width: 100%;
+
+    margin-left: 0;
+
+    padding-left: 0;
+  }
+
+
+  /* ---------------------------------------------------------
+     HEADER
+  --------------------------------------------------------- */
+
+  .inventory_section {
+    height: 3.75rem;
+
+    min-height: 3.75rem;
+
+    padding: 0 0.75rem;
+  }
+
+  .left_inventory_section {
+    gap: 0.6rem;
+  }
+
+  .left_inventory_section h4 {
+    font-size: 1.1rem;
   }
 
   .left_inventory_section .header-icon-button {
     display: none;
   }
 
+
+  /*
+     FOOTER
+  */
+
+  .app-shell-footer {
+    margin-top: 1rem;
+
+    padding-bottom: 5.5rem;
+  }
+
+
+  /* 
+     BOTTOM NAV
+     
+     DO NOT repeat the complete BottomNav CSS here.
+     It already comes from max-width: 768px.
+   */
+
+  .bottom-nav {
+    display: flex;
+
+    width: 100%;
+
+    height: 4.5rem;
+
+    min-height: 4.5rem;
+
+    left: 0;
+
+    right: 0;
+
+    bottom: 0;
+  }
+
+
+  /* 
+     BOTTOM NAV ACTIVE ITEM
+  */
+
+  .bottom-nav .nav-link.active {
+    width: 5.5rem;
+
+    height: 4rem;
+  }
+
+  .bottom-nav .nav-link.active::before {
+    width: 5.5rem;
+  }
+
+
+  /* 
+     PROFILE
+  */
+
+  .profile-container {
+    padding: 0.75rem;
+  }
+
+  .profile-card {
+    width: 100%;
+
+    max-width: 28rem;
+
+    padding: 1rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.35rem;
+
+    margin-bottom: 0.9rem;
+  }
+
+  .profile-card input {
+    height: 2.5rem;
+
+    padding: 0 0.65rem;
+
+    font-size: 0.78rem;
+  }
+
+  .profile-buttons {
+    gap: 0.5rem;
+  }
+
+  .profile-buttons button {
+    min-width: 0;
+
+    height: 2.3rem;
+
+    padding: 0 0.75rem;
+
+    font-size: 0.8rem;
+  }
+
+}
+
+
+
+
+@media screen and (max-width: 360px) {
+
+  
+  .app-shell {
+    height: auto;
+
+    min-height: 100vh;
+
+    overflow: visible;
+  }
+
+
+  /* ---------------------------------------------------------
+     SIDEBAR
+  --------------------------------------------------------- */
+
+  .sidebar-desktop {
+    display: none;
+  }
+
+
+  /* ---------------------------------------------------------
+     MAIN CONTENT
+  --------------------------------------------------------- */
+
+  .app-shell-content {
+    width: 100%;
+
+    margin-left: 0 ;
+
+    padding: 0.75rem;
+
+    padding-bottom: 5.5rem;
+  }
+
+  .app-shell-content.sidebar-open {
+    width: 100%;
+
+    margin-left: 0;
+  }
+
+
   .main-content {
+    width: 100%;
+
+    margin-left: 0;
+
     padding-left: 0;
   }
 
+
+  /* ---------------------------------------------------------
+     HEADER
+  --------------------------------------------------------- */
+
+  .inventory_section {
+    height: 3.75rem;
+
+    min-height: 3.75rem;
+
+    padding: 0 0.75rem;
+  }
+
+  .left_inventory_section {
+    gap: 0.6rem;
+  }
+
+  .left_inventory_section h4 {
+    font-size: 1.1rem;
+  }
+
+  .left_inventory_section .header-icon-button {
+    display: none;
+  }
+
+
+  /*
+     FOOTER
+  */
+
+  .app-shell-footer {
+    margin-top: 1rem;
+
+    padding-bottom: 5.5rem;
+  }
+
+
+  /* 
+     BOTTOM NAV
+     
+     DO NOT repeat the complete BottomNav CSS here.
+     It already comes from max-width: 768px.
+   */
+
   .bottom-nav {
+    display: flex;
+
     width: 100%;
+
     height: 4.5rem;
+
     min-height: 4.5rem;
 
-    display: flex;
-
-    align-items: center;
-    justify-content: space-around;
-
-    position: fixed;
-
-    background-color: #ffffff;
-
-    border-top: 0.0625rem solid #e5e7eb;
-
-    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);
-
-    z-index: 1000;
-
-    bottom:0;
-  }
-
-  .bottom-nav .nav-item {
-    flex: 1;
-
-    display: flex;
-    justify-content: center;
-  }
-
-  .bottom-nav button {
-    width: 100%;
-    height: 4rem;
-
-    border: none;
-
-    background-color: transparent;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 0.35rem;
-
-    cursor: pointer;
-  }
-
-  .bottom-nav .nav-icon {
-    width: 1.8rem;
-    height: 1.8rem;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .bottom-nav .nav-icon img {
-    width: 1.4rem;
-    height: 1.4rem;
-
-    object-fit: contain;
-  }
-
-  .bottom-nav .nav-label {
-    font-size: 0.7rem;
-    color: #53605a;
-  }
-
-  .bottom-nav .nav-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-  
-    text-decoration: none;
-    color: #53605a;
-  
-    position: relative;
-  }
-
-  
-  .bottom-nav .nav-link.active {
-    background-color: #e8f7f2;
-  
-    color: #008f6b;
-
-    width: 6rem;
-    height: 4rem;
-  
-    border-radius: 0.5rem;
-  }
-  
-  
-  /* ACTIVE TEXT */
-  
-  .bottom-nav .nav-link.active .nav-label {
-    color: #008f6b;
-  
-    font-weight: 600;
-  }
-  
-  
-  /* ACTIVE GREEN INDICATOR */
-  
-  .bottom-nav .nav-link.active::before {
-    content: "";
-  
-    position: absolute;
-    align-content: center;
-  
     left: 0;
+
     right: 0;
+
     bottom: 0;
-    /* top: 50%; */
-  
-    /* transform: translateY(-50%); */
-  
-    width: 6rem;
-  
-    height: 0.25rem;
-  
-    background-color: #008f6b;
-  
-    border-radius: 0 0.25rem 0.25rem 0;
-  }
-  
-  
-  .bottom-nav .dashboard-active,
-  .bottom-nav .dashboard-active .nav-label {
-    color: #008f6b;
   }
 
-  
+
+  /* 
+     BOTTOM NAV ACTIVE ITEM
+  */
+
+  .bottom-nav .nav-link.active {
+    width: 5.5rem;
+
+    height: 4rem;
+  }
+
+  .bottom-nav .nav-link.active::before {
+    width: 5.5rem;
+  }
+
+
+  /* 
+     PROFILE
+  */
+
+  .profile-container {
+    padding: 0.75rem;
+  }
+
+  .profile-card {
+    width: 100%;
+
+    max-width: 28rem;
+
+    padding: 1rem;
+  }
+
+  .profile-card h2 {
+    font-size: 1.35rem;
+
+    margin-bottom: 0.9rem;
+  }
+
+  .profile-card input {
+    height: 2.5rem;
+
+    padding: 0 0.65rem;
+
+    font-size: 0.78rem;
+  }
+
+  .profile-buttons {
+    gap: 0.5rem;
+  }
+
+  .profile-buttons button {
+    min-width: 0;
+
+    height: 2.3rem;
+
+    padding: 0 0.75rem;
+
+    font-size: 0.8rem;
+  }
+
 }
-
-
-/* =========================================================
-   PROFILE INPUT BOXES
-========================================================= */
-
-.profile-card input {
-  width: 100%;
-  height: 2.75rem;
-
-  padding: 0 0.75rem;
-
-  background-color: #ffffff;
-
-  border: 0.0625rem solid #dfe5e2;
-  border-radius: 0.4rem;
-
-  outline: none;
-
-  color: #22272b;
-  font-size: 0.85rem;
-}
-
-.profile-card input::placeholder {
-  color: #7a8580;
-}
-
-.profile-card input:focus {
-  border-color: #008f6b;
-}
-
-
-/* =========================================================
-   PROFILE BUTTONS
-========================================================= */
-
-.profile-buttons {
-  display: flex;
-
-  align-items: center;
-  justify-content: flex-end;
-
-  gap: 0.75rem;
-
-  margin-top: 0.5rem;
-}
-
-.profile-buttons button {
-  min-width: 8rem;
-
-  height: 2.5rem;
-
-  padding: 0 1rem;
-
-  border: none;
-  border-radius: 0.4rem;
-
-  font-size: 0.9rem;
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-
-/* CANCEL */
-
-.profile-buttons button:first-child {
-  background-color: #f1f3f2;
-
-  color: #53605a;
-}
-
-
-/* EDIT DETAILS */
-
-.profile-buttons button:last-child {
-  background-color: #008f6b;
-
-  color: #ffffff;
-}
-
-
-/* HOVER */
-
-.profile-buttons button:hover {
-  opacity: 0.85;
-} 

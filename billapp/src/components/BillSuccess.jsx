@@ -24,7 +24,7 @@ function BillSuccess({
       className="bill-success-page"
     >
 
-      {/* ================= SUCCESS ================= */}
+      {/* ------ SUCCESS --------*/}
 
       <section className="success">
 
@@ -52,7 +52,7 @@ function BillSuccess({
 
       </section>
 
-      {/* ================= BILL DETAILS ================= */}
+      {/* ------ BILL DETAILS ---------- */}
 
       <section className="bill-details">
 
@@ -82,7 +82,7 @@ function BillSuccess({
 
       </section>
 
-      {/* ================= AMOUNT ================= */}
+      {/* -------- AMOUNT --------- */}
 
       <section className="amount-card">
 
@@ -113,7 +113,7 @@ function BillSuccess({
 
       </section>
 
-      {/* ================= ACTIONS ================= */}
+      {/* ---------- ACTIONS ---------- */}
 
       <section className="action-list">
 
@@ -187,7 +187,7 @@ function BillSuccess({
 
       </section>
 
-      {/* ================= NEW BILL ================= */}
+      {/* -------NEW BILL--------- */}
 
       <div className="new-bill-container">
 
