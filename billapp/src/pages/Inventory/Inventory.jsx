@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-// import { useOutletContext } from "react-router-dom"; 
+// import { useOutletContext } from "react-router-dom";
 
 import searchIcon from "../../assets/icons/search.png";
 import leftIcon from "../../assets/icons/left.png";
@@ -257,7 +257,8 @@ function Inventory() {
 
     const lastProduct = Math.min(endIndex, totalProducts);
 
-    paginationText = `Showing ${firstProduct}-${lastProduct} of ${totalProducts} products`;
+    paginationText = `Showing ${firstProduct}-${lastProduct} of
+${totalProducts} products`;
   }
 
   return (
@@ -341,7 +342,8 @@ function Inventory() {
           </div>
 
           <div className="add-product-container">
-              <button  className="add-product-button" type="button" onClick={openPopup}>
+              <button  className="add-product-button" type="button"
+onClick={openPopup}>
                 Add Product to Inventory
               </button>
           </div>
@@ -502,17 +504,18 @@ function Inventory() {
                       </button>
                     </div>
                   </div>
-          
+
                   <div className="bill-card-row">
                     <span className="bill-card-label">Type / Brand</span>
                     <span className="bill-card-value">
                       {product.type} - {product.brand}
                     </span>
                   </div>
-          
+
                   <div className="bill-card-row">
                     <span className="bill-card-label">Price</span>
-                    <span className="bill-card-value">₹{product.cost.toFixed(2)}</span>
+                    <span
+className="bill-card-value">₹{product.cost.toFixed(2)}</span>
                   </div>
                   <div className="bill-card-row bill-card-total">
                     <span className="bill-card-label">Weight</span>
@@ -520,7 +523,7 @@ function Inventory() {
                       {product.weight}
                     </span>
                   </div>
-          
+
                   <div className="bill-card-row">
                     <span className="bill-card-label">Qty</span>
                     <span className="bill-card-value">
@@ -542,13 +545,14 @@ function Inventory() {
                     >
                       <button className="status-btn" type="button">
                         <img
-                          src={product.status === "Out of Stock" ? removeIcon : tickIcon}
+                          src={product.status === "Out of Stock" ?
+removeIcon : tickIcon}
                           alt={product.status}
                         />
                       </button>
                     </span>
                   </div>
-          
+
                 </div>
               ))
             )}
