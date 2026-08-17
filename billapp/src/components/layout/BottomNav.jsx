@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import dashboardIcon from "../../assets/icons/dashboard.png";
 import boxIcon from "../../assets/icons/box.png";
@@ -6,12 +6,38 @@ import billIcon from "../../assets/icons/bill.png";
 import userIcon from "../../assets/icons/user.png";
 
 function BottomNav({onProfileClick}) {
-  const navigate = useNavigate();
+  const routes = [
+      {
+        id: 1,
+        path: "/dashboard",
+        label: "Dashboard",
+        icon: dashboardIcon,
+      },
+      {
+        id: 2,
+        path: "/inventory",
+        label: "Inventory",
+        icon: boxIcon,
+      },
+      {
+        id: 3,
+        path: "/billing",
+        label: "Billing",
+        icon: billIcon,
+      },
+      // {
+      //   id: 4,
+      //   path: "",
+      //   label: "Profile",
+      //   icon: userIcon,
+      // },
+    ];
+  // const navigate = useNavigate();
 
   return (
-    <nav className="bottom-nav">
+    <nav className="bottom-nav" id="nav">
 
-      <div className="nav-item">
+      {/* <div className="nav-item">
         <button
           className="dashboard"
           type="button"
@@ -72,7 +98,43 @@ function BottomNav({onProfileClick}) {
             Profile
           </div>
         </button>
+      </div> */}
+
+      {routes.map((route) => (
+        <div className="nav-item" key={route.id}>
+
+          <NavLink
+            to={route.path}
+            className={({ isActive }) =>
+              isActive
+                ? "nav-link active"
+                : "nav-link"
+            }
+          >
+
+            <div className="nav-icon">
+              <img
+                src={route.icon}
+                alt={route.label}
+              />
+            </div>
+
+            <div className="nav-label">
+              {route.label}
+            </div>
+
+          </NavLink>
+
+        </div>
+      ))}
+
+      <div className="nav-item">
+        <button type="button" className="nav-link" onClick={onProfileClick}>
+          <div className="nav-icon"><img src={userIcon} alt="Profile" /></div>
+          <div className="nav-label">Profile</div>
+        </button>
       </div>
+
 
     </nav>
   );
