@@ -64,6 +64,7 @@ body,
   height: 100%;
 
   padding: 1.5rem 2rem 0 2rem;
+  margin-top: var(--header-height);
 
   background-color: #f7f9f8;
 
@@ -144,7 +145,6 @@ body {
   border-bottom: 0.0625rem solid #e5e7eb;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
 
-  position: sticky;
   top: 0;
   z-index: 1000;
 }
@@ -526,68 +526,43 @@ body {
   opacity: 0.85;
 } 
 
-
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-@media screen and (min-width: 375px) and (max-width: 767px){
-
-  .sidebar-desktop {
-    display: none;
-  }
-
-  .left_inventory_section .header-icon-button{
-    display: none;
-  }
-
-  .main-content {
-    padding-left: 0;
-  }
-
+.sidebar-desktop {
+  display: none !important;
 }
 
-@media screen and (min-width: 768px) and (max-width: 2000px){
+.left_inventory_section .header-icon-button {
+  display: none !important;
+}
 
+.bottom-nav {
+  display: flex !important;
+}
+
+.app-shell-content {
+  padding-bottom: var(--footer-height);
+}
+
+
+/* 2. DESKTOP & TABLET AIR AND UP (>= 820px: iPad Air, iPad Pro, Laptops) */
+@media screen and (min-width: 820px) {
+  
+  /* Show sidebar (visibility controlled via .sidebar-open / .sidebar-closed transform) */
+  .sidebar-desktop {
+    display: flex !important;
+  }
+
+  /* Show the header menu toggle button to open/close the sidebar */
+  .left_inventory_section .header-icon-button {
+    display: flex !important;
+  }
+
+  /* Hide mobile bottom navigation */
   .bottom-nav {
-    display: none;
+    display: none !important;
   }
 
-  .main-content {
-    padding-left: 0;
+  /* Remove mobile bottom padding since bottom nav is gone */
+  .app-shell-content {
+    padding-bottom: 0;
   }
-
-}
-
-@media screen and (max-width: 375px){
-
-  .sidebar-desktop {
-    display: none;
-  }
-
-  .left_inventory_section .header-icon-button{
-    display: none;
-  }
-
-  .main-content {
-    padding-left: 0;
-  }
-
-}
-
-@media screen and (max-width: 415px) and (max-height: 900px){
-
-  .sidebar-desktop {
-    display: none;
-  }
-
-  .left_inventory_section .header-icon-button{
-    display: none;
-  }
-
-  .main-content {
-    padding-left: 0;
-  }
-
 }
