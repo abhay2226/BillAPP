@@ -29,6 +29,7 @@ import AppShell from "./components/layout/AppShell";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Inventory from "./pages/Inventory/Inventory";
 import Voicebilling from "./pages/Voicebilling/Voicebilling";
+import Profile from "./pages/Profile/Profile";
 
 function App() {
   return (
@@ -55,6 +56,11 @@ function App() {
           path="/billing"
           element={<Voicebilling />}
         />
+
+        <Route
+            path="/profile"
+         element={<Profile />} 
+         />
 
       </Route>
 
