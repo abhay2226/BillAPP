@@ -1,6 +1,15 @@
 /* =========================================================
    SEARCH
 ========================================================= */
+.main-container{
+  padding: 0.5rem;
+}
+.search-inventory-cards{
+  position:relative;
+  border:none;
+  padding:0;
+  margin:0;
+}
 
 .search-container {
   width: 100%;
@@ -676,18 +685,19 @@
 }
 
 .popup-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
   align-items: center;
   justify-content: flex-end;
 
-  gap: 0.75rem;
+  gap: 0.5rem;
 
   margin-top: 0.5rem;
 }
 
 .popup-buttons button {
-  min-width: 11rem;
+  min-width: 10rem;
 
   height: 2.5rem;
 
