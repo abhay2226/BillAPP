@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 import menuIcon from "../../assets/icons/menu.png";
-import addIcon from "../../assets/icons/add (2).png";
+// import addIcon from "../../assets/icons/add (2).png";
 
 import "./AppShell.css";
 
@@ -9,7 +9,7 @@ const routeTitles = {
   "/billing": "Voice Billing",
   "/inventory": "Inventory",
   "/dashboard": "Dashboard",
-  // add other routes here
+  "/profile" : "Profile",
 };
 
 function Header({ onMenuToggle, onAddProduct }) {
@@ -43,7 +43,7 @@ function Header({ onMenuToggle, onAddProduct }) {
         >
           <img src={addIcon} alt="Add Product" />
         </button> */}
-
+{/* 
         {onAddProduct && (
           <button
             type="button"
@@ -55,7 +55,7 @@ function Header({ onMenuToggle, onAddProduct }) {
               alt="Add Product"
             />
           </button>
-        )}
+        )} */}
 
       </div>
 

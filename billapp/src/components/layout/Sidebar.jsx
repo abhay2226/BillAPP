@@ -25,12 +25,12 @@ function Sidebar({ isOpen , onProfileClick}) {
       label: "Billing",
       icon: billIcon,
     },
-    // {
-    //   id: 4,
-    //   path: "",
-    //   label: "Profile",
-    //   icon: userIcon,
-    // },
+    {
+      id: 4,
+      path: "/profile",
+      label: "Profile",
+      icon: userIcon,
+    },
   ];
 
   return (
@@ -69,12 +69,12 @@ function Sidebar({ isOpen , onProfileClick}) {
         </div>
       ))}
 
-      <div className="nav-item">
+      {/* <div className="nav-item">
         <button type="button" className="sidebar-link" onClick={onProfileClick}>
           <div className="nav-icon"><img src={userIcon} alt="Profile" /></div>
           <div className="nav-label">Profile</div>
         </button>
-      </div>
+      </div> */}
 
     </aside>
   );
