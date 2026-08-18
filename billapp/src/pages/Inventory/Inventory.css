@@ -2,7 +2,7 @@
    SEARCH
 ========================================================= */
 .main-container{
-  padding: 0.5rem;
+  padding:1.5rem;
 }
 .search-inventory-cards{
   position:relative;
@@ -1015,6 +1015,7 @@
     min-width: 0;
 
     overflow: hidden;
+    padding: 0.5rem;
   }
 
   /*
@@ -1027,6 +1028,7 @@
     min-width: 0;
 
     overflow: hidden;
+    padding: 0.5rem;
   }
 
 
@@ -1192,6 +1194,7 @@
     min-width: 0;
 
     overflow: hidden;
+    padding: 0.5rem;
   }
 
   .main-container > div {
@@ -1200,6 +1203,7 @@
     min-width: 0;
 
     overflow: hidden;
+    padding: 0.5rem;
   }
 
 
@@ -1393,6 +1397,7 @@
     min-width: 0;
 
     overflow: hidden;
+    padding: 0.5rem;
   }
 
   .main-container > div {
@@ -1401,6 +1406,7 @@
     min-width: 0;
 
     overflow: hidden;
+    padding: 0.5rem;
   }
 
 
