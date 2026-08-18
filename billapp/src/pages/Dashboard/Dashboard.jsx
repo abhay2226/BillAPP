@@ -18,12 +18,7 @@ export default function Dashboard() {
   const [sales, setSales] = useState("₹0.00");
   const [lowStockCount, setLowStockCount] = useState(0);
 
-  // --------- SIDEBAR STATE ---------
-  // const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // const handleMenuToggle = () => {
-  //   setSidebarOpen((previous) => !previous);
-  // };
+  
 
   useEffect(() => {
     const options = {
