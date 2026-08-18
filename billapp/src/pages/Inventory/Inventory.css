@@ -3,17 +3,39 @@
 ========================================================= */
 .main-container{
   padding: 0.5rem;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
 .search-inventory-cards{
-  position:relative;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   border:none;
   padding:0;
   margin:0;
+  background-color: #f7f8f9;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.app-shell-content {
+  overflow: hidden !important;
+}
+
+.app-shell-body {
+  overflow: hidden !important;
 }
 
 .search-container {
   width: 100%;
   position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f7f8f9;
 
   margin-bottom: 1rem;
 }
@@ -67,12 +89,18 @@
 .card_section {
   width: 100%;
 
+  position: sticky;
+  top: 4rem;
+  z-index: 5;
+
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 
   gap: 1.25rem;
 
   margin-bottom: 1.25rem;
+  overflow: hidden;
+  background-color: #f7f8f9;
 }
 
 .card_box {
@@ -214,6 +242,12 @@
 
 .bill-cards-container {
   display: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 18rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  flex-shrink: 1;
 }
 
 .bill-card {
@@ -1006,6 +1040,11 @@
     flex-direction: column;
     gap: 0.75rem;
 
+    max-height: 18rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+
     margin-top: 0.4rem;
   }
 
@@ -1182,6 +1221,11 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+
+    max-height: 18rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 
     margin-top: 0.4rem;
   }
@@ -1383,6 +1427,11 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+
+    max-height: 18rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 
     margin-top: 0.4rem;
   }
