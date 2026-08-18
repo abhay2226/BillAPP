@@ -283,62 +283,64 @@ ${totalProducts} products`;
           // }
         >
 
-          {/* SEARCH */}
-          <div className="search-container">
-            <div className="search-input-wrapper">
-
-              <img
-                className="search-icon"
-                src={searchIcon}
-                alt="Search"
-              />
-
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search Product"
-                value={searchValue}
-                onChange={(event) =>
-                  setSearchValue(event.target.value)
-                }
-              />
-
-            </div>
-          </div>
-
-          {/* CARDS */}
-          <div className="card_section">
-
-            <div className="card_box">
-              <div className="card_box_header">
-                Items IN
-              </div>
-
-              <div className="card_box_count">
-                {String(itemsIn).padStart(2, "0")}
+          <div className="search-inventory-cards">
+            {/* SEARCH */}
+            <div className="search-container">
+              <div className="search-input-wrapper">
+  
+                <img
+                  className="search-icon"
+                  src={searchIcon}
+                  alt="Search"
+                />
+  
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search Product"
+                  value={searchValue}
+                  onChange={(event) =>
+                    setSearchValue(event.target.value)
+                  }
+                />
+  
               </div>
             </div>
-
-            <div className="card_box">
-              <div className="card_box_header">
-                Low Stock
+  
+            {/* CARDS */}
+            <div className="card_section">
+  
+              <div className="card_box">
+                <div className="card_box_header">
+                  Items IN
+                </div>
+  
+                <div className="card_box_count">
+                  {String(itemsIn).padStart(2, "0")}
+                </div>
               </div>
-
-              <div className="card_box_count">
-                {String(lowStock).padStart(2, "0")}
+  
+              <div className="card_box">
+                <div className="card_box_header">
+                  Low Stock
+                </div>
+  
+                <div className="card_box_count">
+                  {String(lowStock).padStart(2, "0")}
+                </div>
               </div>
+  
+              <div className="card_box">
+                <div className="card_box_header">
+                  Out of Stock
+                </div>
+  
+                <div className="card_box_count">
+                  {String(outOfStock).padStart(2, "0")}
+                </div>
+              </div>
+  
             </div>
-
-            <div className="card_box">
-              <div className="card_box_header">
-                Out of Stock
-              </div>
-
-              <div className="card_box_count">
-                {String(outOfStock).padStart(2, "0")}
-              </div>
-            </div>
-
           </div>
 
           <div className="add-product-container">

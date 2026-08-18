@@ -4,17 +4,17 @@ import { Outlet } from "react-router-dom";
 import Header from "../../components/layout/Header";
 import Sidebar from "../../components/layout/Sidebar";
 import BottomNav from "../../components/layout/BottomNav";
-import UserProfile from "../ProfilePopup";
+// import UserProfile from "../../";
 
 import "./AppShell.css";
 
 function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [headerAction, setHeaderAction] = useState(null);
-  const [profileOpen, setProfileOpen] = useState(false);
+//   const [profileOpen, setProfileOpen] = useState(false);
 
-  const openProfile = () => setProfileOpen(true);
-  const closeProfile = () => setProfileOpen(false);
+//   const openProfile = () => setProfileOpen(true);
+//   const closeProfile = () => setProfileOpen(false);
 
   const handleMenuToggle = () => {
     setSidebarOpen((previous) => !previous);
@@ -27,7 +27,8 @@ function AppShell() {
 
       <div className="app-shell-body">
 
-        <Sidebar isOpen={sidebarOpen} onProfileClick={openProfile} />
+        {/* <Sidebar isOpen={sidebarOpen} onProfileClick={openProfile} /> */}
+        <Sidebar isOpen={sidebarOpen} />
 
         <main
           className={sidebarOpen ? "app-shell-content sidebar-open" : "app-shell-content"}
@@ -43,9 +44,10 @@ function AppShell() {
 
       </div>
 
-      <BottomNav onProfileClick={openProfile} />
+      {/* <BottomNav onProfileClick={openProfile} /> */}
+      <BottomNav />
 
-      <UserProfile isOpen={profileOpen} onClose={closeProfile} />
+      {/* <UserProfile isOpen={profileOpen} onClose={closeProfile} /> */}
     </div>
   );
 }
