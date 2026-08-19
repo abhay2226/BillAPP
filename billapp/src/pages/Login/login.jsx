@@ -41,6 +41,28 @@ const login_signup = ()=>{
                 </div>
 
             </div>
+            <div class="signin-container">
+                <h1>Login</h1>
+                <form onSubmit={handleLogin}>
+                    <input 
+                    type="email"
+                    placeholder="Enter your Email"
+                    value={email}
+                    onChange={(e)=>setEmail(e.target.value)}
+                    required/>
+                    <input
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e)=>setPassword(e.target.value)}
+                    required/>
+                    <button type="submit"> Login </button>
+                </form>
+                <div class="signup-link">
+                    <span><a>Create an account</a></span>
+                </div>
+
+            </div>
         </div>
         </>
     );
