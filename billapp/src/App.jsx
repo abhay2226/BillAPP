@@ -30,18 +30,23 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Inventory from "./pages/Inventory/Inventory";
 import Voicebilling from "./pages/Voicebilling/Voicebilling";
 import Profile from "./pages/Profile/Profile";
+import Login, { SESSION_KEY } from "./pages/Login/login";
 
 
 function App() {
+  const isAuthenticated = localStorage.getItem(SESSION_KEY) === "true";
+
   return (
     <Routes>
 
       <Route
         path="/"
-        element={<Navigate to="/dashboard" replace />}
+        element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />}
       />
 
-      <Route element={<AppShell />}>
+      <Route path="/login" element={<Login />} />
+
+      <Route element={isAuthenticated ? <AppShell /> : <Navigate to="/login" replace />}>
 
         <Route
           path="/dashboard"
