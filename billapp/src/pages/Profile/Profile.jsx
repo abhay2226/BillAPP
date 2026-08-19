@@ -1,6 +1,9 @@
 import React, { useState } from "react"; 
 import UserProfile from "../../components/ProfilePopup"; 
 import "./Profile.css"; 
+
+import profileIcon from "../../assets/icons/user.png"
+import logoutIcon from "../../assets/icons/logout.png";
  
 function Profile() { 
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false); 
@@ -9,14 +12,13 @@ function Profile() {
     <div className="profile-page"> 
  
       <div className="profile-page-header"> 
-        <h1>Profile</h1> 
         <p>Manage your profile details</p> 
       </div> 
  
       <div className="profile-options"> 
  
         {/* Personal Details */} 
-        <div className="profile-option-card"> 
+        {/* <div className="profile-option-card"> 
           <div className="profile-option-content"> 
             <h2>User Details</h2> 
             <p> 
@@ -30,10 +32,40 @@ function Profile() {
           > 
             Edit Profile 
           </button> 
-        </div> 
+        </div>  */}
+        <button
+          type="button"
+          className="profile-option-card"
+          onClick={() => setIsProfilePopupOpen(true)}
+        >
+          <div className="card-link">
+            <div className="action-left">
+              <div className="card-icon inventory-icon-background">
+                <img
+                  src={profileIcon}
+                  alt="Profile"
+                />
+              </div>
+              <div className="card-text">
+                <h2 className="card-title">
+                  Profile Details
+                </h2>
+                <span className="card-subtitle">
+                  Manage your profile details.
+                </span>
+              </div>
+            </div>
+            {/* <div className="card-arrow">
+              <img
+                src={chevronIcon}
+                alt="Go to Inventory"
+              />
+            </div> */}
+          </div>
+        </button>
  
-        {/* Business Details */} 
-        <div className="profile-option-card"> 
+        {/* Business Details */}
+        {/* <div className="profile-option-card"> 
           <div className="profile-option-content"> 
             <h2>Logout</h2> 
             <p> 
@@ -46,9 +78,42 @@ function Profile() {
           > 
             Logout
           </button> 
-        </div> 
+        </div> */}
+
+        <button
+          type="button"
+          className="profile-option-card"
+          
+        >
+          <div className="card-link">
+            <div className="action-left">
+              <div className="card-icon inventory-icon-background">
+                <img
+                  src={logoutIcon}
+                  alt="Logout"
+                />
+              </div>
+              <div className="card-text">
+                <h2 className="card-title">
+                  Logout
+                </h2>
+                <span className="card-subtitle">
+                  Logout of your Account.
+                </span>
+              </div>
+            </div>
+            {/* <div className="card-arrow">
+              <img
+                src={chevronIcon}
+                alt="Go to Inventory"
+              />
+            </div> */}
+          </div>
+        </button> 
  
-      </div> 
+      </div>  
+
+      
  
       {/* Popup */} 
       <UserProfile 
