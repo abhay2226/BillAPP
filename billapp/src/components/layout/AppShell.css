@@ -584,3 +584,34 @@ body {
     padding-bottom: 0;
   }
 }
+
+
+.auth-header {
+    justify-content: center;
+    background-color: #17352d;
+    border-bottom: none;
+}
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.auth-brand-icon {
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+}
+.auth-brand-text {
+    color: #f0f4ed;
+    font-size: 1.3rem;
+}
+.auth-brand-text strong {
+    color: #52d477;
+}
+.auth-brand-text b {
+    font-weight: 700;
+}
+.app-shell-content-auth {
+    padding-bottom: 0;
+    background-color: #0e211c;
+}
