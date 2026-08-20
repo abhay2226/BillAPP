@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 
 import menuIcon from "../../assets/icons/menu.png";
 // import addIcon from "../../assets/icons/add (2).png";
+import storeIcon from "../../assets/icons/store.png";
 
 import "./AppShell.css";
 
@@ -12,10 +13,20 @@ const routeTitles = {
   "/profile" : "Profile",
 };
 
-function Header({ onMenuToggle, onAddProduct }) {
+function Header({ onMenuToggle, onAddProduct , isAuthPage }) {
   const location = useLocation();
   const title = routeTitles[location.pathname] || "ProShop";
 
+  if (isAuthPage) {
+    return (
+        <header className="inventory_section auth-header">
+            <div className="auth-brand">
+                <img src={storeIcon} alt="ProShop" className="auth-brand-icon" />
+                <span className="auth-brand-text"><strong>PRO</strong><b>SHOP</b></span>
+            </div>
+        </header>
+    );
+  }
   return (
     <header className="inventory_section">
 
