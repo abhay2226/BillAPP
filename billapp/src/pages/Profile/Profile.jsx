@@ -1,4 +1,7 @@
 import React, { useState } from "react"; 
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../components/layout/AuthContext";
+
 import UserProfile from "../../components/ProfilePopup"; 
 import "./Profile.css"; 
 
@@ -7,6 +10,15 @@ import logoutIcon from "../../assets/icons/logout.png";
  
 function Profile() { 
   const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false); 
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+      await logout();
+      navigate("/login", { replace: true });
+  };
+
  
   return ( 
     <div className="profile-page"> 
@@ -83,6 +95,7 @@ function Profile() {
         <button
           type="button"
           className="profile-option-card"
+          onClick={handleLogout}
           
         >
           <div className="card-link">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 import Header from "../../components/layout/Header";
 import Sidebar from "../../components/layout/Sidebar";
@@ -15,6 +15,8 @@ function AppShell() {
 
 //   const openProfile = () => setProfileOpen(true);
 //   const closeProfile = () => setProfileOpen(false);
+  const location = useLocation();
+  const isAuthPage=location.pathname === "/login";
 
   const handleMenuToggle = () => {
     setSidebarOpen((previous) => !previous);
@@ -28,24 +30,31 @@ function AppShell() {
       <div className="app-shell-body">
 
         {/* <Sidebar isOpen={sidebarOpen} onProfileClick={openProfile} /> */}
-        <Sidebar isOpen={sidebarOpen} />
+        {!isAuthPage && <Sidebar isOpen={sidebarOpen} />}
 
         <main
-          className={sidebarOpen ? "app-shell-content sidebar-open" : "app-shell-content"}
+          className={
+                        isAuthPage
+                            ? "app-shell-content app-shell-content-auth"
+                            : sidebarOpen
+                                ? "app-shell-content sidebar-open"
+                                : "app-shell-content"
+                    }
         >
           <Outlet context={{ setHeaderAction }} />
-
-          <div className="app-shell-footer">
-            <footer>
-              <span>Copyright @2026</span>
-            </footer>
-          </div>
+          {!isAuthPage && (
+            <div className="app-shell-footer">
+              <footer>
+                <span>Copyright @2026</span>
+              </footer>
+            </div>
+          )}
         </main>
 
       </div>
 
       {/* <BottomNav onProfileClick={openProfile} /> */}
-      <BottomNav />
+      {!isAuthPage && <BottomNav />}
 
       {/* <UserProfile isOpen={profileOpen} onClose={closeProfile} /> */}
     </div>
