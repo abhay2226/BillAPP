@@ -1,4 +1,4 @@
-.login-signup-page {
+/* .login-signup-page {
     width: 100%;
     min-height: 100%;
     flex: 1;
@@ -109,4 +109,210 @@
   .auth-page { padding: 0.75rem; }
   .auth-device { width: min(27rem, 96vw); }
   .auth-screen { min-height: 39rem; padding: 2.8rem 1.2rem 1.5rem; }
+} */
+
+
+.login-signup-page {
+    width: 100%;
+    min-height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1rem;
+    background: #f4f6f5;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.auth-header-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-icon-badge {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: #0b8a6a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 0.5rem 1rem rgba(11, 138, 106, 0.25);
+}
+.auth-icon-badge img {
+    width: 1.6rem;
+    height: 1.6rem;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.auth-header-block h1 {
+    margin: 0;
+    color: #1a2420;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.auth-header-block p {
+    margin: 0.4rem 0 0;
+    color: #6b7570;
+    font-size: 0.9rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 26rem;
+    background: #ffffff;
+    border-radius: 1rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+}
+
+.auth-card form {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.auth-card label {
+    color: #1a2420;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0.4rem 0 0.1rem;
+}
+
+.auth-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+}
+.auth-label-row label {
+    margin: 0;
+}
+
+.auth-forgot-link {
+    border: none;
+    background: transparent;
+    color: #0b8a6a;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.auth-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: 2.9rem;
+    padding: 0 0.9rem;
+    border: 1px solid #dfe5e2;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    transition: border-color 0.15s ease;
+}
+.auth-input-wrap:focus-within {
+    border-color: #0b8a6a;
+}
+.auth-input-wrap svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: #9aa5a0;
+    flex-shrink: 0;
+}
+.auth-input-wrap input {
+    flex: 1;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #1a2420;
+    font-size: 0.9rem;
+}
+.auth-input-wrap input::placeholder {
+    color: #a7b0ac;
+}
+
+.auth-eye-toggle {
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    color: #9aa5a0;
+}
+.auth-eye-toggle svg {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.auth-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.6rem 0 0.2rem;
+    font-size: 0.85rem;
+    color: #53605a;
+    font-weight: 400;
+    cursor: pointer;
+}
+.auth-checkbox-row input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #0b8a6a;
+}
+
+.auth-submit {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: #0b8a6a;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background 0.15s ease;
+}
+.auth-submit:hover {
+    background: #097a5d;
+}
+.auth-submit:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+.auth-submit-arrow {
+    font-size: 1rem;
+}
+
+.auth-feedback {
+    margin: 0.4rem 0 0;
+    font-size: 0.8rem;
+    text-align: center;
+}
+.auth-feedback.success { color: #0b8a6a; }
+.auth-feedback.error { color: #d64545; }
+
+.auth-switch-text {
+    margin-top: 1.5rem;
+    color: #53605a;
+    font-size: 0.85rem;
+}
+.auth-switch {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #0b8a6a;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
 }
