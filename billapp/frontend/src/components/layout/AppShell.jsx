@@ -25,7 +25,8 @@ function AppShell() {
   return (
     <div className="app-shell">
 
-      <Header onMenuToggle={handleMenuToggle} onAddProduct={headerAction} />
+      {/* <Header onMenuToggle={handleMenuToggle} onAddProduct={headerAction} /> */}
+      <Header onMenuToggle={handleMenuToggle} onAddProduct={headerAction} isAuthPage={isAuthPage} />
 
       <div className="app-shell-body">
 
