@@ -6,10 +6,10 @@ import {
     JoinColumn 
 } from "typeorm"; 
  
-// import { Customer } from "./TransactionsCustomer.js"; 
+//  import { Customer } from "./TransactionsCustomer.ts"; 
  
 @Entity({name:"TransactionCustomer"}) 
-export class CustomerUser { 
+export class Customer { 
  
     @PrimaryGeneratedColumn({ 
         name: "customer_user_id" 
