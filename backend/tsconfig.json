@@ -43,5 +43,6 @@
 
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames":true,
   }
 }
