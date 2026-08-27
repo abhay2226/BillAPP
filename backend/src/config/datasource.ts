@@ -2,10 +2,10 @@
 
 import { DataSource } from "typeorm";
 
-import { User } from "../entities/User.js";
-import { Role } from "../entities/Role.js";
-import { Store } from "../entities/Store.js";
-import { Session } from "../entities/Session.js";
+import { User } from "../entity/User.js";
+import { Role } from "../entity/Role.js";
+import { Store } from "../entity/Store.js";
+import { Session } from "../entity/Session.js";
 
 export const AppDataSource = new DataSource({
 
