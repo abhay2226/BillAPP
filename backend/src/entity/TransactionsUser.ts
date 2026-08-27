@@ -7,10 +7,10 @@ import {
     JoinColumn
 } from "typeorm";
 
-import { Role } from "./Role.js";
-import { Session } from "./Session.js";
+import { Role } from "./MasterRole.js";
+import { Session } from "./TransactionsSession.js";
 
-@Entity({ name: "user" })
+@Entity({ name: " Transaction user" })
 export class User {
 
     @PrimaryGeneratedColumn({

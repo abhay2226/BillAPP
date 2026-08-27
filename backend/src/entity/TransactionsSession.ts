@@ -6,10 +6,10 @@ import {
     JoinColumn
 } from "typeorm";
 
-import { User } from "./User.js";
-import { Store } from "./Store.js";
+import { User } from "./TransactionsUser.js";
+import { Store } from "./TransactionsStore.js";
 
-@Entity({ name: "session" })
+@Entity({ name: "Transaction session" })
 export class Session {
 
     @PrimaryGeneratedColumn({
