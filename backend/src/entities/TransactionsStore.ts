@@ -7,10 +7,10 @@ import {
     OneToMany
 } from "typeorm";
 
-import { User } from "./User.js";
-import { Session } from "./Session.js";
+import { User } from "./TransactionsUser.js";
+import { Session } from "./TransactionsSession.js";
 
-@Entity({ name: "store" })
+@Entity({ name: "Transaction store" })
 export class Store {
 
     @PrimaryGeneratedColumn({

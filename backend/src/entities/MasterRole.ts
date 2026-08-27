@@ -5,9 +5,9 @@ import {
     OneToMany
 } from "typeorm";
 
-import { User } from "./User.js";
+import { User } from "./TransactionsUser.js";
 
-@Entity({ name: "role" })
+@Entity({ name: "MasterRole" })
 export class Role {
 
     @PrimaryGeneratedColumn({
