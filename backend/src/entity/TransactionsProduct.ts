@@ -10,7 +10,7 @@ import {
 import { Store } from "./TransactionsStore.js";
 import { Type } from "./MasterProductType.js";
 import { Brand } from "./MasterProductBrand.js";
-import { Uom } from "./MasterUom.js";
+import { UoM } from "./MasterUoM.js";
 import { Inventory } from "./TransactionsInventory.js";
 // import { BillItem } from "./TransactionsBillItem.js";
 
@@ -135,7 +135,7 @@ export class Product {
     brand!: Brand;
 
     @ManyToOne(
-        () => Uom,
+        () => UoM,
         uom => uom.products,
         {
             nullable: false
@@ -145,7 +145,7 @@ export class Product {
         name: "unit_id",
         referencedColumnName: "unit_id"
     })
-    uom!: Uom;
+    uom!: UoM;
 
     @OneToMany(
         () => Inventory,
