@@ -9,8 +9,10 @@ import {
 
 import { User } from "./TransactionsUser.js";
 import { Session } from "./TransactionsSession.js";
+import { Discount } from "./TransactionsDiscount.js";
+import { Bill } from "./TransactionsBill.js"
 
-@Entity({ name: "Transaction store" })
+@Entity({ name: "transaction_store" })
 export class Store {
 
     @PrimaryGeneratedColumn({
@@ -101,8 +103,21 @@ export class Store {
     // One Store -> Many Sessions
 
     @OneToMany(
+        () => Discount,
+        (discount) => discount.store_id
+    )
+    discounts!: Discount[];
+
+    @OneToMany(
         () => Session,
         (session: Session) => session.store
     )
     sessions!: Session[];
+
+    @OneToMany(
+        () => Bill ,(bill) => bill.store
+    )
+    bills!: Bill[];
+
+    
 }
