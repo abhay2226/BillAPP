@@ -12,7 +12,7 @@ import { UoM } from "../entity/MasterUoM.js";
 import { User } from "../entity/TransactionsUser.js";
 import { Store } from "../entity/TransactionsStore.js";
 import { Customer } from "../entity/TransactionsCustomer.js";
-import { CustomerUser } from "../entity/TransactionsCustomerUser.js";
+// import { CustomerUser } from "../entity/TransactionsCustomerUser.js";
 import { Bill } from "../entity/TransactionsBill.js";
 import { Inventory } from "../entity/TransactionsInventory.js";
 import { Product } from "../entity/TransactionsSession.js";
