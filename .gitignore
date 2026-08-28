@@ -19,3 +19,7 @@ yarn-error.log*
 # OS/editor files
 .DS_Store
 .vscode/
+
+*.sqlite
+*.sqlite3
+*.db
