@@ -9,6 +9,7 @@ import { Session } from "./TransactionsSession.js";
 import { Discount } from "./TransactionsDiscount.js";
 import { Bill } from "./TransactionsBill.js";
 import { Inventory } from "./TransactionsInventory.js";
+import { Product } from "./TransactionsProduct.js"
 
 @Entity({ name: "transactions_store" })
 export class Store {
@@ -100,6 +101,11 @@ export class Store {
         (bill) => bill.store
     )
     bills!: Bill[];
+
+    @OneToMany(
+        () => Product ,(product) => product.store
+    )
+    product!: Product[];
 
 
     // One Store -> Many Inventory records

@@ -34,14 +34,16 @@ export class DiscountType{
 
     @Column({
         name: "created_at",
-        type: "datetime"
+        type: "datetime",
+        nullable: false
+        
     })
     created_at!: Date;
 
     @Column({
         name: "created_by",
         type: "integer",
-        nullable: true
+        nullable: false
     })
     created_by!: number ;
 
