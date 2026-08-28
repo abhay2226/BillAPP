@@ -11,14 +11,14 @@ import {
 import { Product } from "./TransactionsProduct.js";
 import { Store } from "./TransactionsStore.js";
 import { DamagedGoods } from "./TransactionsDamagedGoods.js";
-import { TransactionsStockMovement } from "./TransactionsStockMovement.js";
+import { StockMovement } from "./TransactionsStockMovement.js";
 
 @Entity({ name: "transactions_inventory" })
 @Unique(
     "UQ_inventory_store_id_product_id",
     ["store_id", "product_id"]
 )
-export class TransactionsInventory {
+export class Inventory {
 
     @PrimaryGeneratedColumn({
         name: "inventory_id",
@@ -129,8 +129,8 @@ export class TransactionsInventory {
     damagedGoods!: DamagedGoods[];
 
     @OneToMany(
-        () => TransactionsStockMovement,
+        () => StockMovement,
         stockMovement => stockMovement.inventory
     )
-    stockMovements!: TransactionsStockMovement[];
+    stockMovements!: StockMovement[];
 }

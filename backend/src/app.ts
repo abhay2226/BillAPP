@@ -22,7 +22,7 @@ const userRepository = AppDataSource.getRepository(User);
 
 //express app
 const app= express();
-app.use(express.json);
+app.use(express.json());
 
 export default app;
 

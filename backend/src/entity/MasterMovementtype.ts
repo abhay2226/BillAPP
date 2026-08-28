@@ -5,10 +5,10 @@ import {
     OneToMany
 } from "typeorm";
 
-import { TransactionsStockMovement } from "./TransactionsStockMovement.js";
+import { StockMovement } from "./TransactionsStockMovement.js";
 
 @Entity({ name: "master_movement_type" })
-export class MasterMovementType {
+export class MovementType {
 
     @PrimaryGeneratedColumn({
         name: "movement_type_id",
@@ -38,8 +38,8 @@ export class MasterMovementType {
     is_active!: boolean;
 
     @OneToMany(
-        () => TransactionsStockMovement,
-        stockMovement => stockMovement.movementType
+        () => StockMovement,
+        (stockMovement) => stockMovement.movementType
     )
-    stockMovements!: TransactionsStockMovement[];
+    stockMovements!: StockMovement[];
 }

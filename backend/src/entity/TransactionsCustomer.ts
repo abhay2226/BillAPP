@@ -8,7 +8,7 @@ import {
 import { Bill } from "./TransactionsBill.js";
 
 @Entity({ name: "transactions_customer" })
-export class TransactionsCustomer {
+export class Customer {
 
     @PrimaryGeneratedColumn({
         name: "customer_id",

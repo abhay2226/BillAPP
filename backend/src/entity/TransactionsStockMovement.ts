@@ -6,11 +6,11 @@ import {
     JoinColumn
 } from "typeorm";
 
-import { TransactionsInventory } from "./TransactionsInventory.js";
-import { MasterMovementType } from "./MasterMovementType.js";
+import { Inventory } from "./TransactionsInventory.js";
+import { MovementType } from "./MasterMovementType.js";
 
 @Entity({ name: "transactions_stock_movement" })
-export class TransactionsStockMovement {
+export class StockMovement {
 
     @PrimaryGeneratedColumn({
         name: "movement_id",
@@ -71,7 +71,7 @@ export class TransactionsStockMovement {
     created_by!: number | null;
 
     @ManyToOne(
-        () => TransactionsInventory,
+        () => Inventory,
         inventory => inventory.stockMovements,
         {
             nullable: false
@@ -81,10 +81,10 @@ export class TransactionsStockMovement {
         name: "inventory_id",
         referencedColumnName: "inventory_id"
     })
-    inventory!: TransactionsInventory;
+    inventory!:Inventory;
 
     @ManyToOne(
-        () => MasterMovementType,
+        () => MovementType,
         movementType => movementType.stockMovements,
         {
             nullable: false
@@ -94,5 +94,5 @@ export class TransactionsStockMovement {
         name: "movement_type_id",
         referencedColumnName: "movement_type_id"
     })
-    movementType!: MasterMovementType;
+    movementType!: MovementType;
 }
