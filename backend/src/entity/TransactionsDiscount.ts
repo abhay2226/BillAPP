@@ -20,7 +20,8 @@ export class Discount{
     @Column({
         name:"discount_name",
         type: "varchar",
-        nullable: false
+        nullable: false,
+        unique: true
     })
     discount_name!: string;
 
