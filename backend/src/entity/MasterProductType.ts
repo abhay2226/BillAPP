@@ -62,7 +62,7 @@ export class Type {
 
     @OneToMany(
         () => Product,
-        (product) => product.type_id
+        (product) => product.type
     )
     products!: Product[];
 }

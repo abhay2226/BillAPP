@@ -8,8 +8,8 @@ import {
 } from "typeorm";
 
 import { Store } from "./TransactionsStore.js";
-import { ProductType } from "./MasterProductType.js";
-import { ProductBrand } from "./MasterProductBrand.js";
+import { Type } from "./MasterProductType.js";
+import { Brand } from "./MasterProductBrand.js";
 import { Uom } from "./MasterUom.js";
 import { Inventory } from "./TransactionsInventory.js";
 // import { BillItem } from "./TransactionsBillItem.js";
@@ -97,7 +97,7 @@ export class Product {
 
     @ManyToOne(
         () => Store,
-        store => store.products,
+        store => store.product,
         {
             nullable: false
         }
@@ -109,8 +109,8 @@ export class Product {
     store!: Store;
 
     @ManyToOne(
-        () => ProductType,
-        productType => productType.products,
+        () => Type,
+        type => type.products,
         {
             nullable: false
         }
@@ -119,11 +119,11 @@ export class Product {
         name: "type_id",
         referencedColumnName: "type_id"
     })
-    productType!: ProductType;
+    type!: Type;
 
     @ManyToOne(
-        () => ProductBrand,
-        productBrand => productBrand.products,
+        () => Brand,
+        (brand : Brand) => brand.products,
         {
             nullable: false
         }
@@ -132,7 +132,7 @@ export class Product {
         name: "brand_id",
         referencedColumnName: "brand_id"
     })
-    productBrand!: ProductBrand;
+    brand!: Brand;
 
     @ManyToOne(
         () => Uom,

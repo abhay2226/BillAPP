@@ -11,6 +11,7 @@ import { User } from "./TransactionsUser.js";
 import { Session } from "./TransactionsSession.js";
 import { Discount } from "./TransactionsDiscount.js";
 import { Bill } from "./TransactionsBill.js"
+import { Product } from "./TransactionsProduct.js"
 
 @Entity({ name: "transaction_store" })
 export class Store {
@@ -118,6 +119,11 @@ export class Store {
         () => Bill ,(bill) => bill.store
     )
     bills!: Bill[];
+
+    @OneToMany(
+        () => Product ,(product) => product.store
+    )
+    product!: Product[];
 
     
 }
