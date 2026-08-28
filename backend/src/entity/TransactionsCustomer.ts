@@ -20,7 +20,6 @@ export class Customer {
         name: "phone_no",
         type: "varchar",
         nullable: true,
-        unique: true
     })
     phone_no!: string | null;
 
