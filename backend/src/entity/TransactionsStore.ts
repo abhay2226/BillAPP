@@ -105,7 +105,7 @@ export class Store {
     @OneToMany(
         () => Product ,(product) => product.store
     )
-    product!: Product[];
+    products!: Product[];
 
 
     // One Store -> Many Inventory records

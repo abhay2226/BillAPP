@@ -97,10 +97,8 @@ export class Product {
 
     @ManyToOne(
         () => Store,
-        store => store.product,
-        {
-            nullable: false
-        }
+        store => store.products,
+        { nullable: false }
     )
     @JoinColumn({
         name: "store_id",
@@ -117,7 +115,7 @@ export class Product {
     )
     @JoinColumn({
         name: "type_id",
-        referencedColumnName: "type_id"
+        referencedColumnName: "product_type_id"
     })
     type!: Type;
 
