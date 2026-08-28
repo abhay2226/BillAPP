@@ -31,7 +31,8 @@ export class Product {
 
     @Column({
         name: "product_name",
-        type: "varchar"
+        type: "varchar",
+        unique: true
     })
     product_name!: string;
 

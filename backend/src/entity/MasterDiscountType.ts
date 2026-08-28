@@ -16,6 +16,7 @@ export class DiscountType{
     @Column({
         name: "code",
         type: "varchar",
+        unique: true
     })
     code!: string;
 

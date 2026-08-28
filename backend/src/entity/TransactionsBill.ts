@@ -14,10 +14,10 @@ import { Discount } from "./TransactionsDiscount.js";
 // import { BillItem } from "./TransactionsBillItem.js";
 
 @Entity({ name: "transactions_bill" })
-@Unique(
-    "UQ_bill_store_id_invoice_number",
-    ["store_id", "invoice_number"]
-)
+// @Unique(
+//     "UQ_bill_store_id_invoice_number",
+//     ["store_id", "invoice_number"]
+// )
 export class Bill {
 
     @PrimaryGeneratedColumn({
@@ -28,7 +28,8 @@ export class Bill {
 
     @Column({
         name: "invoice_number",
-        type: "varchar"
+        type: "varchar",
+        unique: true
     })
     invoice_number!: string;
 
