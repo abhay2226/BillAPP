@@ -37,9 +37,39 @@ export class MovementType {
     })
     is_active!: boolean;
 
+    @Column({
+        name: "created_at",
+        type: "datetime",
+        nullable: false
+        
+    })
+    created_at!: Date;
+
+    @Column({
+        name: "created_by",
+        type: "integer",
+        nullable: false
+    })
+    created_by!: number ;
+
+    @Column({
+        name: "updated_at",
+        type: "datetime",
+        nullable: true
+    })
+    updated_at!: Date | null;
+
+    @Column({
+        name: "updated_by",
+        type: "integer",
+        nullable: true
+    })
+    updated_by!: number | null;
+
+
     @OneToMany(
         () => StockMovement,
-        (stockMovement) => stockMovement.movementType
+        (stockMovement) => stockMovement.movement_type_id
     )
     stockMovements!: StockMovement[];
 }
