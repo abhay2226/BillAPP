@@ -128,7 +128,7 @@ export class Product {
     )
     @JoinColumn({
         name: "brand_id",
-        referencedColumnName: "brand_id"
+        referencedColumnName: "product_brand_id"
     })
     brand!: Brand;
 

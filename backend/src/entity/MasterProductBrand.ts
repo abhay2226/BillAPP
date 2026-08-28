@@ -11,17 +11,17 @@ import { Product } from "./TransactionsProduct.js";
 export class Brand {
 
     @PrimaryGeneratedColumn({
-        name: "product_Brand_id",
+        name: "product_brand_id",
         type: "integer"
     })
-    product_Brand_id!: number;
+    product_brand_id!: number;
 
     @Column({
-        name: "Brand_name",
+        name: "brand_name",
         type: "varchar",
         unique: true
     })
-    type_name!: string;
+    brand_name!: string;
 
     @Column({
         name: "is_active",
