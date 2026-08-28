@@ -15,10 +15,10 @@ import { Customer } from "../entity/TransactionsCustomer.js";
 // import { CustomerUser } from "../entity/TransactionsCustomerUser.js";
 import { Bill } from "../entity/TransactionsBill.js";
 import { Inventory } from "../entity/TransactionsInventory.js";
-import { Product } from "../entity/TransactionsSession.js";
+import { Product } from "../entity/TransactionsProduct.js";
 import { Discount } from "../entity/TransactionsDiscount.js";
-import { Damage } from "../entity/TransactionsDamagedGoods.js";
-import { StockMov } from "../entity/TransactionsStockMovement.js";
+import { DamagedGoods } from "../entity/TransactionsDamagedGoods.js";
+import { StockMovement } from "../entity/TransactionsStockMovement.js";
 import { Session } from "../entity/TransactionsSession.js";
 import { Audit } from "../entity/TransactionsAudit.js";
 
@@ -42,14 +42,13 @@ export const AppDataSource = new DataSource({
         UoM,                 
         Audit,           
         Bill,          
-        Customer,        
-        CustomerUser,  
-        Damage,  
+        Customer,          
+        DamagedGoods,  
         Discount,   
         Inventory,       
         Product,         
-        Session         
-        StockMov,   
+        Session,         
+        StockMovement,   
         Store,           
         User,
 

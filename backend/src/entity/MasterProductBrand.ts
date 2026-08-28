@@ -8,7 +8,7 @@ import {
 import { Product } from "./TransactionsProduct.js";
 
 @Entity({ name: "master_product_brand" })
-export class Type {
+export class Brand {
 
     @PrimaryGeneratedColumn({
         name: "product_Brand_id",

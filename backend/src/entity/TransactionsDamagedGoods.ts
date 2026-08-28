@@ -6,7 +6,7 @@ import {
     JoinColumn
 } from "typeorm";
 
-import { TransactionsInventory } from "./TransactionsInventory.js";
+import { Inventory } from "./TransactionsInventory.js";
 
 @Entity({ name: "transactions_damaged_goods" })
 export class DamagedGoods {
@@ -73,7 +73,7 @@ export class DamagedGoods {
     created_by!: number | null;
 
     @ManyToOne(
-        () => TransactionsInventory,
+        () => Inventory,
         inventory => inventory.damagedGoods,
         {
             nullable: false
@@ -83,5 +83,5 @@ export class DamagedGoods {
         name: "inventory_id",
         referencedColumnName: "inventory_id"
     })
-    inventory!: TransactionsInventory;
+    inventory!: Inventory;
 }
