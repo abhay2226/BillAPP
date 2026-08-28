@@ -8,7 +8,6 @@ import {
 
 import { Inventory } from "./TransactionsInventory.js";
 import { MovementType } from "./MasterMovementType.js";
-
 @Entity({ name: "transactions_stock_movement" })
 export class StockMovement {
 
