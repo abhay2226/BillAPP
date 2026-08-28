@@ -10,7 +10,7 @@ import {
 import { Role } from "./MasterRole.js";
 import { Session } from "./TransactionsSession.js";
 
-@Entity({ name: " Transaction user" })
+@Entity({ name: " transaction_user" })
 export class User {
 
     @PrimaryGeneratedColumn({

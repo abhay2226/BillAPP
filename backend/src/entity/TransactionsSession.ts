@@ -9,7 +9,7 @@ import {
 import { User } from "./TransactionsUser.js";
 import { Store } from "./TransactionsStore.js";
 
-@Entity({ name: "Transaction session" })
+@Entity({ name: "transactions_session" })
 export class Session {
 
     @PrimaryGeneratedColumn({
@@ -21,7 +21,8 @@ export class Session {
 
     @Column({
         name: "user_id",
-        type: "integer"
+        type: "integer",
+        nullable: false
     })
     user_id!: number;
 
@@ -29,14 +30,15 @@ export class Session {
     @Column({
         name: "store_id",
         type: "integer",
-        nullable: true
+        nullable: false
     })
-    store_id!: number | null;
+    store_id!: number;
 
 
     @Column({
         name: "login_at",
-        type: "datetime"
+        type: "datetime",
+        nullable: false
     })
     login_at!: Date;
 
@@ -91,7 +93,8 @@ export class Session {
 
     @Column({
         name: "status",
-        type: "varchar"
+        type: "varchar",
+        nullable: false
     })
     status!: string;
 
@@ -106,17 +109,17 @@ export class Session {
 
     @Column({
         name: "created_at",
-        type: "datetime"
+        type: "datetime",
+        nullable: false
     })
     created_at!: Date;
 
 
-    // user_id -> user.user_id
-    // Many Sessions belong to one User
+    // Many Sessions -> One User
 
     @ManyToOne(
         () => User,
-        (user: User) => user.sessions,
+        (user) => user.sessions,
         {
             nullable: false
         }
@@ -128,20 +131,18 @@ export class Session {
     user!: User;
 
 
-    // store_id -> store.store_id
-    // Many Sessions can belong to one Store
-    // store_id is nullable in the database
+    // Many Sessions -> One Store
 
     @ManyToOne(
         () => Store,
-        (store: Store) => store.sessions,
+        (store) => store.sessions,
         {
-            nullable: true
+            nullable: false
         }
     )
     @JoinColumn({
         name: "store_id",
         referencedColumnName: "store_id"
     })
-    store!: Store | null;
+    store!: Store;
 }

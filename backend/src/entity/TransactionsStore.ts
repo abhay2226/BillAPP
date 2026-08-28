@@ -2,17 +2,15 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    ManyToOne,
-    JoinColumn,
     OneToMany
 } from "typeorm";
 
-import { User } from "./TransactionsUser.js";
 import { Session } from "./TransactionsSession.js";
 import { Discount } from "./TransactionsDiscount.js";
-import { Bill } from "./TransactionsBill.js"
+import { Bill } from "./TransactionsBill.js";
+import { Inventory } from "./TransactionsInventory.js";
 
-@Entity({ name: "transaction_store" })
+@Entity({ name: "transactions_store" })
 export class Store {
 
     @PrimaryGeneratedColumn({
@@ -34,12 +32,6 @@ export class Store {
         type: "varchar"
     })
     store_name!: string;
-
-    @Column({
-        name: "owner_user_id",
-        type: "integer"
-    })
-    owner_user_id!: number;
 
     @Column({
         name: "location",
@@ -83,24 +75,7 @@ export class Store {
     updated_by!: number | null;
 
 
-    // Relationship:
-    // store.owner_user_id -> user.user_id
-
-    @ManyToOne(
-        () => User,
-        {
-            nullable: false
-        }
-    )
-    @JoinColumn({
-        name: "owner_user_id",
-        referencedColumnName: "user_id"
-    })
-    owner!: User;
-
-
-    // Relationship:
-    // One Store -> Many Sessions
+    // One Store -> Many Discounts
 
     @OneToMany(
         () => Discount,
@@ -108,16 +83,30 @@ export class Store {
     )
     discounts!: Discount[];
 
+
+    // One Store -> Many Sessions
+
     @OneToMany(
         () => Session,
-        (session: Session) => session.store
+        (session) => session.store
     )
     sessions!: Session[];
 
+
+    // One Store -> Many Bills
+
     @OneToMany(
-        () => Bill ,(bill) => bill.store
+        () => Bill,
+        (bill) => bill.store
     )
     bills!: Bill[];
 
-    
+
+    // One Store -> Many Inventory records
+
+    @OneToMany(
+        () => Inventory,
+        (inventory) => inventory.store
+    )
+    inventory!: Inventory[];
 }
