@@ -2,52 +2,122 @@ import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    CreateDateColumn,
+    ManyToOne,
+    JoinColumn
 } from "typeorm";
 
-@Entity("transactions_audit")
+import { User } from "./TransactionsUser.js";
+import { Store } from "./TransactionsStore.js";
+import { Session } from "./TransactionsSession.js";
+
+@Entity({ name: "transactions_audit" })
 export class Audit {
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn({
+        name: "audit_id",
+        type: "integer"
+    })
     audit_id!: number;
 
     @Column({
+        name: "table_name",
         type: "varchar",
-        length: 100,
+        nullable: false
     })
     table_name!: string;
 
     @Column({
+        name: "record_id",
         type: "integer",
+        nullable: false
     })
     record_id!: number;
 
     @Column({
+        name: "action_type",
         type: "varchar",
-        length: 50,
+        nullable: false
     })
-    action!: string;
+    action_type!: string;
 
     @Column({
+        name: "updated_by",
         type: "integer",
-        nullable: true,
+        nullable: false
     })
-    user_id!: number | null;
+    updated_by!: number;
 
     @Column({
-        type: "text",
-        nullable: true,
-    })
-    old_value!: string | null;
-
-    @Column({
-        type: "text",
-        nullable: true,
-    })
-    new_value!: string | null;
-
-    @CreateDateColumn({
+        name: "updated_at",
         type: "datetime",
+        nullable: false
     })
-    created_at!: Date;
+    updated_at!: Date;
+
+    @Column({
+        name: "store_id",
+        type: "integer",
+        nullable: false
+    })
+    store_id!: number;
+
+    @Column({
+        name: "session_id",
+        type: "integer",
+        nullable: false
+    })
+    session_id!: number;
+
+    @Column({
+        name: "ip_address",
+        type: "varchar",
+        nullable: true
+    })
+    ip_address!: string | null;
+
+    @Column({
+        name: "is_active",
+        type: "boolean",
+        default: true
+    })
+    is_active!: boolean;
+
+
+    // Audit -> User
+
+    @ManyToOne(
+        () => User,
+        { nullable: false }
+    )
+    @JoinColumn({
+        name: "updated_by",
+        referencedColumnName: "user_id"
+    })
+    updatedByUser!: User;
+
+
+    // Audit -> Store
+
+    @ManyToOne(
+        () => Store,
+        { nullable: false }
+    )
+    @JoinColumn({
+        name: "store_id",
+        referencedColumnName: "store_id"
+    })
+    store!: Store;
+
+
+    // Audit -> Session
+
+    @ManyToOne(
+        () => Session,
+        { nullable: false }
+    )
+    @JoinColumn({
+        name: "session_id",
+        referencedColumnName: "session_id"
+    })
+    session!: Session;
 }
