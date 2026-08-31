@@ -9,8 +9,9 @@ import {
 
 import { Role } from "./MasterRole.js";
 import { Session } from "./TransactionsSession.js";
+import { Store } from "./TransactionsStore.js";
 
-@Entity({ name: " transaction_user" })
+@Entity({ name: " transactions_user" })
 export class User {
 
     @PrimaryGeneratedColumn({
@@ -46,9 +47,15 @@ export class User {
 
     @Column({
         name: "role_id",
-        type: "integer"
+        type: "integer",
+        nullable: true
     })
     role_id!: number;
+    @Column({
+        name: "store_id",
+        type: "integer"
+    })
+    store_id!: number;
 
     @Column({
         name: "is_active",
@@ -84,6 +91,8 @@ export class User {
     })
     updated_by!: number | null;
 
+
+
     @ManyToOne(
         () => Role,
         (role: Role) => role.users
@@ -93,6 +102,21 @@ export class User {
         referencedColumnName: "role_id"
     })
     role!: Role;
+
+
+    @ManyToOne(
+        () => Store,
+        (store) => store.users,
+        {
+            nullable: false
+        }
+    )
+    @JoinColumn({
+        name: "store_id",
+        referencedColumnName: "store_id"
+    })
+    store!: Store;
+
 
     @OneToMany(
         () => Session,
