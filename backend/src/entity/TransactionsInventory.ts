@@ -135,7 +135,8 @@ export class Inventory {
         () => Product,
         product => product.inventory,
         {
-            nullable: false
+            nullable: false,
+            onDelete: "CASCADE"
         }
     )
     @JoinColumn({

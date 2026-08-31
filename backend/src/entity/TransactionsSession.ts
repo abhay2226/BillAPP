@@ -145,4 +145,17 @@ export class Session {
         referencedColumnName: "store_id"
     })
     store!: Store;
+
+     @ManyToOne(
+        () => User,
+        (user) => user.sessions,
+        {
+            nullable: false
+        }
+    )
+    @JoinColumn({
+        name: "user_id",
+        referencedColumnName: "user_id"
+    })
+    users!: User;
 }
