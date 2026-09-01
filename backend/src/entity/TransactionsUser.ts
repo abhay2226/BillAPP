@@ -11,7 +11,7 @@ import { Role } from "./MasterRole.js";
 import { Session } from "./TransactionsSession.js";
 import { Store } from "./TransactionsStore.js";
 
-@Entity({ name: " transactions_user" })
+@Entity({ name: "transactions_user" })
 export class User {
 
     @PrimaryGeneratedColumn({
@@ -48,13 +48,13 @@ export class User {
     @Column({
         name: "role_id",
         type: "integer",
-        nullable: true
     })
-    role_id!: number | null;
+    role_id!: number ;
 
     @Column({
         name: "store_id",
-        type: "integer"
+        type: "integer",
+        nullable: false,
     })
     store_id!: number;
 
@@ -98,8 +98,8 @@ export class User {
         () => Role,
         (role: Role) => role.users,
         {
-            nullable:true,
-            onDelete:"SET NULL"
+            nullable:false,
+            onDelete:"RESTRICT"
         }
     )
     @JoinColumn({
@@ -113,7 +113,8 @@ export class User {
         () => Store,
         (store) => store.users,
         {
-            onDelete: "CASCADE",
+             nullable: false,
+             onDelete: "RESTRICT"
         }
     )
     @JoinColumn({
