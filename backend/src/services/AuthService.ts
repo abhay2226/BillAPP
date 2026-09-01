@@ -1,5 +1,4 @@
-// import type { Request, Response } from "express";
-// import  UAParser from "ua-parser-js";
+
 
 import { AppDataSource } from "../datasource.js";
 import { In } from "typeorm";
