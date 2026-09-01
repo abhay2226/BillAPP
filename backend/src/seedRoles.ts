@@ -8,7 +8,7 @@ async function seedRole(){
     await AppDataSource.initialize();
     console.log("Database connected.");
     const roleRepo = AppDataSource.getRepository(Role);
-    const roles = ["OWNER","MANAGER","CASHIER"];
+    const roles = ["OWNER","MANAGER","CASHIER" , "ADMIN"];
     for (const roleName of roles) { 
         const existingRole = await roleRepo.findOne({ 
             where: { role_name: roleName } 
