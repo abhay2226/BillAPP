@@ -1,9 +1,7 @@
 import type { Request, Response } from "express";
-
 import {
     getInventoryByStoreService,
-    updateStockService,
-    logDamagedGoodsService
+    updatePricingService
 } from "../services/Inventoryservice.js";
 
 interface AuthRequest extends Request {
@@ -19,12 +17,16 @@ export const getInventory = async (req: AuthRequest, res: Response) => {
     try {
         const storeId = Number(req.params.storeId);
         const productId = req.query.productId ? Number(req.query.productId) : undefined;
+        
+        if (Number.isNaN(storeId)) {
+            return res.status(400).json({ success: false, message: "Invalid store ID parameter" });
+        }
 
         const data = await getInventoryByStoreService(storeId, productId);
-        return res.status(200).json({ message: "Inventory profiles fetched successfully", data });
-    } catch (error) {
+        return res.status(200).json({ success: true, message: "Inventory profiles fetched successfully", data });
+    } catch (error: any) {
         console.error(error);
-        return res.status(500).json({ message: "Failed to fetch inventory rows" });
+        return res.status(500).json({ success: false, message: "Failed to fetch inventory rows" });
     }
 };
 
@@ -34,40 +36,18 @@ export const updatePricing = async (req: AuthRequest, res: Response) => {
         const { cost_price, selling_price } = req.body;
         const userId = req.user?.user_id || 1;
 
-        const data = await updateStockService({
-            inventoryId: id,
-            movementTypeId: 0,
-            quantityChange: 0,
-            userId
-        });
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ success: false, message: "Invalid inventory ID parameter" });
+        }
 
-        if (!data) return res.status(404).json({ message: "Inventory record missing" });
+        const data = await updatePricingService(id, cost_price, selling_price, userId);
+        if (!data) {
+            return res.status(404).json({ success: false, message: "Inventory record missing" });
+        }
 
-        return res.status(200).json({ message: "Pricing models updated successfully", data });
-    } catch (error) {
+        return res.status(200).json({ success: true, message: "Pricing models updated successfully", data });
+    } catch (error: any) {
         console.error(error);
-        return res.status(500).json({ message: "Failed to update pricing configurations" });
-    }
-};
-
-export const adjustStock = async (req: AuthRequest, res: Response) => {
-    try {
-        const { inventory_id, movement_type_id, quantity_change, reference_type, reference_id } = req.body;
-        const userId = req.user?.user_id || 1;
-
-        const data = await updateStockService({
-            inventoryId: inventory_id,
-            movementTypeId: movement_type_id,
-            quantityChange: quantity_change,
-            referenceType: reference_type,
-            referenceId: reference_id,
-            userId: userId
-        });
-        if (!data) return res.status(404).json({ message: "Target inventory profile missing" });
-
-        return res.status(200).json({ message: "Stock matrix adjusted and tracked successfully", data });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Failed to update stock metrics" });
+        return res.status(500).json({ success: false, message: "Failed to update pricing configurations" });
     }
 };
