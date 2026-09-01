@@ -6,6 +6,7 @@ import {
 } from "typeorm";
 
 import { Session } from "./TransactionsSession.js";
+import { User } from "./TransactionsUser.js";
 import { Discount } from "./TransactionsDiscount.js";
 import { Bill } from "./TransactionsBill.js";
 import { Inventory } from "./TransactionsInventory.js";
@@ -77,6 +78,12 @@ export class Store {
 
 
     // One Store -> Many Discounts
+
+    @OneToMany(
+        () => User,
+        (user) => user.store
+    )
+    users!: User[];
 
     @OneToMany(
         () => Discount,
