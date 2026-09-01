@@ -8,7 +8,7 @@ async function seedRole(){
     await AppDataSource.initialize();
     console.log("Database connected.");
     const roleRepo = AppDataSource.getRepository(Role);
-    const roles = ["OWNER","MANAGER","CASHIER"];
+    const roles = ["OWNER","MANAGER","CASHIER","ADMIN","STAFF"];
     for (const roleName of roles) { 
         const existingRole = await roleRepo.findOne({ 
             where: { role_name: roleName } 
@@ -19,7 +19,8 @@ async function seedRole(){
         } 
         const role = roleRepo.create({ 
             role_name: roleName, 
-            is_active: true 
+            is_active: true,
+            created_at: new Date()
         }); 
         await roleRepo.save(role); 
         console.log( `${roleName} created.` ); 

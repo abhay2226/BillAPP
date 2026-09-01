@@ -7,7 +7,7 @@ import {
 
 import { User } from "./TransactionsUser.js";
 
-@Entity({ name: "MasterRole" })
+@Entity({ name: "master_role" })
 export class Role {
 
     @PrimaryGeneratedColumn({
@@ -28,6 +28,22 @@ export class Role {
         default: true
     })
     is_active!: boolean;
+
+    @Column({
+        name: "created_at",
+        type: "datetime",
+        nullable: false
+        
+    })
+    created_at!: Date;
+
+    @Column({
+        name: "updated_at",
+        type: "datetime",
+        nullable: true
+    })
+    updated_at!: Date | null;
+
 
     @OneToMany(
         () => User,

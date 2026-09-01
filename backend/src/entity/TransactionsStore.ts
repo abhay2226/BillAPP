@@ -24,10 +24,9 @@ export class Store {
     @Column({
         name: "gst_no",
         type: "varchar",
-        unique: true,
-        nullable: true
+        unique: true
     })
-    gst_no!: string | null;
+    gst_no!: string ;
 
     @Column({
         name: "store_name",
