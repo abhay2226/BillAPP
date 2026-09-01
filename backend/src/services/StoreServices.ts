@@ -1,24 +1,83 @@
 import { AppDataSource } from "../datasource.js";
+import { Role } from "../entity/MasterRole.js";
 import { Store } from "../entity/TransactionsStore.js";
 import { User } from "../entity/TransactionsUser.js";
 
 // import { AppError } from "../utils/AppError.js";
+import { In } from "typeorm";
 
 const storeRepo = AppDataSource.getRepository(Store);
 const userRepo = AppDataSource.getRepository(User);
+const roleRepo = AppDataSource.getRepository(Role);
 
 export interface StoreData{
     store_name: string;
-    is_active: boolean;
     gst_no: string ;
     location: string | null;
+    is_active?: boolean;
     // created_at: Date;
     // created_by: number | null;
     // updated_at: Date | null;
     // updated_by: number | null
 }
 
+//=========================================================================
+//list stores and owners for signup
+//=========================================================================
+export async function listStoresForSignup(){
+    const stores = await storeRepo.find({
+        where:{
+            is_active:true
+        },
+        order:{
+            store_name:"ASC"
+        },
+    });
+    if(!stores || stores.length===0){
+        throw new Error("No active stores found.");
+        return [];
+    }
+    
+    const ownerRole = await roleRepo.findOne({
+        where:{
+            role_name:"OWNER",
+            is_active:true
+        }
+    });
 
+    if (!ownerRole) {
+        throw new Error("OWNER role does not exist.");
+    }
+
+    const storeIds =stores.map((store)=> store.store_id);
+
+    const owners = await userRepo.find({
+        where:{
+            store_id: In(storeIds),
+            role_id: ownerRole.role_id,
+            is_active:true
+        }
+    });
+
+    const ownerByStoreIds = new Map(owners.map((owner) =>[owner.store_id,owner]));
+
+    return stores.map((store) => {
+    const owner = ownerByStoreIds.get(store.store_id);
+    return {
+      storeId: store.store_id,
+      storeName: store.store_name,
+      location: store.location,
+
+      ownerUserId: owner ? owner.user_id : null,
+      ownerName: owner ? `${owner.firstname}${owner.lastname ? " " + owner.lastname : ""}` : null,
+    };
+  });
+
+}
+
+//=========================================================================
+//list sotre 
+//=========================================================================
 export async function getStores(){
     const existingStores = await storeRepo.find({
         where:{
@@ -32,6 +91,9 @@ export async function getStores(){
     return existingStores;
 }
 
+//=========================================================================
+//single store by id
+//=========================================================================
 export async function getStoreById(storeId: number){
     const existingStore = await storeRepo.findOne({ 
         where: { store_id: storeId }
@@ -45,13 +107,16 @@ export async function getStoreById(storeId: number){
     return existingStore;
 }
 
+//=========================================================================
+//new store
+//=========================================================================
 export async function createStore(data: StoreData){
 
     const {
         store_name,
-        is_active= true,
         gst_no,
-        location
+        location,
+        is_active = true
      } = data
 
     const existingStore = await storeRepo.findOne({ 
@@ -91,7 +156,9 @@ export async function createStore(data: StoreData){
     return savedStore; 
 }
 
-
+//=========================================================================
+//update store
+//=========================================================================
 export async function updateStore(storeId: number, data:Partial<StoreData>,userId:number ){
 
     // const {
@@ -153,6 +220,9 @@ export async function updateStore(storeId: number, data:Partial<StoreData>,userI
     return updatedStore; 
 }
 
+//=========================================================================
+//deactive store
+//=========================================================================
 export async function deleteStore(storeId: number, data: StoreData,userId:number){
 
     const existingStore = await storeRepo.findOne({ 

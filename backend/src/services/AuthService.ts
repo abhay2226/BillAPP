@@ -1,5 +1,3 @@
-
-
 import { AppDataSource } from "../datasource.js";
 import { In } from "typeorm";
 
@@ -7,6 +5,9 @@ import { User } from "../entity/TransactionsUser.js";
 import { Role } from "../entity/MasterRole.js";
 import { Store } from "../entity/TransactionsStore.js";
 import { Session } from "../entity/TransactionsSession.js";
+
+import { listStoresForSignup ,createStore, getStoreById } from "./StoreServices.js";
+import { getRoleById ,getRoles } from "./Role.js";
 
 import { hashPassword , comparePassword } from "../utils/passwords.js";
 
@@ -27,7 +28,9 @@ export interface SignUpData{
     lastname?: string; 
     email: string; 
     password: string;
-    role_id?: number; 
+
+    role_id: number; 
+
     store_id?: number;
     store_name?: string; 
     gst_no?: string; 
@@ -39,54 +42,22 @@ export interface LogInData{
     password: string;
 }
 
+
 //=========================================================================
-//list sotre for signup
+//get roles for signup
 //=========================================================================
-export async function listStoresForSignup(){
-    const stores = await storeRepo.find({
-        where:{
-            is_active:true
-        },
-        order:{
-            store_name:"ASC"
-        },
-        relations:["user","users.role"]
-    });
-    if(!stores || stores.length===0){
-        throw new Error("No active stores found.");
-        return [];
-    }
-    
-    const ownerRoles = await roleRepo.find({
-        where:{
-            role_name:"OWNER",
-            is_active:true
-        }
-    });
 
-    const storeIds =stores.map((store)=> store.store_id);
-
-    const owners = ownerRoles ? await userRepo.find({
-        where:{
-            store_id: In(storeIds),
-            role_id: In(ownerRoles.map((role)=> role.role_id)),
-            is_active:true
-        }
-    }): [];
-
-    const ownerByStoreIds = new Map(owners.map((owner) =>[owner.store_id,owner]));
-
-    return stores.map((store) => {
-    const owner = ownerByStoreIds.get(store.store_id);
-    return {
-      storeId: store.store_id,
-      storeName: store.store_name,
-      location: store.location,
-      ownerName: owner ? `${owner.firstname}${owner.lastname ? " " + owner.lastname : ""}` : null,
-    };
-  });
-
+export async function getSignupRoles() { 
+    return getRoles(); 
 }
+
+//=========================================================================
+//get stores for signup
+//=========================================================================
+export async function getSignupStores() {
+    return listStoresForSignup();
+}
+
 
 //=========================================================================
 //signup
@@ -101,19 +72,12 @@ export async function signUp(data:SignUpData){
         role_id,
         store_id,
         store_name,
-        gst_no, 
+        gst_no,
         location
     } = data;
 
-    const role = await roleRepo.findOne({ where: { role_id: data.role_id, is_active: true } });
-    if (!role) {
-        throw new Error(`Role does not exist or is inactive.`);
-    }
-
-    if (!store_id && !store_name) {
-        throw new Error("Provide either a store_id to join an existing store, or a store_name to create a new one.");
-    }
-
+    //check for email
+    
     const existingUser = await userRepo.findOne({
         where:{
             email
@@ -124,57 +88,54 @@ export async function signUp(data:SignUpData){
         throw new Error("An user with this email exists already.");
     }
 
-    // const ownerRole = await roleRepo.findOne({ 
-    //     where: { role_name: "OWNER", is_active: true }
-    // }); 
-    
-    // if (!ownerRole) { 
-    //     throw new Error( "OWNER role does not exist. Please seed roles first." ); 
-    // }
+
+
+    const role = await getRoleById(role_id);
+    if (!role.is_active) {
+        throw new Error(`Role does not exist or is inactive.`);
+    }
+
+    const roleName=role.role_name.toUpperCase();
+
 
     let targetStoreId: number;
-    let roleIdToAssign: number;
 
-    if (store_id) {
-        const existingStore = await storeRepo.findOne({
-            where: { store_id, is_active: true }
-        });
-        if (!existingStore) {
-            throw new Error("The specified store does not exist or is inactive.");
+    if (roleName === "OWNER") {
+        if (store_id) {
+            const selectedStore = await getStoreById(store_id);
+            if (!selectedStore.is_active) {
+                throw new Error("Selected store does not exist or is inactive.");
+            }
+            targetStoreId = selectedStore.store_id;
+        } else {
+            if (!store_name) {
+                throw new Error("Store name is required to create a new store.");
+            }
+            if (!gst_no) {
+                throw new Error("Gst_no is required to create a new store.");
+            }
+    
+            const newStore = await createStore({
+                store_name,
+                gst_no,
+                location: location ?? null
+            });
+    
+            targetStoreId = newStore.store_id;
         }
-        const staffRole = await roleRepo.findOne({
-            where: { role_name: "STAFF", is_active: true }
-        });
-        
-        if (!staffRole) {
-            throw new Error("STAFF role does not exist. Please seed roles first.");
+    } else {
+        if (!store_id) {
+            throw new Error("A non-owner user must provide a valid store_id.");
         }
-
-        targetStoreId = existingStore.store_id;
-        roleIdToAssign = staffRole.role_id;
+    
+        const selectedStore = await getStoreById(store_id);
+        if (!selectedStore.is_active) {
+            throw new Error("Selected store does not exist or is inactive.");
+        }
+    
+        targetStoreId = selectedStore.store_id;
     }
-    else{
-        const ownerRole = await roleRepo.findOne({ where: { role_name: "OWNER", is_active: true } });
-        if (!ownerRole) {
-            throw new Error("OWNER role does not exist. Please seed roles first.");
-        }
-
-        const newStore = storeRepo.create({
-            store_name: store_name!,
-            gst_no: gst_no || null,
-            location: location || null,
-            is_active: true,
-            created_at: new Date(),
-            created_by: null,
-            updated_at: null,
-            updated_by: null
-        });
-         const savedStore= await storeRepo.save(newStore);
-
-        targetStoreId = savedStore.store_id;
-        roleIdToAssign = ownerRole.role_id;
-    }
-
+    
     const passwordHash = await hashPassword(password);
 
     const user = userRepo.create({
@@ -182,7 +143,7 @@ export async function signUp(data:SignUpData){
         lastname: lastname || null, 
         email, 
         password_hash : passwordHash,
-        role_id: roleIdToAssign, 
+        role_id, 
         store_id: targetStoreId,
         created_at: new Date(), 
         created_by: null, 
@@ -197,19 +158,19 @@ export async function signUp(data:SignUpData){
         email: savedUser.email,
         roleId: savedUser.role_id,
         storeId: savedUser.store_id
-    })
+    });
 
-    // return({
-    //     token,
-    //     user:{
-    //         userId: savedUser.user_id,
-    //         firstname:savedUser.firstname,
-    //         lastname:savedUser.lastname,
-    //         email: savedUser.email,
-    //         roleId: savedUser.role_id,
-    //         storeId: savedUser.store_id
-    //     }
-    // });
+    return({
+        token,
+        user:{
+            userId: savedUser.user_id,
+            firstname:savedUser.firstname,
+            lastname:savedUser.lastname,
+            email: savedUser.email,
+            roleId: savedUser.role_id,
+            storeId: savedUser.store_id
+        }
+    });
 
 }
 
