@@ -103,7 +103,7 @@ export async function signUp(data:SignUpData){
     const token=signToken({
         userId: savedUser.user_id,
         email: savedUser.email,
-        roleId: savedUser.role_id,
+        // roleId: savedUser.role_id,
         storeId: savedUser.store_id
     })
 
@@ -162,7 +162,7 @@ export async function logIn(
     const token=signToken({
         userId: existingUser.user_id,
         email: existingUser.email,
-        roleId: existingUser.role_id,
+        // roleId: existingUser.role_id,
         storeId: existingUser.store_id
     })
 

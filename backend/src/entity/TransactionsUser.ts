@@ -50,7 +50,8 @@ export class User {
         type: "integer",
         nullable: true
     })
-    role_id!: number;
+    role_id!: number | null;
+
     @Column({
         name: "store_id",
         type: "integer"
@@ -95,7 +96,11 @@ export class User {
 
     @ManyToOne(
         () => Role,
-        (role: Role) => role.users
+        (role: Role) => role.users,
+        {
+            nullable:true,
+            onDelete:"SET NULL"
+        }
     )
     @JoinColumn({
         name: "role_id",
@@ -108,7 +113,7 @@ export class User {
         () => Store,
         (store) => store.users,
         {
-            nullable: false
+            onDelete: "CASCADE",
         }
     )
     @JoinColumn({
