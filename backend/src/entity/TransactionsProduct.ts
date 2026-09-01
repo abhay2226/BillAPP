@@ -3,7 +3,8 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    OneToMany,
+    // OneToMany,
+    OneToOne,
     JoinColumn
 } from "typeorm";
 
@@ -99,7 +100,10 @@ export class Product {
     @ManyToOne(
         () => Store,
         store => store.products,
-        { nullable: false }
+        { 
+            nullable:false,
+            onDelete:"CASCADE"
+        }
     )
     @JoinColumn({
         name: "store_id",
@@ -146,11 +150,20 @@ export class Product {
     })
     uom!: UoM;
 
-    @OneToMany(
-        () => Inventory,
-        inventory => inventory.product
+    
+    @OneToOne(
+      () => Inventory,
+      inventory => inventory.product,
+      { cascade: true } // optional: auto-save inventory when product is saved
     )
-    inventory!: Inventory[];
+    inventory!: Inventory;
+
+
+    // @OneToMany(
+    //     () => Inventory,
+    //     inventory => inventory.product
+    // )
+    // inventory!: Inventory[];
 
 //     @OneToMany(
 //         () => BillItem,
