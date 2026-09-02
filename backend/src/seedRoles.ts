@@ -2,8 +2,6 @@ import { AppDataSource } from "./datasource.js";
 
 import { Role } from "./entity/MasterRole.js";
 
-
-
 async function seedRole(){
     await AppDataSource.initialize();
     console.log("Database connected.");

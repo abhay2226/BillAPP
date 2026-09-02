@@ -166,7 +166,7 @@ export async function updateStore(storeId: number, data:Partial<StoreData>,userI
     //     is_active= true
     // } = data
     const existingStore = await storeRepo.findOne({ 
-        where: { store_id: storeId }
+        where: { store_id: storeId , is_active:true}
         
     })
 
