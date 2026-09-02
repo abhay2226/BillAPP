@@ -4,7 +4,7 @@ import {
     getInventoryByStoreService,
     updateStockService,
     logDamagedGoodsService
-} from "../services/Inventoryservice.js";
+} from "../services/InventoryService.js";
 
 interface AuthRequest extends Request {
     user?: {
