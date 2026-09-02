@@ -2,43 +2,25 @@ import { Router } from "express";
 
 import {
     createInventory,
-    getInventory,
+    getInventoryByStore,
     getInventoryById,
-    updatePricing,
+    updateInventoryPricing,
     updateInventoryQuantity,
     deactivateInventory
 } from "../controller/InventoryController.js";
 
-const InventoryRouter = Router();
+const router = Router();
 
-InventoryRouter.post(
-    "/",
-    createInventory
-);
+router.post("/", createInventory);
 
-InventoryRouter.get(
-    "/store/:storeId",
-    getInventory
-);
+router.get("/store/:storeId", getInventoryByStore);
 
-InventoryRouter.get(
-    "/:id",
-    getInventoryById
-);
+router.get("/:id", getInventoryById);
 
-InventoryRouter.put(
-    "/pricing/:id",
-    updatePricing
-);
+router.put("/pricing/:id", updateInventoryPricing);
 
-InventoryRouter.put(
-    "/quantity/:id",
-    updateInventoryQuantity
-);
+router.put("/quantity/:id", updateInventoryQuantity);
 
-InventoryRouter.patch(
-    "/deactivate/:id",
-    deactivateInventory
-);
+router.patch("/deactivate/:id", deactivateInventory);
 
-export default InventoryRouter;
+export default router;

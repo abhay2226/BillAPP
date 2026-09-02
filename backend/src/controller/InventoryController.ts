@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+
 import {
     createInventoryService,
     getInventoryByStoreService,
@@ -45,32 +46,40 @@ export const createInventory = async (
         const productId = Number(product_id);
         const storeId = Number(store_id);
         const quantity = qty === undefined ? 0 : Number(qty);
-
         const costPrice =
-            cost_price === null || cost_price === undefined
+            cost_price === undefined || cost_price === null
                 ? null
                 : Number(cost_price);
-
         const sellingPrice = Number(selling_price);
 
-        if (!Number.isInteger(productId) || productId <= 0) {
+        if (
+            !Number.isInteger(productId) ||
+            productId <= 0
+        ) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid product ID"
             });
         }
 
-        if (!Number.isInteger(storeId) || storeId <= 0) {
+        if (
+            !Number.isInteger(storeId) ||
+            storeId <= 0
+        ) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid store ID"
             });
         }
 
-        if (!Number.isInteger(quantity) || quantity < 0) {
+        if (
+            !Number.isInteger(quantity) ||
+            quantity < 0
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Quantity must be a non-negative integer"
+                message:
+                    "Quantity must be a non-negative integer"
             });
         }
 
@@ -120,16 +129,6 @@ export const createInventory = async (
     } catch (error: any) {
         console.error(error);
 
-        if (
-            error.message ===
-            "Inventory already exists for this product in this store"
-        ) {
-            return res.status(409).json({
-                success: false,
-                message: error.message
-            });
-        }
-
         return res.status(500).json({
             success: false,
             message: "Failed to create inventory"
@@ -137,38 +136,60 @@ export const createInventory = async (
     }
 };
 
-export const getInventory = async (
-    req: AuthRequest,
+export const getInventoryByStore = async (
+    req: Request,
     res: Response
 ) => {
     try {
         const storeId = Number(req.params.storeId);
 
-        const productId =
-            req.query.productId !== undefined
-                ? Number(req.query.productId)
-                : undefined;
-
-        if (!Number.isInteger(storeId) || storeId <= 0) {
+        if (
+            !Number.isInteger(storeId) ||
+            storeId <= 0
+        ) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid store ID parameter"
             });
         }
 
-        if (
-            productId !== undefined &&
-            (!Number.isInteger(productId) || productId <= 0)
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid product ID parameter"
-            });
+        const productIdParam = req.query.productId;
+
+        let productId: number | undefined;
+
+        if (productIdParam !== undefined) {
+            productId = Number(productIdParam);
+
+            if (
+                !Number.isInteger(productId) ||
+                productId <= 0
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid product ID"
+                });
+            }
+        }
+
+        let productName: string | undefined;
+
+        if (req.query.productName !== undefined) {
+            productName = String(
+                req.query.productName
+            ).trim();
+
+            if (productName === "") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Product name cannot be empty"
+                });
+            }
         }
 
         const data = await getInventoryByStoreService(
             storeId,
-            productId
+            productId,
+            productName
         );
 
         return res.status(200).json({
@@ -187,7 +208,7 @@ export const getInventory = async (
 };
 
 export const getInventoryById = async (
-    req: AuthRequest,
+    req: Request,
     res: Response
 ) => {
     try {
@@ -203,14 +224,13 @@ export const getInventoryById = async (
             });
         }
 
-        const data = await getInventoryByIdService(
-            inventoryId
-        );
+        const data =
+            await getInventoryByIdService(inventoryId);
 
         if (!data) {
             return res.status(404).json({
                 success: false,
-                message: "Inventory record not found"
+                message: "Inventory not found"
             });
         }
 
@@ -229,7 +249,7 @@ export const getInventoryById = async (
     }
 };
 
-export const updatePricing = async (
+export const updateInventoryPricing = async (
     req: AuthRequest,
     res: Response
 ) => {
@@ -258,23 +278,12 @@ export const updatePricing = async (
             });
         }
 
-        const sellingPrice = Number(selling_price);
-
         const costPrice =
-            cost_price === null ||
-            cost_price === undefined
+            cost_price === undefined || cost_price === null
                 ? null
                 : Number(cost_price);
 
-        if (
-            !Number.isFinite(sellingPrice) ||
-            sellingPrice < 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid selling price"
-            });
-        }
+        const sellingPrice = Number(selling_price);
 
         if (
             costPrice !== null &&
@@ -283,6 +292,16 @@ export const updatePricing = async (
             return res.status(400).json({
                 success: false,
                 message: "Invalid cost price"
+            });
+        }
+
+        if (
+            !Number.isFinite(sellingPrice) ||
+            sellingPrice < 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid selling price"
             });
         }
 
@@ -305,7 +324,7 @@ export const updatePricing = async (
         if (!data) {
             return res.status(404).json({
                 success: false,
-                message: "Inventory record not found"
+                message: "Inventory not found"
             });
         }
 
@@ -330,7 +349,7 @@ export const updateInventoryQuantity = async (
 ) => {
     try {
         const inventoryId = Number(req.params.id);
-        const quantity = Number(req.body.qty);
+        const { qty } = req.body;
 
         if (
             !Number.isInteger(inventoryId) ||
@@ -342,7 +361,19 @@ export const updateInventoryQuantity = async (
             });
         }
 
-        if (!Number.isInteger(quantity) || quantity < 0) {
+        if (qty === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "qty is required"
+            });
+        }
+
+        const quantity = Number(qty);
+
+        if (
+            !Number.isInteger(quantity) ||
+            quantity < 0
+        ) {
             return res.status(400).json({
                 success: false,
                 message:
@@ -369,7 +400,7 @@ export const updateInventoryQuantity = async (
         if (!data) {
             return res.status(404).json({
                 success: false,
-                message: "Inventory record not found"
+                message: "Inventory not found"
             });
         }
 
@@ -384,7 +415,8 @@ export const updateInventoryQuantity = async (
 
         return res.status(500).json({
             success: false,
-            message: "Failed to update inventory quantity"
+            message:
+                "Failed to update inventory quantity"
         });
     }
 };
@@ -424,7 +456,7 @@ export const deactivateInventory = async (
         if (!data) {
             return res.status(404).json({
                 success: false,
-                message: "Inventory record not found"
+                message: "Inventory not found"
             });
         }
 
@@ -439,7 +471,8 @@ export const deactivateInventory = async (
 
         return res.status(500).json({
             success: false,
-            message: "Failed to deactivate inventory"
+            message:
+                "Failed to deactivate inventory"
         });
     }
 };
