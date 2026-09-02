@@ -112,7 +112,7 @@ export async function updateUser(data:Partial<UserData>,userId:number ){
 //=========================================================================
 //deactive user
 //=========================================================================
-export async function deleteUser( data: UserData,userId:number){
+export async function deleteUser(userId:number){
 
     const existingUser = await userRepo.findOne({ 
         where: { user_id: userId ,is_active: true }
@@ -128,17 +128,9 @@ export async function deleteUser( data: UserData,userId:number){
          throw new Error("This user is already deactivated."); 
     }
 
-    const usersWithUser = await userRepo.count({
-    where: { user_id: userId, is_active: true },
-  });
-
-  if (usersWithUser > 0) {
-    throw new Error(`Cannot deactivate this user — ${usersWithUser} active user(s) still have it. Reassign them first.`);
-  }
-
-  existingUser.is_active = false;
-  existingUser.updated_at=new Date();
-  existingUser.updated_by = userId;
-
-  return userRepo.save(existingUser);
+    existingUser.is_active = false;
+    existingUser.updated_at=new Date();
+    existingUser.updated_by = userId;
+  
+    return userRepo.save(existingUser);
 }

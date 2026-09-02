@@ -3,10 +3,10 @@ import type { Request, Response } from "express";
 import {
     createInventoryService,
     getInventoryByStoreService,
-    getInventoryByIdService,
     updatePricingService,
     updateInventoryQuantityService,
-    deactivateInventoryService
+    deactivateInventoryService,
+    getInventoryByIdService
 } from "../services/InventoryService.js";
 
 interface AuthRequest extends Request {
