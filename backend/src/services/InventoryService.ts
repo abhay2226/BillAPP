@@ -39,35 +39,52 @@ export const createInventoryService = async (
 
 export const getInventoryByStoreService = async (
     storeId: number,
-    productId?: number
+    productId?: number,
+    productName?: string
 ) => {
-    const whereCondition = productId !== undefined
-        ? {
-              store_id: storeId,
-              product_id: productId,
-              is_active: true
-          }
-        : {
-              store_id: storeId,
-              is_active: true
-          };
+    const query = inventoryRepository
+        .createQueryBuilder("inventory")
+        .leftJoinAndSelect("inventory.product", "product")
+        .leftJoinAndSelect("product.type", "type")
+        .leftJoinAndSelect("product.brand", "brand")
+        .leftJoinAndSelect("product.uom", "uom")
+        .leftJoinAndSelect("inventory.store", "store")
+        .where("inventory.store_id = :storeId", {
+            storeId
+        })
+        .andWhere("inventory.is_active = :isActive", {
+            isActive: true
+        });
 
-    return await inventoryRepository.find({
-        where: whereCondition,
-        relations: [
-            "product",
-            "product.type",
-            "product.brand",
-            "product.uom",
-            "store"
-        ],
-        order: {
-            inventory_id: "ASC"
-        }
-    });
+    if (productId !== undefined) {
+        query.andWhere(
+            "inventory.product_id = :productId",
+            {
+                productId
+            }
+        );
+    }
+
+    if (
+        productName !== undefined &&
+        productName.trim() !== ""
+    ) {
+        query.andWhere(
+            "LOWER(product.product_name) LIKE LOWER(:productName)",
+            {
+                productName: `%${productName.trim()}%`
+            }
+        );
+    }
+
+    return await query
+        .orderBy("inventory.inventory_id", "ASC")
+        .getMany();
 };
 
-export const getInventoryByIdService = async (inventoryId: number) => {
+export const getInventoryByIdService = async (
+    inventoryId: number
+) => {
     return await inventoryRepository.findOne({
         where: {
             inventory_id: inventoryId,
