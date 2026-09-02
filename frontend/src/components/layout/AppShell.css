@@ -587,13 +587,11 @@ body {
 
 .auth-header {
     /* justify-content: center; */
-<<<<<<<< HEAD:billapp/frontend/src/components/layout/AppShell.css
-========
+
     min-height: var(--header-height);
     height: var(--header-height);
 
     padding: 0 1.5rem;
->>>>>>>> b770cca194cf6e261c420ff6aaf8c8714e27a2fd:frontend/src/components/layout/AppShell.css
     background-color: #ffffff;
     border-bottom: 0.0625rem solid #e5e7eb;
     justify-content: left;
@@ -618,9 +616,6 @@ body {
 .auth-brand-text b {
     font-weight: 700;
     color: #1a2420;
-<<<<<<<< HEAD:billapp/frontend/src/components/layout/AppShell.css
+
 }
 
-========
-}
->>>>>>>> b770cca194cf6e261c420ff6aaf8c8714e27a2fd:frontend/src/components/layout/AppShell.css

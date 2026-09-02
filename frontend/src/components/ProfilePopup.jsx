@@ -1,13 +1,7 @@
-
-
-
 import React, { useState } from "react";
 
 import "../pages/Voicebilling/Voicebilling.css";
 import "../components/ProfilePopup.css"
-
-
-
 
 function UserProfile({ isOpen, onClose }) {
   const [userFirstName, setUserFirstName] = useState("");
