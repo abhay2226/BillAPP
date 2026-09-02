@@ -150,6 +150,7 @@ export async function signUp(data:SignUpData){
     });
 
     const savedUser = await userRepo.save(user);
+    
 
     const token=signToken({
         userId: savedUser.user_id,
@@ -210,12 +211,6 @@ export async function logIn(
         throw new Error( "User is not associated with a store." ); 
     }
 
-    const token=signToken({
-        userId: existingUser.user_id,
-        email: existingUser.email,
-        // roleId: existingUser.role_id,
-        storeId: existingUser.store_id
-    })
 
     // const ipAddress = req.headers["x-forwarded-for"] || requestIdleCallback.socket.remoteAddress || null;
     // const userAgent = req.headers["user-agent"] || "";
@@ -243,6 +238,15 @@ export async function logIn(
 
     const savedSess = await sessionRepo.save(sesssion);
 
+    const token=signToken({
+        userId: existingUser.user_id,
+        email: existingUser.email,
+        // roleId: existingUser.role_id,
+        storeId: existingUser.store_id,
+        sessionId: savedSess.session_id,
+    })
+
+
     return({
         token,
         user:{
@@ -255,5 +259,48 @@ export async function logIn(
             sessionId: savedSess.session_id
         }
     });
+
+}
+
+//=========================================================================
+//logout
+//=========================================================================
+
+export async function logOut(token: string){ 
+    let decodedToken;
+    try {
+        decodedToken = verifyToken(token);
+    } catch (error) {
+        throw new Error("Invalid or expired token.");
+    }
+
+    if(!decodedToken || !decodedToken.sessionId){
+        throw new Error("Token does not carry a session — nothing to log out.");
+    }
+
+    const sessionId = decodedToken.sessionId;
+
+    const existingSession = await sessionRepo.findOne({
+        where: {
+            session_id: sessionId,
+            is_active: true
+        }
+    });
+
+    if (!existingSession) {
+        throw new Error("Session not found or already logged out.");
+    }
+
+    if (!existingSession.is_active) {
+        return { message: "Already logged out." };
+    }
+
+    existingSession.is_active = false;
+    existingSession.status = "INACTIVE";
+    existingSession.logout_at = new Date();
+
+    await sessionRepo.save(existingSession);
+
+    return { message: "Logged out successfully." };
 
 }

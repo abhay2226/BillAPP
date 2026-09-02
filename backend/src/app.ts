@@ -11,6 +11,9 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/auth", authRoutes);
+app.use("/roles", authRoutes);
+app.use("/stores", storeRoutes);
+app.use("/inventory", inventoryRoutes);
 app.use("/products", productRoutes);
 
 export default app;
