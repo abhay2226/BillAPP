@@ -88,8 +88,6 @@ export async function signUp(data:SignUpData){
         throw new Error("An user with this email exists already.");
     }
 
-
-
     const role = await getRoleById(role_id);
     if (!role.is_active) {
         throw new Error(`Role does not exist or is inactive.`);

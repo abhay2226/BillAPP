@@ -30,7 +30,7 @@ export class User {
         type: "varchar",
         nullable: true
     })
-    lastname!: string | null;
+    lastname?: string | null;
 
     @Column({
         name: "email",

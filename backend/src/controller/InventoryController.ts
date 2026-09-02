@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import {
     getInventoryByStoreService,
     updatePricingService
-} from "../services/Inventoryservice.js";
+} from "../services/InventoryService.js";
 
 interface AuthRequest extends Request {
     user?: {
