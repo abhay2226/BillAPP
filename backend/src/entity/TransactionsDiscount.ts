@@ -11,7 +11,7 @@ import { DiscountType } from "./MasterDiscountType.js"
 import { Bill } from "./TransactionsBill.js"
 import { Store } from "./TransactionsStore.js"
 
-@Entity({name:"transaction_Discount"})
+@Entity({name:"transaction_discount"})
 
 export class Discount{
     @PrimaryGeneratedColumn({name:"discount_id"})

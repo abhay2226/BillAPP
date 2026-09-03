@@ -63,114 +63,81 @@ export async function getSignupStores() {
 //signup
 //=========================================================================
 
-export async function signUp(data:SignUpData){
-    const {
-        firstname,
-        lastname, 
-        email, 
-        password,
-        role_id,
-        store_id,
-        store_name,
-        gst_no,
-        location
-    } = data;
+export async function signUp(data: SignUpData) {
+  const { firstname, lastname, email, password, role_id, store_id, store_name, gst_no, location } = data;
 
-    //check for email
-    
-    const existingUser = await userRepo.findOne({
-        where:{
-            email
-        }
-    });
+  const existingUser = await userRepo.findOne({ where: { email } });
+  if (existingUser) {
+    throw new Error("An user with this email exists already.");
+  }
 
-    if(existingUser){
-        throw new Error("An user with this email exists already.");
-    }
+  const role = await getRoleById(role_id);
+  if (!role.is_active) {
+    throw new Error("Role does not exist or is inactive.");
+  }
+  const roleName = role.role_name.toUpperCase();
 
-    const role = await getRoleById(role_id);
-    if (!role.is_active) {
-        throw new Error(`Role does not exist or is inactive.`);
-    }
+  let targetStoreId: number;
 
-    const roleName=role.role_name.toUpperCase();
-
-
-    let targetStoreId: number;
-
+  if (store_id) {
     if (roleName === "OWNER") {
-        if (store_id) {
-            const selectedStore = await getStoreById(store_id);
-            if (!selectedStore.is_active) {
-                throw new Error("Selected store does not exist or is inactive.");
-            }
-            targetStoreId = selectedStore.store_id;
-        } else {
-            if (!store_name) {
-                throw new Error("Store name is required to create a new store.");
-            }
-            if (!gst_no) {
-                throw new Error("Gst_no is required to create a new store.");
-            }
-    
-            const newStore = await createStore({
-                store_name,
-                gst_no,
-                location: location ?? null
-            });
-    
-            targetStoreId = newStore.store_id;
-        }
-    } else {
-        if (!store_id) {
-            throw new Error("A non-owner user must provide a valid store_id.");
-        }
-    
-        const selectedStore = await getStoreById(store_id);
-        if (!selectedStore.is_active) {
-            throw new Error("Selected store does not exist or is inactive.");
-        }
-    
-        targetStoreId = selectedStore.store_id;
+      throw new Error("Cannot register as OWNER of an existing store.");
     }
+
+    const selectedStore = await getStoreById(store_id);
+    if (!selectedStore.is_active) {
+      throw new Error("Selected store does not exist or is inactive.");
+    }
+    targetStoreId = selectedStore.store_id;
+  } else {
     
-    const passwordHash = await hashPassword(password);
+    if (roleName !== "OWNER") {
+      throw new Error("A store_id is required unless registering as OWNER of a new store.");
+    }
+    if (!store_name) {
+      throw new Error("Store name is required to create a new store.");
+    }
+    if (!gst_no) {
+      throw new Error("Gst_no is required to create a new store.");
+    }
 
-    const user = userRepo.create({
-        firstname,
-        lastname: lastname || null, 
-        email, 
-        password_hash : passwordHash,
-        role_id, 
-        store_id: targetStoreId,
-        created_at: new Date(), 
-        created_by: null, 
-        updated_at: null, 
-        updated_by: null
-    });
+    const newStore = await createStore({ store_name, gst_no, location: location ?? null });
+    targetStoreId = newStore.store_id;
+  }
 
-    const savedUser = await userRepo.save(user);
-    
+  const passwordHash = await hashPassword(password);
+  const user = userRepo.create({
+    firstname,
+    lastname: lastname || null,
+    email,
+    password_hash: passwordHash,
+    role_id,
+    store_id: targetStoreId,
+    created_at: new Date(),
+    created_by: null,
+    updated_at: null,
+    updated_by: null,
+  });
+  const savedUser = await userRepo.save(user);
 
-    const token=signToken({
-        userId: savedUser.user_id,
-        email: savedUser.email,
-        roleId: savedUser.role_id,
-        storeId: savedUser.store_id
-    });
+  const token = signToken({
+    userId: savedUser.user_id,
+    email: savedUser.email,
+    roleId: savedUser.role_id,
+    storeId: savedUser.store_id,
+  });
 
-    return({
-        token,
-        user:{
-            userId: savedUser.user_id,
-            firstname:savedUser.firstname,
-            lastname:savedUser.lastname,
-            email: savedUser.email,
-            roleId: savedUser.role_id,
-            storeId: savedUser.store_id
-        }
-    });
-
+  return {
+    token,
+    user: {
+      userId: savedUser.user_id,
+      firstname: savedUser.firstname,
+      lastname: savedUser.lastname,
+      email: savedUser.email,
+      roleId: savedUser.role_id,
+      storeId: savedUser.store_id,
+    },
+  };
 }
 
 //=========================================================================
