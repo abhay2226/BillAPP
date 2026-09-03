@@ -8,14 +8,24 @@ import {
     deleteProductService
 } from "../services/ProductService.js";
 
+import { verifyToken } from "../utils/jwt.js";
+
 
 // CREATE PRODUCT
 
-export const createProductController = async (
-    req: Request,
-    res: Response
-) => {
-    try {
+export async function createProductController (req: Request,res: Response) {
+    try{
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
 
         const product = await createProductService(req.body);
 
@@ -32,7 +42,7 @@ export const createProductController = async (
             message: "Failed to create product"
         });
     }
-};
+}
 
 
 
@@ -45,6 +55,18 @@ export const getAllProductsController = async (
     res: Response
 ) => {
     try {
+
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
 
         const storeId =
             req.query.storeId !== undefined
@@ -102,6 +124,18 @@ export const getProductByIdController = async (
 ) => {
     try {
 
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
+
         const productId = Number(req.params.id);
 
 
@@ -155,6 +189,18 @@ export const updateProductController = async (
     res: Response
 ) => {
     try {
+
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
 
         const productId = Number(req.params.id);
 
@@ -210,6 +256,18 @@ export const deleteProductController = async (
     res: Response
 ) => {
     try {
+
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
 
         const productId = Number(req.params.id);
 
