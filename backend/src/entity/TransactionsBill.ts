@@ -49,7 +49,7 @@ export class Bill {
         name: "discount_id",
         type: "integer"
     })
-    discount_id!: number;
+    discount_id?: number;
 
     @Column({
         name: "subtotal",
@@ -164,14 +164,14 @@ export class Bill {
         () => Discount,
         discount => discount.bills,
         {
-            nullable: false
+            nullable: true
         }
     )
     @JoinColumn({
         name: "discount_id",
         referencedColumnName: "discount_id"
     })
-    discount!: Discount;
+    discount?: Discount;
 
 //     @OneToMany(
 //         () => BillItem,

@@ -19,16 +19,16 @@ export const createInventory = async (
 ) => {
     try {
         const authHeader = req.headers["authorization"];
-                if (!authHeader) {
-                    return res.status(401).json({ message: "No token provided" });
-                }
-                const token = authHeader.slice("Bearer ".length);
-                let payload;
-                try {
-                    payload = verifyToken(token);
-                } catch {
-                    return res.status(403).json({ message: "Invalid or expired token" });
-                }
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
         const {
             product_id,
             store_id,
