@@ -1,19 +1,23 @@
 import type { Request, Response } from "express";
 import { updateStockService } from "../services/StockMovementService.js";
 
-interface AuthRequest extends Request {
-    user?: {
-        user_id?: number;
-        email?: string;
-        roleId?: number;
-        storeId?: number;
-    };
-}
+import { verifyToken } from "../utils/jwt.js";
 
-export const adjustStock = async (req: AuthRequest, res: Response) => {
+export const adjustStock = async (req: Request, res: Response) => {
     try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
         const { inventory_id, movement_type_id, quantity_change, reference_type, reference_id } = req.body;
-        const userId = req.user?.user_id || 1;
+        const userId = payload.userId || 1;
 
         const data = await updateStockService({
             inventoryId: inventory_id,

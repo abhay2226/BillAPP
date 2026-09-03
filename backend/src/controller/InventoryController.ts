@@ -9,20 +9,26 @@ import {
     getInventoryByIdService
 } from "../services/InventoryService.js";
 
-interface AuthRequest extends Request {
-    user?: {
-        user_id?: number;
-        email?: string;
-        roleId?: number;
-        storeId?: number;
-    };
-}
+import { verifyToken } from "../utils/jwt.js";
+
+
 
 export const createInventory = async (
-    req: AuthRequest,
+    req: Request,
     res: Response
 ) => {
     try {
+        const authHeader = req.headers["authorization"];
+                if (!authHeader) {
+                    return res.status(401).json({ message: "No token provided" });
+                }
+                const token = authHeader.slice("Bearer ".length);
+                let payload;
+                try {
+                    payload = verifyToken(token);
+                } catch {
+                    return res.status(403).json({ message: "Invalid or expired token" });
+                }
         const {
             product_id,
             store_id,
@@ -103,7 +109,7 @@ export const createInventory = async (
             });
         }
 
-        const userId = req.user?.user_id;
+        const userId = payload.userId;
 
         if (!userId) {
             return res.status(401).json({
@@ -141,6 +147,17 @@ export const getInventoryByStore = async (
     res: Response
 ) => {
     try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
         const storeId = Number(req.params.storeId);
 
         if (
@@ -212,6 +229,17 @@ export const getInventoryById = async (
     res: Response
 ) => {
     try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
         const inventoryId = Number(req.params.id);
 
         if (
@@ -250,10 +278,21 @@ export const getInventoryById = async (
 };
 
 export const updateInventoryPricing = async (
-    req: AuthRequest,
+    req: Request,
     res: Response
 ) => {
     try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
         const inventoryId = Number(req.params.id);
 
         const {
@@ -305,7 +344,7 @@ export const updateInventoryPricing = async (
             });
         }
 
-        const userId = req.user?.user_id;
+        const userId = payload.userId;
 
         if (!userId) {
             return res.status(401).json({
@@ -344,10 +383,21 @@ export const updateInventoryPricing = async (
 };
 
 export const updateInventoryQuantity = async (
-    req: AuthRequest,
+    req: Request,
     res: Response
 ) => {
     try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
         const inventoryId = Number(req.params.id);
         const { qty } = req.body;
 
@@ -381,7 +431,7 @@ export const updateInventoryQuantity = async (
             });
         }
 
-        const userId = req.user?.user_id;
+        const userId = payload.userId;
 
         if (!userId) {
             return res.status(401).json({
@@ -422,10 +472,21 @@ export const updateInventoryQuantity = async (
 };
 
 export const deactivateInventory = async (
-    req: AuthRequest,
+    req: Request,
     res: Response
 ) => {
     try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+        const token = authHeader.slice("Bearer ".length);
+        let payload;
+        try {
+            payload = verifyToken(token);
+        } catch {
+            return res.status(403).json({ message: "Invalid or expired token" });
+        }
         const inventoryId = Number(req.params.id);
 
         if (
@@ -438,7 +499,7 @@ export const deactivateInventory = async (
             });
         }
 
-        const userId = req.user?.user_id;
+        const userId = payload.userId;
 
         if (!userId) {
             return res.status(401).json({
