@@ -8,6 +8,8 @@ import {
 
 import { Inventory } from "./TransactionsInventory.js";
 import { MovementType } from "./MasterMovementType.js";
+
+
 @Entity({ name: "transactions_stock_movement" })
 export class StockMovement {
 
@@ -17,11 +19,13 @@ export class StockMovement {
     })
     movement_id!: number;
 
+
     @Column({
         name: "inventory_id",
         type: "integer"
     })
     inventory_id!: number;
+
 
     @Column({
         name: "movement_type_id",
@@ -29,11 +33,13 @@ export class StockMovement {
     })
     movement_type_id!: number;
 
+
     @Column({
         name: "quantity_change",
         type: "integer"
     })
     quantity_change!: number;
+
 
     @Column({
         name: "reference_type",
@@ -42,12 +48,14 @@ export class StockMovement {
     })
     reference_type!: string | null;
 
+
     @Column({
         name: "reference_id",
         type: "integer",
         nullable: true
     })
     reference_id!: number | null;
+
 
     @Column({
         name: "is_active",
@@ -56,11 +64,13 @@ export class StockMovement {
     })
     is_active!: boolean;
 
+
     @Column({
         name: "created_at",
         type: "datetime"
     })
     created_at!: Date;
+
 
     @Column({
         name: "created_by",
@@ -68,6 +78,27 @@ export class StockMovement {
         nullable: true
     })
     created_by!: number | null;
+
+
+    // UPDATED AT
+
+    @Column({
+        name: "updated_at",
+        type: "datetime",
+        nullable: true
+    })
+    updated_at!: Date | null;
+
+
+    // UPDATED BY
+
+    @Column({
+        name: "updated_by",
+        type: "integer",
+        nullable: true
+    })
+    updated_by!: number | null;
+
 
     @ManyToOne(
         () => Inventory,
@@ -80,7 +111,8 @@ export class StockMovement {
         name: "inventory_id",
         referencedColumnName: "inventory_id"
     })
-    inventory!:Inventory;
+    inventory!: Inventory;
+
 
     @ManyToOne(
         () => MovementType,

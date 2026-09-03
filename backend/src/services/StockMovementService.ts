@@ -10,30 +10,51 @@ export const updateStockService = async (data: {
     referenceId?: number;
     userId: number;
 }) => {
-    return await AppDataSource.manager.transaction(async (transactionManager) => {
-        const stock = await transactionManager.findOne(Inventory, {
-            where: { inventory_id: data.inventoryId }
-        });
+    return await AppDataSource.manager.transaction(
+        async (transactionManager) => {
+            const stock = await transactionManager.findOne(
+                Inventory,
+                {
+                    where: {
+                        inventory_id: data.inventoryId,
+                        is_active: true
+                    }
+                }
+            );
 
-        if (!stock) return null;
+            if (!stock) {
+                return null;
+            }
 
-        stock.qty += data.quantityChange;
-        stock.updated_by = data.userId;
-        stock.updated_at = new Date();
-        await transactionManager.save(stock);
+            const now = new Date();
 
-        const log = transactionManager.create(StockMovement, {
-            inventory_id: data.inventoryId,
-            movement_type_id: data.movementTypeId,
-            quantity_change: data.quantityChange,
-            reference_type: data.referenceType ?? null,
-            reference_id: data.referenceId ?? null,
-            created_by: data.userId,
-            created_at: new Date()
-        });
+            stock.qty += data.quantityChange;
+            stock.updated_by = data.userId;
+            stock.updated_at = now;
 
-        await transactionManager.save(log);
+            await transactionManager.save(stock);
 
-        return stock;
-    });
+            const log = transactionManager.create(
+                StockMovement,
+                {
+                    inventory_id: data.inventoryId,
+                    movement_type_id: data.movementTypeId,
+                    quantity_change: data.quantityChange,
+                    reference_type:
+                        data.referenceType ?? null,
+                    reference_id:
+                        data.referenceId ?? null,
+                    is_active: true,
+                    created_by: data.userId,
+                    created_at: now,
+                    updated_by: data.userId,
+                    updated_at: now
+                }
+            );
+
+            await transactionManager.save(log);
+
+            return stock;
+        }
+    );
 };
