@@ -37,6 +37,21 @@ export class MovementType {
     })
     is_active!: boolean;
 
+    @Column({
+        name: "created_at",
+        type: "datetime",
+        nullable: false
+        
+    })
+    created_at!: Date;
+
+    @Column({
+        name: "updated_at",
+        type: "datetime",
+        nullable: true
+    })
+    updated_at!: Date | null;
+
     @OneToMany(
         () => StockMovement,
         (stockMovement) => stockMovement.movementType

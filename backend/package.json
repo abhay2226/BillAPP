@@ -7,7 +7,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "check": "tsc --noEmit",
-    "seed:roles": "tsx src/seedRoles.ts"
+    "seed:roles": "tsx src/seedRoles.ts",
+    "seed:movtype": "tsx src/seedMovementType.ts"
   },
   "keywords": [],
   "author": "",
