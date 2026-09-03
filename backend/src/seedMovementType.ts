@@ -16,14 +16,19 @@ async function seedMovementTypes() {
                 description: "New Product is added to the Inventory"
             },
             {
-                //when bill is deleted or 
+                // when a product or inventory is deleted
+                code: "DELETE",
+                description: "New Product is added to the Inventory"
+            },
+            {
+                //when bill is deleted each item will be market this or 
                 // damaged table as deletion or 
                 // exiting product is updated 
                 code: "RESTOCK",
                 description: "Stock added to inventory"
             },
             {
-                //when bill is generated
+                //when bill is generated each item is given
                 code: "SALE",
                 description: "Stock reduced because of a sale"
             },
