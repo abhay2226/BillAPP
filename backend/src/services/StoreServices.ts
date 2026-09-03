@@ -4,7 +4,7 @@ import { Store } from "../entity/TransactionsStore.js";
 import { User } from "../entity/TransactionsUser.js";
 
 // import { AppError } from "../utils/AppError.js";
-import { In } from "typeorm";
+import { In,Not } from "typeorm";
 
 const storeRepo = AppDataSource.getRepository(Store);
 const userRepo = AppDataSource.getRepository(User);
@@ -174,6 +174,17 @@ export async function updateStore(storeId: number, data:Partial<StoreData>,userI
          throw new Error("Store not found."); 
     }
 
+    const actingUser = await userRepo.findOne({ where: { user_id: userId } });
+    if (!actingUser || !actingUser.is_active) {
+      throw new Error("Acting user not found or inactive.");
+    }
+
+    const actingRole = await roleRepo.findOne({ where: { role_id: actingUser.role_id } });
+    const isOwner = actingRole?.role_name.toUpperCase() === "OWNER";
+    if (!isOwner || actingUser.store_id !== storeId) {
+      throw new Error("Only this store's OWNER can update it.");
+    }
+
     if(data.store_name!== undefined && data.store_name!== existingStore.store_name){
         const duplicate = await storeRepo.findOne({
             where:{
@@ -186,6 +197,7 @@ export async function updateStore(storeId: number, data:Partial<StoreData>,userI
 
         existingStore.store_name=data.store_name;
     }
+
     if(data.gst_no !== undefined && data.gst_no !== existingStore.gst_no){
         const duplicate = await storeRepo.findOne({
             where:{
@@ -198,6 +210,7 @@ export async function updateStore(storeId: number, data:Partial<StoreData>,userI
 
         existingStore.gst_no=data.gst_no;
     }
+    
 
 
     if (data.is_active !== undefined) { 
@@ -223,7 +236,7 @@ export async function updateStore(storeId: number, data:Partial<StoreData>,userI
 //=========================================================================
 //deactive store
 //=========================================================================
-export async function deleteStore(storeId: number, data: StoreData,userId:number){
+export async function deleteStore(storeId: number, userId:number){
 
     const existingStore = await storeRepo.findOne({ 
         where: { store_id: storeId }
@@ -239,17 +252,30 @@ export async function deleteStore(storeId: number, data: StoreData,userId:number
          throw new Error("This store is already deactivated."); 
     }
 
-    const usersWithStore = await userRepo.count({
-    where: { store_id: storeId, is_active: true },
-  });
+    const actingUser = await userRepo.findOne({ where: { user_id: userId } });
+    if (!actingUser || !actingUser.is_active) {
+        throw new Error("Acting user not found or inactive.");
+    }
 
-  if (usersWithStore > 0) {
-    throw new Error(`Cannot deactivate this store — ${usersWithStore} active user(s) still have it. Reassign them first.`);
-  }
+    const actingRole = await roleRepo.findOne({ where: { role_id: actingUser.role_id } });
+    const isOwner = actingRole?.role_name.toUpperCase() === "OWNER";
+    if (!isOwner || actingUser.store_id !== storeId) {
+      throw new Error("Only this store's OWNER can deactivate it.");
+    }
 
-  existingStore.is_active = false;
-  existingStore.updated_at=new Date();
-  existingStore.updated_by = userId;
+    const otherActiveUsers = await userRepo.count({
+      where: { store_id: storeId, is_active: true, user_id: Not(userId) },
+    });
+    if (otherActiveUsers > 0) {
+      throw new Error(`Cannot deactivate this store — ${otherActiveUsers} other active user(s) still attached. Reassign or deactivate them first.`);
+    }
 
-  return storeRepo.save(existingStore);
+    existingStore.is_active = false;
+    existingStore.updated_at=new Date();
+    existingStore.updated_by = userId;
+
+    return storeRepo.save(existingStore);
 }
+
+
+

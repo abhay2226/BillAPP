@@ -106,7 +106,7 @@ export async function createRole(data: RoleData){
     return savedRole; 
 }
 
-export async function deleteRole(roleId: number, data: RoleData){
+export async function deleteRole(roleId: number){
 
     const existingRole = await roleRepo.findOne({ 
         where: { role_id: roleId }
