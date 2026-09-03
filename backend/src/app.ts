@@ -5,6 +5,8 @@ import type { Application } from "express";
 
 import authRoutes from "./routes/AuthRoute.js";
 import productRoutes from "./routes/Productroutes.js";
+import inventoryRoutes from "./routes/InventoryRoutes.js";
+import storeRoutes from "./routes/StoreRoute.js";
 
 const app: Application = express();
 app.use(cors());

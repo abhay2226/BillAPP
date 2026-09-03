@@ -7,8 +7,21 @@ import {
     deleteUser
 } from "../services/UserService.js";
 
+import { verifyToken } from "../utils/jwt.js";
+
 export async function getUsersController(req:Request,res:Response){
     try{
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+       const token = authHeader.slice("Bearer ".length);
+            let payload;
+            try {
+              payload = verifyToken(token);
+            } catch {
+              return res.status(403).json({ message: "Invalid or expired token" });
+            }
         const result=await getUsers();
         return res.status(200).json({
             success: true, 
