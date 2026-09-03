@@ -61,7 +61,16 @@ export async function getBillById(storeId:number,billId:number) {
 }
 
 export async function createBill() {
-    
+// Core function: validate store and customer are active.
+// Loop through items:
+// Check inventory availability.
+// Reduce stock.
+// Log stock movement.
+// Calculate line totals.
+// Apply discount if provided.
+// Calculate subtotal, tax, rounding, grand total.
+// Save bill header.
+// Return saved bill.
 }
 
 export async function deleteBill() {
