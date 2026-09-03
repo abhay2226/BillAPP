@@ -6,6 +6,7 @@ import {
     getAuditByIdService,
     getAuditsByTableNameService,
     getAuditsByRecordIdService,
+    getAuditsByTableAndRecordIdService,
     getAuditsByStoreService,
     getAuditsByUserService,
     getAuditsBySessionService,
@@ -238,6 +239,75 @@ export const getAuditsByRecordIdController = async (
                 recordId
             );
 
+
+        return res.status(200).json({
+
+            message: "Audit records fetched successfully",
+
+            data: audits
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            message: "Failed to fetch audit records"
+
+        });
+
+    }
+};
+
+
+
+// GET AUDITS BY TABLE NAME + RECORD ID
+
+export const getAuditsByTableAndRecordIdController = async (
+    req: Request,
+    res: Response
+) => {
+
+    try {
+
+        const tableName = String(
+            req.params.tableName
+        );
+
+        const recordId = Number(
+            req.params.recordId
+        );
+
+        if (!tableName.trim()) {
+
+            return res.status(400).json({
+
+                message: "Table name is required"
+
+            });
+
+        }
+
+        if (
+            !Number.isInteger(recordId) ||
+            recordId <= 0
+        ) {
+
+            return res.status(400).json({
+
+                message: "Invalid record ID"
+
+            });
+
+        }
+
+        const audits =
+            await getAuditsByTableAndRecordIdService(
+                tableName,
+                recordId
+            );
 
         return res.status(200).json({
 
