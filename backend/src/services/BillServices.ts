@@ -76,10 +76,11 @@ export async function createBill() {
 export async function deleteBill() {
 // Core function: validate store and customer are active.
 // check if the exiting bill 
+// check if created time is not 5 mins from delete call
 // access the stockmovements for each inventory deductions related to this bill
-// then access inventory to make chnages 
+// then access inventory to make changes 
 // check if discount was applied are not 
-//Calculate subtotal,discount if any, tax, rounding, grand total.
+// Calculate subtotal,discount if any, tax, rounding, grand total.
 // give alert to pay back the total amount
 // deactivate bill
 }

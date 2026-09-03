@@ -6,6 +6,7 @@ import { Role } from "./entity/MasterRole.js";
 import { Type } from "./entity/MasterProductType.js";
 import { Brand } from "./entity/MasterProductBrand.js";
 import { MovementType } from "./entity/MasterMovementType.js";
+import { ReferenceType } from "./entity/MasterReference.js";
 import { DiscountType } from "./entity/MasterDiscountType.js";
 import { UoM } from "./entity/MasterUoM.js";
 
@@ -34,7 +35,8 @@ export const AppDataSource = new DataSource({
 
     entities: [
         DiscountType,          
-        MovementType,          
+        MovementType,
+        ReferenceType,          
         Brand,          
         Type,           
         Role,                  

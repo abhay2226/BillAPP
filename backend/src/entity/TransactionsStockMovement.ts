@@ -8,6 +8,7 @@ import {
 
 import { Inventory } from "./TransactionsInventory.js";
 import { MovementType } from "./MasterMovementType.js";
+import { ReferenceType } from "./MasterReference.js";
 
 
 @Entity({ name: "transactions_stock_movement" })
@@ -44,9 +45,8 @@ export class StockMovement {
     @Column({
         name: "reference_type",
         type: "varchar",
-        nullable: true
     })
-    reference_type!: string | null;
+    reference_type_id!: number;
 
 
     @Column({
@@ -126,4 +126,18 @@ export class StockMovement {
         referencedColumnName: "movement_type_id"
     })
     movementType!: MovementType;
+
+
+    @ManyToOne(
+        () => ReferenceType,
+        referenceType => referenceType.stockMovements,
+        {
+            nullable: false
+        }
+    )
+    @JoinColumn({
+        name: "reference_type_id",
+        referencedColumnName: "reference_type_id"
+    })
+    referenceType!: ReferenceType;
 }
