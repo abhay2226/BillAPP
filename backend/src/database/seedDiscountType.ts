@@ -1,5 +1,5 @@
-import { AppDataSource } from "./datasource.js";
-import { DiscountType } from "./entity/MasterDiscountType.js";
+import { AppDataSource } from "../datasource.js";
+import { DiscountType } from "../entity/MasterDiscountType.js";
 
 async function seedDiscountTypes() {
     try {
