@@ -9,7 +9,7 @@ import {
 import { User } from "./TransactionsUser.js";
 import { Store } from "./TransactionsStore.js";
 import { Session } from "./TransactionsSession.js";
-import { MasterActionType } from "./MasterActionType.js";
+import { ActionType } from "./MasterActionType.js";
 
 @Entity({ name: "transactions_audit" })
 export class Audit {
@@ -47,8 +47,14 @@ export class Audit {
     // ACTION TYPE
     // ======================================================
 
+     @Column({
+        type: "integer",
+        name: "action_type_id"
+    })
+    action_type_id!: number;
+    
     @ManyToOne(
-        () => MasterActionType,
+        () => ActionType,
         {
             nullable: false
         }
@@ -56,48 +62,44 @@ export class Audit {
     @JoinColumn({
         name: "action_type_id"
     })
-    action_type!: MasterActionType;
+    action_type!: ActionType;
 
 
-    @Column({
-        type: "integer",
-        name: "action_type_id"
-    })
-    action_type_id!: number;
+   
 
 
     // ======================================================
     // UPDATED BY
     // ======================================================
 
-    @ManyToOne(
-        () => User,
-        {
-            nullable: true
-        }
-    )
-    @JoinColumn({
-        name: "updated_by"
-    })
-    updated_by_user!: User;
+    // @ManyToOne(
+    //     () => User,
+    //     {
+    //         nullable: true
+    //     }
+    // )
+    // @JoinColumn({
+    //     name: "updated_by"
+    // })
+    // updated_by_user!: User;
 
 
-    @Column({
-        type: "integer",
-        nullable: true
-    })
-    updated_by!: number | null;
+    // @Column({
+    //     type: "integer",
+    //     nullable: true
+    // })
+    // updated_by!: number | null;
 
 
     // ======================================================
     // UPDATED AT
     // ======================================================
 
-    @Column({
-        type: "datetime",
-        default: () => "CURRENT_TIMESTAMP"
-    })
-    updated_at!: Date;
+    // @Column({
+    //     type: "datetime",
+    //     default: () => "CURRENT_TIMESTAMP"
+    // })
+    // updated_at!: Date;
 
 
     // ======================================================

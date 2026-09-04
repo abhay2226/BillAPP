@@ -8,7 +8,7 @@ import {
 import { Audit } from "./TransactionsAudit.js";
 
 @Entity({ name: "master_action_type" })
-export class MasterActionType {
+export class ActionType {
 
     // ======================================================
     // PRIMARY KEY
@@ -67,12 +67,12 @@ export class MasterActionType {
     created_at!: Date;
 
 
-    @Column({
-        name: "created_by",
-        type: "integer",
-        nullable: false,
-    })
-    created_by!: number;
+    // @Column({
+    //     name: "created_by",
+    //     type: "integer",
+    //     nullable: false,
+    // })
+    // created_by!: number;
 
 
     // ======================================================
@@ -87,12 +87,12 @@ export class MasterActionType {
     updated_at!: Date | null;
 
 
-    @Column({
-        name: "updated_by",
-        type: "integer",
-        nullable: true,
-    })
-    updated_by!: number | null;
+    // @Column({
+    //     name: "updated_by",
+    //     type: "integer",
+    //     nullable: true,
+    // })
+    // updated_by!: number | null;
 
 
     // ======================================================

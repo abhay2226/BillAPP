@@ -10,7 +10,8 @@
     "seed:roles": "tsx src/database/seedRoles.ts",
     "seed:movtype": "tsx src/database/seedMovementType.ts",
     "seed:reftype": "tsx src/database/seedRefrenceType.ts",
-    "seed:distype": "tsx src/database/seedRefrenceType.ts"
+    "seed:distype": "tsx src/database/seedRefrenceType.ts",
+    "seed:actype": "tsx src/database/seedRefrenceType.ts"
   },
   "keywords": [],
   "author": "",

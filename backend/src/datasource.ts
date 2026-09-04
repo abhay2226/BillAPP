@@ -22,6 +22,7 @@ import { DamagedGoods } from "./entity/TransactionsDamagedGoods.js";
 import { StockMovement } from "./entity/TransactionsStockMovement.js";
 import { Session } from "./entity/TransactionsSession.js";
 import { Audit } from "./entity/TransactionsAudit.js";
+import {  ActionType } from "./entity/MasterActionType.js";
 
 
 export const AppDataSource = new DataSource({
@@ -35,6 +36,7 @@ export const AppDataSource = new DataSource({
     logging: false,
 
     entities: [
+        ActionType,
         DiscountType,          
         MovementType,
         ReferenceType,          

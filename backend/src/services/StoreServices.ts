@@ -346,7 +346,7 @@ export async function updateStore(storeId: number, data: Partial<StoreData>, use
     await auditRepo.insert({
       table_name: "transactions_store",
       record_id: savedStore.store_id,
-      action_type: "UPDATE",
+      action_type: "UPATE",
       updated_by: userId,
       updated_at: new Date(),
       store_id: savedStore.store_id,
