@@ -1,3 +1,4 @@
+
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -10,7 +11,6 @@ import { Inventory } from "./TransactionsInventory.js";
 import { MovementType } from "./MasterMovementType.js";
 import { ReferenceType } from "./MasterReference.js";
 
-
 @Entity({ name: "transactions_stock_movement" })
 export class StockMovement {
 
@@ -20,13 +20,11 @@ export class StockMovement {
     })
     movement_id!: number;
 
-
     @Column({
         name: "inventory_id",
         type: "integer"
     })
     inventory_id!: number;
-
 
     @Column({
         name: "movement_type_id",
@@ -34,20 +32,17 @@ export class StockMovement {
     })
     movement_type_id!: number;
 
-
     @Column({
         name: "quantity_change",
         type: "integer"
     })
     quantity_change!: number;
 
-
     @Column({
-        name: "reference_type",
-        type: "varchar",
+        name: "reference_type_id",
+        type: "integer"
     })
     reference_type_id!: number;
-
 
     @Column({
         name: "reference_id",
@@ -56,7 +51,6 @@ export class StockMovement {
     })
     reference_id!: number | null;
 
-
     @Column({
         name: "is_active",
         type: "boolean",
@@ -64,13 +58,11 @@ export class StockMovement {
     })
     is_active!: boolean;
 
-
     @Column({
         name: "created_at",
         type: "datetime"
     })
     created_at!: Date;
-
 
     @Column({
         name: "created_by",
@@ -79,9 +71,6 @@ export class StockMovement {
     })
     created_by!: number | null;
 
-
-    // UPDATED AT
-
     @Column({
         name: "updated_at",
         type: "datetime",
@@ -89,16 +78,12 @@ export class StockMovement {
     })
     updated_at!: Date | null;
 
-
-    // UPDATED BY
-
     @Column({
         name: "updated_by",
         type: "integer",
         nullable: true
     })
     updated_by!: number | null;
-
 
     @ManyToOne(
         () => Inventory,
@@ -113,7 +98,6 @@ export class StockMovement {
     })
     inventory!: Inventory;
 
-
     @ManyToOne(
         () => MovementType,
         movementType => movementType.stockMovements,
@@ -126,7 +110,6 @@ export class StockMovement {
         referencedColumnName: "movement_type_id"
     })
     movementType!: MovementType;
-
 
     @ManyToOne(
         () => ReferenceType,
@@ -141,3 +124,4 @@ export class StockMovement {
     })
     referenceType!: ReferenceType;
 }
+
