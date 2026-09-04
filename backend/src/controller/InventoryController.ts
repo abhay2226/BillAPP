@@ -1,3 +1,4 @@
+
 import type { Request, Response } from "express";
 
 import {
@@ -11,24 +12,88 @@ import {
 
 import { verifyToken } from "../utils/jwt.js";
 
+const getAuthenticatedUserId = (
+    req: Request
+): number => {
+    const authHeader = req.headers.authorization;
 
+    if (
+        !authHeader ||
+        !authHeader.startsWith("Bearer ")
+    ) {
+        throw new Error("Bearer token is required");
+    }
+
+    const token = authHeader.slice(7).trim();
+
+    if (!token) {
+        throw new Error("Bearer token is required");
+    }
+
+    const payload = verifyToken(token);
+
+    if (
+        !Number.isInteger(payload.userId) ||
+        payload.userId <= 0
+    ) {
+        throw new Error(
+            "Authenticated user not found"
+        );
+    }
+
+    return payload.userId;
+};
+
+const handleError = (
+    error: unknown,
+    res: Response,
+    message: string
+): void => {
+    console.error(error);
+
+    if (
+        error instanceof Error &&
+        error.message ===
+            "Bearer token is required"
+    ) {
+        res.status(401).json({
+            success: false,
+            message: error.message
+        });
+        return;
+    }
+
+    if (
+        error instanceof Error &&
+        (
+            error.name ===
+                "JsonWebTokenError" ||
+            error.name ===
+                "TokenExpiredError"
+        )
+    ) {
+        res.status(403).json({
+            success: false,
+            message:
+                "Invalid or expired token"
+        });
+        return;
+    }
+
+    res.status(500).json({
+        success: false,
+        message
+    });
+};
 
 export const createInventory = async (
     req: Request,
     res: Response
-) => {
+): Promise<void> => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
+        const userId =
+            getAuthenticatedUserId(req);
+
         const {
             product_id,
             store_id,
@@ -42,258 +107,276 @@ export const createInventory = async (
             store_id === undefined ||
             selling_price === undefined
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message:
                     "product_id, store_id and selling_price are required"
             });
+            return;
         }
 
-        const productId = Number(product_id);
-        const storeId = Number(store_id);
-        const quantity = qty === undefined ? 0 : Number(qty);
+        const productId =
+            Number(product_id);
+
+        const storeId =
+            Number(store_id);
+
+        const quantity =
+            qty === undefined
+                ? 0
+                : Number(qty);
+
         const costPrice =
-            cost_price === undefined || cost_price === null
+            cost_price === undefined ||
+            cost_price === null
                 ? null
                 : Number(cost_price);
-        const sellingPrice = Number(selling_price);
+
+        const sellingPrice =
+            Number(selling_price);
 
         if (
             !Number.isInteger(productId) ||
             productId <= 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid product ID"
+                message:
+                    "Invalid product ID"
             });
+            return;
         }
 
         if (
             !Number.isInteger(storeId) ||
             storeId <= 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid store ID"
+                message:
+                    "Invalid store ID"
             });
+            return;
         }
 
         if (
             !Number.isInteger(quantity) ||
             quantity < 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message:
                     "Quantity must be a non-negative integer"
             });
+            return;
         }
 
         if (
             costPrice !== null &&
-            (!Number.isFinite(costPrice) || costPrice < 0)
+            (
+                !Number.isFinite(costPrice) ||
+                costPrice < 0
+            )
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid cost price"
+                message:
+                    "Invalid cost price"
             });
+            return;
         }
 
         if (
             !Number.isFinite(sellingPrice) ||
             sellingPrice < 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid selling price"
+                message:
+                    "Invalid selling price"
             });
+            return;
         }
 
-        const userId = payload.userId;
-
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Authenticated user not found"
+        const data =
+            await createInventoryService({
+                product_id: productId,
+                store_id: storeId,
+                qty: quantity,
+                cost_price: costPrice,
+                selling_price: sellingPrice,
+                created_by: userId
             });
-        }
 
-        const data = await createInventoryService({
-            product_id: productId,
-            store_id: storeId,
-            qty: quantity,
-            cost_price: costPrice,
-            selling_price: sellingPrice,
-            created_by: userId
-        });
-
-        return res.status(201).json({
+        res.status(201).json({
             success: true,
-            message: "Inventory created successfully",
+            message:
+                "Inventory created successfully",
             data
         });
-    } catch (error: any) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Failed to create inventory"
-        });
+    } catch (error) {
+        handleError(
+            error,
+            res,
+            "Failed to create inventory"
+        );
     }
 };
 
 export const getInventoryByStore = async (
     req: Request,
     res: Response
-) => {
+): Promise<void> => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const storeId = Number(req.params.storeId);
+        getAuthenticatedUserId(req);
+
+        const storeId =
+            Number(req.params.storeId);
 
         if (
             !Number.isInteger(storeId) ||
             storeId <= 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid store ID parameter"
+                message:
+                    "Invalid store ID parameter"
             });
+            return;
         }
 
-        const productIdParam = req.query.productId;
+        const productIdParam =
+            req.query.productId;
 
-        let productId: number | undefined;
+        let productId:
+            | number
+            | undefined;
 
-        if (productIdParam !== undefined) {
-            productId = Number(productIdParam);
+        if (
+            productIdParam !== undefined
+        ) {
+            productId =
+                Number(productIdParam);
 
             if (
                 !Number.isInteger(productId) ||
                 productId <= 0
             ) {
-                return res.status(400).json({
+                res.status(400).json({
                     success: false,
-                    message: "Invalid product ID"
+                    message:
+                        "Invalid product ID"
                 });
+                return;
             }
         }
 
-        let productName: string | undefined;
+        let productName:
+            | string
+            | undefined;
 
-        if (req.query.productName !== undefined) {
-            productName = String(
-                req.query.productName
-            ).trim();
+        if (
+            req.query.productName !==
+            undefined
+        ) {
+            productName =
+                String(
+                    req.query.productName
+                ).trim();
 
-            if (productName === "") {
-                return res.status(400).json({
+            if (!productName) {
+                res.status(400).json({
                     success: false,
-                    message: "Product name cannot be empty"
+                    message:
+                        "Product name cannot be empty"
                 });
+                return;
             }
         }
 
-        const data = await getInventoryByStoreService(
-            storeId,
-            productId,
-            productName
-        );
+        const data =
+            await getInventoryByStoreService(
+                storeId,
+                productId,
+                productName
+            );
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            message: "Inventory fetched successfully",
+            message:
+                "Inventory fetched successfully",
             data
         });
-    } catch (error: any) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Failed to fetch inventory"
-        });
+    } catch (error) {
+        handleError(
+            error,
+            res,
+            "Failed to fetch inventory"
+        );
     }
 };
 
 export const getInventoryById = async (
     req: Request,
     res: Response
-) => {
+): Promise<void> => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const inventoryId = Number(req.params.id);
+        getAuthenticatedUserId(req);
+
+        const inventoryId =
+            Number(req.params.id);
 
         if (
             !Number.isInteger(inventoryId) ||
             inventoryId <= 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid inventory ID parameter"
+                message:
+                    "Invalid inventory ID parameter"
             });
+            return;
         }
 
         const data =
-            await getInventoryByIdService(inventoryId);
+            await getInventoryByIdService(
+                inventoryId
+            );
 
         if (!data) {
-            return res.status(404).json({
+            res.status(404).json({
                 success: false,
-                message: "Inventory not found"
+                message:
+                    "Inventory not found"
             });
+            return;
         }
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            message: "Inventory fetched successfully",
+            message:
+                "Inventory fetched successfully",
             data
         });
-    } catch (error: any) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Failed to fetch inventory"
-        });
+    } catch (error) {
+        handleError(
+            error,
+            res,
+            "Failed to fetch inventory"
+        );
     }
 };
 
 export const updateInventoryPricing = async (
     req: Request,
     res: Response
-) => {
+): Promise<void> => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const inventoryId = Number(req.params.id);
+        const userId =
+            getAuthenticatedUserId(req);
+
+        const inventoryId =
+            Number(req.params.id);
 
         const {
             cost_price,
@@ -304,208 +387,280 @@ export const updateInventoryPricing = async (
             !Number.isInteger(inventoryId) ||
             inventoryId <= 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid inventory ID parameter"
+                message:
+                    "Invalid inventory ID parameter"
             });
+            return;
         }
 
-        if (selling_price === undefined) {
-            return res.status(400).json({
+        if (
+            selling_price === undefined
+        ) {
+            res.status(400).json({
                 success: false,
-                message: "selling_price is required"
+                message:
+                    "selling_price is required"
             });
+            return;
         }
 
         const costPrice =
-            cost_price === undefined || cost_price === null
+            cost_price === undefined ||
+            cost_price === null
                 ? null
                 : Number(cost_price);
 
-        const sellingPrice = Number(selling_price);
+        const sellingPrice =
+            Number(selling_price);
 
         if (
             costPrice !== null &&
-            (!Number.isFinite(costPrice) || costPrice < 0)
+            (
+                !Number.isFinite(costPrice) ||
+                costPrice < 0
+            )
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid cost price"
+                message:
+                    "Invalid cost price"
             });
+            return;
         }
 
         if (
             !Number.isFinite(sellingPrice) ||
             sellingPrice < 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid selling price"
+                message:
+                    "Invalid selling price"
             });
+            return;
         }
 
-        const userId = payload.userId;
-
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Authenticated user not found"
-            });
-        }
-
-        const data = await updatePricingService(
-            inventoryId,
-            costPrice,
-            sellingPrice,
-            userId
-        );
+        const data =
+            await updatePricingService(
+                inventoryId,
+                costPrice,
+                sellingPrice,
+                userId
+            );
 
         if (!data) {
-            return res.status(404).json({
+            res.status(404).json({
                 success: false,
-                message: "Inventory not found"
+                message:
+                    "Inventory not found"
             });
+            return;
         }
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
-            message: "Inventory pricing updated successfully",
+            message:
+                "Inventory pricing updated successfully",
             data
         });
-    } catch (error: any) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: "Failed to update inventory pricing"
-        });
+    } catch (error) {
+        handleError(
+            error,
+            res,
+            "Failed to update inventory pricing"
+        );
     }
 };
 
 export const updateInventoryQuantity = async (
     req: Request,
     res: Response
-) => {
+): Promise<void> => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const inventoryId = Number(req.params.id);
-        const { qty } = req.body;
+        const userId =
+            getAuthenticatedUserId(req);
+
+        const inventoryId =
+            Number(req.params.id);
+
+        const {
+            qty,
+            movement_type_id,
+            reference_type_code,
+            reference_id
+        } = req.body;
 
         if (
             !Number.isInteger(inventoryId) ||
             inventoryId <= 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid inventory ID parameter"
+                message:
+                    "Invalid inventory ID parameter"
             });
+            return;
         }
 
         if (qty === undefined) {
-            return res.status(400).json({
-                success: false,
-                message: "qty is required"
-            });
-        }
-
-        const quantity = Number(qty);
-
-        if (
-            !Number.isInteger(quantity) ||
-            quantity < 0
-        ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message:
-                    "Quantity must be a non-negative integer"
+                    "qty is required"
             });
+            return;
         }
 
-        const userId = payload.userId;
-
-        if (!userId) {
-            return res.status(401).json({
+        if (
+            movement_type_id === undefined
+        ) {
+            res.status(400).json({
                 success: false,
-                message: "Authenticated user not found"
+                message:
+                    "movement_type_id is required"
             });
+            return;
+        }
+
+        if (
+            reference_type_code === undefined
+        ) {
+            res.status(400).json({
+                success: false,
+                message:
+                    "reference_type_code is required"
+            });
+            return;
+        }
+
+        const quantityChange =
+            Number(qty);
+
+        const movementTypeId =
+            Number(movement_type_id);
+
+        const referenceTypeCode =
+            String(
+                reference_type_code
+            ).trim();
+
+        const referenceId =
+            reference_id === undefined ||
+            reference_id === null
+                ? undefined
+                : Number(reference_id);
+
+        if (
+            !Number.isInteger(
+                quantityChange
+            ) ||
+            quantityChange === 0
+        ) {
+            res.status(400).json({
+                success: false,
+                message:
+                    "Quantity change must be a non-zero integer"
+            });
+            return;
+        }
+
+        if (
+            !Number.isInteger(
+                movementTypeId
+            ) ||
+            movementTypeId <= 0
+        ) {
+            res.status(400).json({
+                success: false,
+                message:
+                    "Invalid movement_type_id"
+            });
+            return;
+        }
+
+        if (!referenceTypeCode) {
+            res.status(400).json({
+                success: false,
+                message:
+                    "reference_type_code is required"
+            });
+            return;
+        }
+
+        if (
+            referenceId !== undefined &&
+            (
+                !Number.isInteger(
+                    referenceId
+                ) ||
+                referenceId <= 0
+            )
+        ) {
+            res.status(400).json({
+                success: false,
+                message:
+                    "Invalid reference_id"
+            });
+            return;
         }
 
         const data =
             await updateInventoryQuantityService(
                 inventoryId,
-                quantity,
+                quantityChange,
+                movementTypeId,
+                referenceTypeCode,
+                referenceId,
                 userId
             );
 
         if (!data) {
-            return res.status(404).json({
+            res.status(404).json({
                 success: false,
-                message: "Inventory not found"
+                message:
+                    "Inventory not found"
             });
+            return;
         }
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
             message:
                 "Inventory quantity updated successfully",
             data
         });
-    } catch (error: any) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message:
-                "Failed to update inventory quantity"
-        });
+    } catch (error) {
+        handleError(
+            error,
+            res,
+            "Failed to update inventory quantity"
+        );
     }
 };
 
 export const deactivateInventory = async (
     req: Request,
     res: Response
-) => {
+): Promise<void> => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const inventoryId = Number(req.params.id);
+        const userId =
+            getAuthenticatedUserId(req);
+
+        const inventoryId =
+            Number(req.params.id);
 
         if (
             !Number.isInteger(inventoryId) ||
             inventoryId <= 0
         ) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
-                message: "Invalid inventory ID parameter"
+                message:
+                    "Invalid inventory ID parameter"
             });
-        }
-
-        const userId = payload.userId;
-
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: "Authenticated user not found"
-            });
+            return;
         }
 
         const data =
@@ -515,25 +670,26 @@ export const deactivateInventory = async (
             );
 
         if (!data) {
-            return res.status(404).json({
+            res.status(404).json({
                 success: false,
-                message: "Inventory not found"
+                message:
+                    "Inventory not found"
             });
+            return;
         }
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
             message:
                 "Inventory deactivated successfully",
             data
         });
-    } catch (error: any) {
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message:
-                "Failed to deactivate inventory"
-        });
+    } catch (error) {
+        handleError(
+            error,
+            res,
+            "Failed to deactivate inventory"
+        );
     }
 };
+
