@@ -1,6 +1,7 @@
 import { AppDataSource } from "../datasource.js";
 import { Role } from "../entity/MasterRole.js";
 import { User } from "../entity/TransactionsUser.js";
+import {Audit} from "../entity/TransactionsAudit.js";
 
 // import { AppError } from "../utils/AppError.js";
 

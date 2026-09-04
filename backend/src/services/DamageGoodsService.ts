@@ -1,349 +1,975 @@
+
 import { AppDataSource } from "../datasource.js";
+
 import { DamagedGoods } from "../entity/TransactionsDamagedGoods.js";
 import { Inventory } from "../entity/TransactionsInventory.js";
-import { StockMovement } from "../entity/TransactionsStockMovement.js";
-import { ReferenceType } from "../entity/MasterReference.js";
+import { Audit } from "../entity/TransactionsAudit.js";
 
-const damagedGoodsRepository = AppDataSource.getRepository(DamagedGoods);
+import { createAuditRecordService } from "./AuditServices.js";
 
-// Helper function to resolve reference type IDs safely inside transactions
-const getReferenceTypeId = async (
-    transactionalEntityManager: any,
-    code: string
-): Promise<number> => {
-    const refType = await transactionalEntityManager.findOne(ReferenceType, {
-        where: { code, is_active: true }
-    });
-    if (!refType) {
-        throw new Error(`Reference type with code '${code}' not found or inactive.`);
+
+// ======================================================
+// REPOSITORIES
+// ======================================================
+
+const damageRepository =
+    AppDataSource.getRepository(DamagedGoods);
+
+const inventoryRepository =
+    AppDataSource.getRepository(Inventory);
+
+
+// ======================================================
+// VALIDATE ID
+// ======================================================
+
+const validateId = (
+    value: number,
+    message: string
+): void => {
+
+    if (
+        !Number.isInteger(value) ||
+        value <= 0
+    ) {
+        throw new Error(message);
     }
-    return refType.reference_type_id;
 };
 
-export const createDamagedGoodsService = async (
-    damagedGoodsData: Partial<DamagedGoods> & {
-        movement_type_id: number;
+
+// ======================================================
+// VALIDATE QUANTITY
+// ======================================================
+
+const validateQuantity = (
+    value: number
+): void => {
+
+    if (
+        !Number.isInteger(value) ||
+        value <= 0
+    ) {
+        throw new Error(
+            "Quantity must be a positive integer"
+        );
     }
-) => {
-    const inventoryId = damagedGoodsData.inventory_id;
-    const quantity = damagedGoodsData.qty;
-    const unitCost = damagedGoodsData.unit_cost;
-    const movementTypeId = damagedGoodsData.movement_type_id;
-    const userId = damagedGoodsData.created_by;
+};
 
-    if (!inventoryId || !Number.isInteger(inventoryId) || inventoryId <= 0) {
-        throw new Error("Valid inventory ID is required");
-    }
 
-    if (!quantity || !Number.isInteger(quantity) || quantity <= 0) {
-        throw new Error("Quantity must be a positive integer");
-    }
+// ======================================================
+// CREATE DAMAGED GOODS
+// ======================================================
 
-    if (unitCost === undefined || !Number.isFinite(unitCost) || unitCost < 0) {
-        throw new Error("Invalid unit cost");
-    }
+export const createDamagedGoodsService =
+    async (
+        inventoryId: number,
+        qty: number,
+        reason: string,
+        unitCost: number,
+        userId: number,
+        sessionId: number
+    ) => {
 
-    if (!movementTypeId || !Number.isInteger(movementTypeId) || movementTypeId <= 0) {
-        throw new Error("Valid movement type ID is required");
-    }
+        // ==================================================
+        // VALIDATION
+        // ==================================================
 
-    if (!userId || !Number.isInteger(userId) || userId <= 0) {
-        throw new Error("Valid user ID is required");
-    }
+        validateId(
+            inventoryId,
+            "Valid inventory ID is required"
+        );
 
-    return await AppDataSource.transaction(
-        async (transactionalEntityManager) => {
-            // Get reference type ID for adding damaged goods
-            const refTypeId = await getReferenceTypeId(transactionalEntityManager, "DAMADD");
+        validateQuantity(qty);
 
-            // Acquire pessimistic write lock to prevent race conditions during inventory updates
-            const inventory = await transactionalEntityManager.findOne(Inventory, {
-                where: { inventory_id: inventoryId },
-                lock: { mode: "pessimistic_write" }
-            });
+        validateId(
+            userId,
+            "Valid user ID is required"
+        );
 
-            if (!inventory) {
-                throw new Error("Inventory not found");
-            }
+        validateId(
+            sessionId,
+            "Valid session ID is required"
+        );
 
-            if (!inventory.is_active) {
-                throw new Error("Inventory is inactive");
-            }
-
-            if (inventory.qty < quantity) {
-                throw new Error(
-                    `Insufficient stock. Available quantity: ${inventory.qty}`
-                );
-            }
-
-            // Decrement inventory stock
-            inventory.qty -= quantity;
-            inventory.updated_at = new Date();
-            inventory.updated_by = userId;
-
-            await transactionalEntityManager.save(Inventory, inventory);
-
-            const now = new Date();
-
-            const damagedGoods = transactionalEntityManager.create(DamagedGoods, {
-                inventory_id: inventoryId,
-                qty: quantity,
-                reason: damagedGoodsData.reason ?? null,
-                unit_cost: unitCost,
-                loss_value: quantity * unitCost,
-                is_active: true,
-                created_at: now,
-                created_by: userId,
-                updated_at: null,
-                updated_by: null
-            });
-
-            const savedDamage = await transactionalEntityManager.save(
-                DamagedGoods,
-                damagedGoods
+        if (
+            !reason ||
+            reason.trim() === ""
+        ) {
+            throw new Error(
+                "Damage reason is required"
             );
-
-            // Create stock movement record using resolved reference_type_id
-            const stockMovement = transactionalEntityManager.create(StockMovement, {
-                inventory_id: inventoryId,
-                movement_type_id: movementTypeId,
-                reference_type_id: refTypeId,
-                quantity_change: -quantity,
-                reference_type: "DAMAGED_GOODS",
-                reference_id: savedDamage.damage_id,
-                is_active: true,
-                created_at: now,
-                created_by: userId,
-                updated_at: now,
-                updated_by: userId
-            });
-
-            await transactionalEntityManager.save(StockMovement, stockMovement);
-
-            return savedDamage;
         }
-    );
-};
 
-export const getAllDamagedGoodsService = async () => {
-    return await damagedGoodsRepository.find({
-        where: { is_active: true },
-        relations: [
-            "inventory",
-            "inventory.product",
-            "inventory.store"
-        ],
-        order: { damage_id: "ASC" }
-    });
-};
-
-export const getDamagedGoodsByIdService = async (damageId: number) => {
-    return await damagedGoodsRepository.findOne({
-        where: {
-            damage_id: damageId,
-            is_active: true
-        },
-        relations: [
-            "inventory",
-            "inventory.product",
-            "inventory.store"
-        ]
-    });
-};
-
-export const getDamagedGoodsByInventoryService = async (inventoryId: number) => {
-    return await damagedGoodsRepository.find({
-        where: {
-            inventory_id: inventoryId,
-            is_active: true
-        },
-        relations: [
-            "inventory",
-            "inventory.product",
-            "inventory.store"
-        ],
-        order: { damage_id: "ASC" }
-    });
-};
-
-export const updateDamagedGoodsService = async (
-    damageId: number,
-    qty: number,
-    reason: string | null,
-    unitCost: number,
-    userId: number,
-    movementTypeId: number
-) => {
-    if (!Number.isInteger(qty) || qty <= 0) {
-        throw new Error("Quantity must be a positive integer");
-    }
-
-    if (!Number.isFinite(unitCost) || unitCost < 0) {
-        throw new Error("Invalid unit cost");
-    }
-
-    return await AppDataSource.transaction(
-        async (transactionalEntityManager) => {
-            const refTypeId = await getReferenceTypeId(transactionalEntityManager, "DAMED");
-
-            const damagedGoods = await transactionalEntityManager.findOne(
-                DamagedGoods,
-                {
-                    where: {
-                        damage_id: damageId,
-                        is_active: true
-                    }
-                }
+        if (
+            typeof unitCost !== "number" ||
+            unitCost < 0
+        ) {
+            throw new Error(
+                "Valid unit cost is required"
             );
-
-            if (!damagedGoods) {
-                return null;
-            }
-
-            const inventory = await transactionalEntityManager.findOne(
-                Inventory,
-                {
-                    where: { inventory_id: damagedGoods.inventory_id },
-                    lock: { mode: "pessimistic_write" }
-                }
-            );
-
-            if (!inventory) {
-                throw new Error("Inventory not found");
-            }
-
-            const oldQty = damagedGoods.qty;
-            const quantityDifference = qty - oldQty;
-
-            if (
-                quantityDifference > 0 &&
-                inventory.qty < quantityDifference
-            ) {
-                throw new Error(
-                    `Insufficient stock. Available quantity: ${inventory.qty}`
-                );
-            }
-
-            inventory.qty -= quantityDifference;
-            inventory.updated_at = new Date();
-            inventory.updated_by = userId;
-
-            await transactionalEntityManager.save(Inventory, inventory);
-
-            damagedGoods.qty = qty;
-            damagedGoods.reason = reason;
-            damagedGoods.unit_cost = unitCost;
-            damagedGoods.loss_value = qty * unitCost;
-            damagedGoods.updated_at = new Date();
-            damagedGoods.updated_by = userId;
-
-            const updatedDamage = await transactionalEntityManager.save(
-                DamagedGoods,
-                damagedGoods
-            );
-
-            if (quantityDifference !== 0) {
-                const stockMovement = transactionalEntityManager.create(
-                    StockMovement,
-                    {
-                        inventory_id: damagedGoods.inventory_id,
-                        movement_type_id: movementTypeId,
-                        reference_type_id: refTypeId,
-                        quantity_change: -quantityDifference,
-                        reference_type: "DAMAGED_GOODS",
-                        reference_id: damagedGoods.damage_id,
-                        is_active: true,
-                        created_at: new Date(),
-                        created_by: userId,
-                        updated_at: new Date(),
-                        updated_by: userId
-                    }
-                );
-
-                await transactionalEntityManager.save(
-                    StockMovement,
-                    stockMovement
-                );
-            }
-
-            return updatedDamage;
         }
-    );
-};
 
-export const deactivateDamagedGoodsService = async (
-    damageId: number,
-    userId: number,
-    reversalMovementTypeId: number
-) => {
-    return await AppDataSource.transaction(
-        async (transactionalEntityManager) => {
-            const refTypeId = await getReferenceTypeId(transactionalEntityManager, "DAMD");
 
-            const damagedGoods = await transactionalEntityManager.findOne(
-                DamagedGoods,
-                {
-                    where: {
-                        damage_id: damageId,
-                        is_active: true
-                    }
+        // ==================================================
+        // TRANSACTION
+        // ==================================================
+
+        return await AppDataSource.manager.transaction(
+            async (manager) => {
+
+                // ==========================================
+                // FIND ACTIVE INVENTORY
+                // ==========================================
+
+                const inventory =
+                    await manager.findOne(
+                        Inventory,
+                        {
+                            where: {
+                                inventory_id:
+                                    inventoryId,
+
+                                is_active:
+                                    true
+                            }
+                        }
+                    );
+
+
+                if (!inventory) {
+                    throw new Error(
+                        "Active inventory record not found"
+                    );
                 }
-            );
 
-            if (!damagedGoods) {
-                return null;
+
+                // ==========================================
+                // CHECK STOCK
+                // ==========================================
+
+                if (inventory.qty < qty) {
+                    throw new Error(
+                        `Insufficient stock. Available stock: ${inventory.qty}`
+                    );
+                }
+
+
+                // ==========================================
+                // CALCULATE LOSS
+                // ==========================================
+
+                const lossValue =
+                    qty * unitCost;
+
+
+                const now =
+                    new Date();
+
+
+                // ==========================================
+                // UPDATE INVENTORY QUANTITY
+                // ==========================================
+
+                inventory.qty =
+                    inventory.qty - qty;
+
+                inventory.updated_at =
+                    now;
+
+                inventory.updated_by =
+                    userId;
+
+
+                // ==========================================
+                // SAVE INVENTORY
+                // ==========================================
+
+                await manager.save(
+                    Inventory,
+                    inventory
+                );
+
+
+                // ==========================================
+                // AUDIT INVENTORY UPDATE
+                // ==========================================
+
+                const inventoryAudit =
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_inventory",
+
+                            recordId:
+                                inventory.inventory_id,
+
+                            actionTypeCode:
+                                "UPDATE",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // CREATE DAMAGE RECORD
+                // ==========================================
+
+                const damage =
+                    manager.create(
+                        DamagedGoods,
+                        {
+                            inventory_id:
+                                inventory.inventory_id,
+
+                            qty:
+                                qty,
+
+                            reason:
+                                reason.trim(),
+
+                            unit_cost:
+                                unitCost,
+
+                            loss_value:
+                                lossValue,
+
+                            is_active:
+                                true,
+
+                            created_at:
+                                now,
+
+                            created_by:
+                                userId,
+
+                            updated_at:
+                                now,
+
+                            updated_by:
+                                userId
+                        }
+                    );
+
+
+                // ==========================================
+                // SAVE DAMAGE
+                // ==========================================
+
+                await manager.save(
+                    DamagedGoods,
+                    damage
+                );
+
+
+                // ==========================================
+                // AUDIT DAMAGE INSERT
+                // ==========================================
+
+                const damageAudit =
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_damaged_goods",
+
+                            recordId:
+                                damage.damage_id,
+
+                            actionTypeCode:
+                                "INSERT",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // RETURN
+                // ==========================================
+
+                return {
+                    inventory,
+                    damage,
+                    audits: [
+                        inventoryAudit,
+                        damageAudit
+                    ]
+                };
             }
+        );
+    };
 
-            const inventory = await transactionalEntityManager.findOne(
-                Inventory,
-                {
-                    where: { inventory_id: damagedGoods.inventory_id },
-                    lock: { mode: "pessimistic_write" }
-                }
-            );
 
-            if (!inventory) {
-                throw new Error("Inventory not found");
+// ======================================================
+// GET DAMAGE BY ID
+// ======================================================
+
+export const getDamagedGoodsByIdService =
+    async (
+        damageId: number
+    ) => {
+
+        validateId(
+            damageId,
+            "Invalid damage ID"
+        );
+
+
+        return await damageRepository.findOne({
+            where: {
+                damage_id:
+                    damageId,
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                inventory: true
             }
+        });
+    };
 
-            inventory.qty += damagedGoods.qty;
-            inventory.updated_at = new Date();
-            inventory.updated_by = userId;
 
-            await transactionalEntityManager.save(Inventory, inventory);
+// ======================================================
+// GET ALL ACTIVE DAMAGE RECORDS
+// ======================================================
 
-            damagedGoods.is_active = false;
-            damagedGoods.updated_at = new Date();
-            damagedGoods.updated_by = userId;
+export const getAllDamagedGoodsService =
+    async () => {
 
-            const deactivatedDamage = await transactionalEntityManager.save(
-                DamagedGoods,
-                damagedGoods
+        return await damageRepository.find({
+            where: {
+                is_active:
+                    true
+            },
+
+            relations: {
+                inventory: true
+            },
+
+            order: {
+                damage_id:
+                    "DESC"
+            }
+        });
+    };
+
+
+// ======================================================
+// GET ALL DAMAGE HISTORY
+// ======================================================
+
+export const getAllDamagedGoodsHistoryService =
+    async () => {
+
+        return await damageRepository.find({
+            relations: {
+                inventory: true
+            },
+
+            order: {
+                damage_id:
+                    "DESC"
+            }
+        });
+    };
+
+
+// ======================================================
+// GET DAMAGE BY INVENTORY
+// ======================================================
+
+export const getDamagedGoodsByInventoryService =
+    async (
+        inventoryId: number
+    ) => {
+
+        validateId(
+            inventoryId,
+            "Invalid inventory ID"
+        );
+
+
+        return await damageRepository.find({
+            where: {
+                inventory_id:
+                    inventoryId,
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                inventory: true
+            },
+
+            order: {
+                damage_id:
+                    "DESC"
+            }
+        });
+    };
+
+
+// ======================================================
+// UPDATE DAMAGED GOODS
+// ======================================================
+
+export const updateDamagedGoodsService =
+    async (
+        damageId: number,
+        qty: number,
+        reason: string,
+        unitCost: number,
+        userId: number,
+        sessionId: number
+    ) => {
+
+        validateId(
+            damageId,
+            "Invalid damage ID"
+        );
+
+        validateQuantity(qty);
+
+        validateId(
+            userId,
+            "Valid user ID is required"
+        );
+
+        validateId(
+            sessionId,
+            "Valid session ID is required"
+        );
+
+        if (
+            !reason ||
+            reason.trim() === ""
+        ) {
+            throw new Error(
+                "Damage reason is required"
             );
-
-            const stockMovement = transactionalEntityManager.create(
-                StockMovement,
-                {
-                    inventory_id: damagedGoods.inventory_id,
-                    movement_type_id: reversalMovementTypeId,
-                    reference_type_id: refTypeId,
-                    quantity_change: damagedGoods.qty,
-                    reference_type: "DAMAGED_GOODS",
-                    reference_id: damagedGoods.damage_id,
-                    is_active: true,
-                    created_at: new Date(),
-                    created_by: userId,
-                    updated_at: new Date(),
-                    updated_by: userId
-                }
-            );
-
-            await transactionalEntityManager.save(
-                StockMovement,
-                stockMovement
-            );
-
-            return deactivatedDamage;
         }
-    );
-};
+
+        if (
+            typeof unitCost !== "number" ||
+            unitCost < 0
+        ) {
+            throw new Error(
+                "Valid unit cost is required"
+            );
+        }
+
+
+        return await AppDataSource.manager.transaction(
+            async (manager) => {
+
+                // ==========================================
+                // FIND DAMAGE
+                // ==========================================
+
+                const damage =
+                    await manager.findOne(
+                        DamagedGoods,
+                        {
+                            where: {
+                                damage_id:
+                                    damageId,
+
+                                is_active:
+                                    true
+                            }
+                        }
+                    );
+
+
+                if (!damage) {
+                    throw new Error(
+                        "Active damaged goods record not found"
+                    );
+                }
+
+
+                // ==========================================
+                // FIND INVENTORY
+                // ==========================================
+
+                const inventory =
+                    await manager.findOne(
+                        Inventory,
+                        {
+                            where: {
+                                inventory_id:
+                                    damage.inventory_id,
+
+                                is_active:
+                                    true
+                            }
+                        }
+                    );
+
+
+                if (!inventory) {
+                    throw new Error(
+                        "Active inventory record not found"
+                    );
+                }
+
+
+                // ==========================================
+                // CALCULATE QUANTITY DIFFERENCE
+                // ==========================================
+
+                const quantityDifference =
+                    qty - damage.qty;
+
+
+                // ==========================================
+                // CHECK STOCK IF INCREASING DAMAGE
+                // ==========================================
+
+                if (
+                    quantityDifference > 0 &&
+                    inventory.qty <
+                        quantityDifference
+                ) {
+                    throw new Error(
+                        `Insufficient stock. Available stock: ${inventory.qty}`
+                    );
+                }
+
+
+                // ==========================================
+                // UPDATE INVENTORY
+                // ==========================================
+
+                inventory.qty =
+                    inventory.qty -
+                    quantityDifference;
+
+
+                const now =
+                    new Date();
+
+
+                inventory.updated_at =
+                    now;
+
+                inventory.updated_by =
+                    userId;
+
+
+                // ==========================================
+                // SAVE INVENTORY
+                // ==========================================
+
+                await manager.save(
+                    Inventory,
+                    inventory
+                );
+
+
+                // ==========================================
+                // AUDIT INVENTORY UPDATE
+                // ==========================================
+
+                const inventoryAudit =
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_inventory",
+
+                            recordId:
+                                inventory.inventory_id,
+
+                            actionTypeCode:
+                                "UPDATE",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // UPDATE DAMAGE
+                // ==========================================
+
+                damage.qty =
+                    qty;
+
+                damage.reason =
+                    reason.trim();
+
+                damage.unit_cost =
+                    unitCost;
+
+                damage.loss_value =
+                    qty * unitCost;
+
+                damage.updated_at =
+                    now;
+
+                damage.updated_by =
+                    userId;
+
+
+                // ==========================================
+                // SAVE DAMAGE
+                // ==========================================
+
+                await manager.save(
+                    DamagedGoods,
+                    damage
+                );
+
+
+                // ==========================================
+                // AUDIT DAMAGE UPDATE
+                // ==========================================
+
+                const damageAudit =
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_damaged_goods",
+
+                            recordId:
+                                damage.damage_id,
+
+                            actionTypeCode:
+                                "UPDATE",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // RETURN
+                // ==========================================
+
+                return {
+                    inventory,
+                    damage,
+                    audits: [
+                        inventoryAudit,
+                        damageAudit
+                    ]
+                };
+            }
+        );
+    };
+
+
+// ======================================================
+// DEACTIVATE DAMAGE RECORD
+// ======================================================
+
+export const deactivateDamagedGoodsService =
+    async (
+        damageId: number,
+        userId: number,
+        sessionId: number
+    ) => {
+
+        validateId(
+            damageId,
+            "Invalid damage ID"
+        );
+
+        validateId(
+            userId,
+            "Valid user ID is required"
+        );
+
+        validateId(
+            sessionId,
+            "Valid session ID is required"
+        );
+
+
+        return await AppDataSource.manager.transaction(
+            async (manager) => {
+
+                // ==========================================
+                // FIND DAMAGE
+                // ==========================================
+
+                const damage =
+                    await manager.findOne(
+                        DamagedGoods,
+                        {
+                            where: {
+                                damage_id:
+                                    damageId,
+
+                                is_active:
+                                    true
+                            }
+                        }
+                    );
+
+
+                if (!damage) {
+                    throw new Error(
+                        "Active damaged goods record not found"
+                    );
+                }
+
+
+                // ==========================================
+                // FIND INVENTORY
+                // ==========================================
+
+                const inventory =
+                    await manager.findOne(
+                        Inventory,
+                        {
+                            where: {
+                                inventory_id:
+                                    damage.inventory_id,
+
+                                is_active:
+                                    true
+                            }
+                        }
+                    );
+
+
+                if (!inventory) {
+                    throw new Error(
+                        "Active inventory record not found"
+                    );
+                }
+
+
+                // ==========================================
+                // RESTORE DAMAGED QUANTITY
+                // ==========================================
+
+                inventory.qty =
+                    inventory.qty +
+                    damage.qty;
+
+
+                const now =
+                    new Date();
+
+
+                inventory.updated_at =
+                    now;
+
+                inventory.updated_by =
+                    userId;
+
+
+                // ==========================================
+                // SAVE INVENTORY
+                // ==========================================
+
+                await manager.save(
+                    Inventory,
+                    inventory
+                );
+
+
+                // ==========================================
+                // AUDIT INVENTORY UPDATE
+                // ==========================================
+
+                const inventoryAudit =
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_inventory",
+
+                            recordId:
+                                inventory.inventory_id,
+
+                            actionTypeCode:
+                                "UPDATE",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // DEACTIVATE DAMAGE
+                // ==========================================
+
+                damage.is_active =
+                    false;
+
+                damage.updated_at =
+                    now;
+
+                damage.updated_by =
+                    userId;
+
+
+                // ==========================================
+                // SAVE DAMAGE
+                // ==========================================
+
+                await manager.save(
+                    DamagedGoods,
+                    damage
+                );
+
+
+                // ==========================================
+                // AUDIT DAMAGE DELETE
+                // ==========================================
+
+                const damageAudit =
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_damaged_goods",
+
+                            recordId:
+                                damage.damage_id,
+
+                            actionTypeCode:
+                                "DELETE",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // RETURN
+                // ==========================================
+
+                return {
+                    inventory,
+                    damage,
+                    audits: [
+                        inventoryAudit,
+                        damageAudit
+                    ]
+                };
+            }
+        );
+    };
+
+
+// ======================================================
+// GET DAMAGE RECORDS BY DATE RANGE
+// ======================================================
+
+export const getDamagedGoodsByDateRangeService =
+    async (
+        fromDate: Date,
+        toDate: Date
+    ) => {
+
+        if (
+            !(fromDate instanceof Date) ||
+            isNaN(fromDate.getTime())
+        ) {
+            throw new Error(
+                "Invalid from date"
+            );
+        }
+
+
+        if (
+            !(toDate instanceof Date) ||
+            isNaN(toDate.getTime())
+        ) {
+            throw new Error(
+                "Invalid to date"
+            );
+        }
+
+
+        if (fromDate > toDate) {
+            throw new Error(
+                "From date cannot be greater than to date"
+            );
+        }
+
+
+        return await damageRepository
+            .createQueryBuilder("damage")
+
+            .leftJoinAndSelect(
+                "damage.inventory",
+                "inventory"
+            )
+
+            .where(
+                "damage.created_at BETWEEN :fromDate AND :toDate",
+                {
+                    fromDate,
+                    toDate
+                }
+            )
+
+            .andWhere(
+                "damage.is_active = :isActive",
+                {
+                    isActive:
+                        true
+                }
+            )
+
+            .orderBy(
+                "damage.created_at",
+                "DESC"
+            )
+
+            .getMany();
+    };

@@ -2,6 +2,7 @@ import { AppDataSource } from "../datasource.js";
 import { Inventory } from "../entity/TransactionsInventory.js";
 import { StockMovement } from "../entity/TransactionsStockMovement.js";
 import { ReferenceType } from "../entity/MasterReference.js";
+import {Audit} from "../entity/TransactionsAudit.js";
 
 const inventoryRepository = AppDataSource.getRepository(Inventory);
 
