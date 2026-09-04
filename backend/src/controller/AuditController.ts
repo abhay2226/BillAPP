@@ -512,15 +512,19 @@ export const getAuditsByActionTypeController = async (
 
     try {
 
-        const actionType =
-            String(req.params.actionType);
+        const actionTypeId = Number(
+            req.params.actionTypeId
+        );
 
 
-        if (!actionType.trim()) {
+        if (
+            !Number.isInteger(actionTypeId) ||
+            actionTypeId <= 0
+        ) {
 
             return res.status(400).json({
 
-                message: "Action type is required"
+                message: "Invalid action type ID"
 
             });
 
@@ -529,7 +533,7 @@ export const getAuditsByActionTypeController = async (
 
         const audits =
             await getAuditsByActionTypeService(
-                actionType
+                actionTypeId
             );
 
 
