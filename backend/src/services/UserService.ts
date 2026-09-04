@@ -70,44 +70,55 @@ export async function updateUser(targetUserId: number, actingUserId: number,data
     //     user_name,
     //     is_active= true
     // } = data
-    const existingUser = await userRepo.findOne({ 
-        where: { user_id: targetUserId }
-        
-    })
 
-    if (!existingUser) {
+    return await AppDataSource.manager.transaction(async (manager) => {
+        const users = manager.getRepository(User);
+        const existingUser = await userRepo.findOne({ 
+            where: { user_id: targetUserId }
+            
+        })
+
+        if (!existingUser) {
          throw new Error("User not found."); 
-    }
+        }
 
-    if (data.firstname && data.firstname !== existingUser.firstname) {
+        if (data.email && data.email !== existingUser.email) {
+          const duplicate = await users.findOne({ where: { email: data.email } });
+          if (duplicate) {
+            throw new Error("Email already in use.");
+          }
+          existingUser.email = data.email;
+        }
+
+        if (data.firstname && data.firstname !== existingUser.firstname) {
       const duplicate = await userRepo.findOne({ where: { firstname: data.firstname } });
       if (duplicate) {
         throw new Error("Email already in use.");
       }   
       existingUser.firstname = data.firstname;
-    }
+        }
     
-    if (data.firstname !== undefined) {
+        if (data.firstname !== undefined) {
         existingUser.firstname = data.firstname;
-    }
+        }
 
-    if (data.lastname !== undefined) {
+        if (data.lastname !== undefined) {
     existingUser.lastname = data.lastname;
-    }
+        }
 
-    if (data.is_active !== undefined) { 
+        if (data.is_active !== undefined) { 
         existingUser.is_active = data.is_active; 
-    }
+        }
 
+        existingUser.updated_at = new Date();
+        existingUser.updated_by = actingUserId;
+        
+        const updatedUser = await userRepo.save(existingUser); 
     
-
-    existingUser.updated_at = new Date();
-    existingUser.updated_by = actingUserId;
-    
-    const updatedUser = await userRepo.save(existingUser); 
-    
-    return updatedUser; 
+        return updatedUser; 
+});
 }
+
 
 //=========================================================================
 //deactive user
@@ -320,5 +331,3 @@ export async function deactivateUserWithOwnershipRules(targetUserId: number,acti
         return savedUser;
     });
 }
-
-

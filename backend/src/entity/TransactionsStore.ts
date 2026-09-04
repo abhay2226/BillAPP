@@ -86,7 +86,7 @@ export class Store {
 
     @OneToMany(
         () => Discount,
-        (discount) => discount.store_id
+        (discount) => discount.store
     )
     discounts!: Discount[];
 
