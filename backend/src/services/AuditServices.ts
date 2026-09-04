@@ -4,6 +4,8 @@ import { AppDataSource } from "../datasource.js";
 import { Audit } from "../entity/TransactionsAudit.js";
 import { ActionType } from "../entity/MasterActionType.js";
 
+import { EntityManager } from "typeorm";
+
 const auditRepository =
     AppDataSource.getRepository(Audit);
 
@@ -11,6 +13,128 @@ const actionTypeRepository =
     AppDataSource.getRepository(ActionType);
 
 
+// ======================================================
+// VALIDATE ID
+// ======================================================
+
+const validateId = (
+    value: number,
+    message: string
+): void => {
+
+    if (
+        !Number.isInteger(value) ||
+        value <= 0
+    ) {
+        throw new Error(message);
+    }
+};
+
+
+// ======================================================
+// GET ACTION TYPE BY CODE
+// ======================================================
+
+const getActionType = async (
+    manager: EntityManager,
+    code: string
+): Promise<ActionType> => {
+
+    const actionType =
+        await manager.findOne(
+            ActionType,
+            {
+                where: {
+                    code,
+                    is_active: true
+                }
+            }
+        );
+
+    if (!actionType) {
+        throw new Error(
+            `Action type '${code}' not found or inactive`
+        );
+    }
+
+    return actionType;
+};
+
+
+// ======================================================
+// CREATE AUDIT RECORD for each table curd
+// ======================================================
+
+export const createAuditRecordService = async (
+    manager: EntityManager,
+    data: {
+        tableName: string;
+        recordId: number;
+        actionTypeCode: string;
+        userId: number;
+        storeId: number;
+        sessionId: number;
+        ipAddress?: string | null;
+    }
+): Promise<Audit> => {
+
+    // ==================================================
+    // GET ACTION TYPE
+    // ==================================================
+
+    const actionType =
+        await getActionType(
+            manager,
+            data.actionTypeCode.trim().toUpperCase()
+        );
+
+
+    // ==================================================
+    // CREATE AUDIT
+    // ==================================================
+
+    const audit =
+        manager.create(
+            Audit,
+            {
+                table_name:
+                    data.tableName,
+
+                record_id:
+                    data.recordId,
+
+                action_type_id:
+                    actionType.action_type_id,
+
+                action_type:
+                    actionType,
+
+                updated_by:
+                    data.userId,
+
+                updated_at:
+                    new Date(),
+
+                store_id:
+                    data.storeId,
+
+                session_id:
+                    data.sessionId,
+
+                ip_address:
+                    data.ipAddress ?? null,
+
+                is_active:
+                    true
+            }
+        );
+
+
+    return await manager.save(
+        Audit,
+        audit
+    );
+};
 // ======================================================
 // CREATE AUDIT RECORD
 // ======================================================

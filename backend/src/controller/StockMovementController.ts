@@ -125,7 +125,8 @@ export const adjustStock = async (
                 quantityChange,
                 referenceTypeCode,
                 referenceId,
-                userId: payload.userId
+                userId: payload.userId,
+                sessionId: Number(payload.sessionId),
             });
 
         res.status(200).json({
