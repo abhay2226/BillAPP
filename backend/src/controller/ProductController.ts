@@ -42,9 +42,17 @@ export async function createProductController(
         }
 
 
+        const clientIp =
+            (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+            req.socket.remoteAddress ||
+            null;
+
         const product =
             await createProductService(
-                req.body
+                req.body,
+                payload.userId,
+                payload.sessionId,
+                clientIp
             );
 
 
@@ -275,10 +283,18 @@ export const updateProductController = async (
         }
 
 
+        const clientIp =
+            (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+            req.socket.remoteAddress ||
+            null;
+
         const product =
             await updateProductService(
                 productId,
-                req.body
+                req.body,
+                payload.userId,
+                payload.sessionId,
+                clientIp
             );
 
 
@@ -355,9 +371,17 @@ export const deleteProductController = async (
         }
 
 
+        const clientIp =
+            (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+            req.socket.remoteAddress ||
+            null;
+
         const product =
             await deleteProductService(
-                productId
+                productId,
+                payload.userId,
+                payload.sessionId,
+                clientIp
             );
 
 

@@ -1,5 +1,6 @@
 import { AppDataSource } from "../datasource.js";
 import { Product } from "../entity/TransactionsProduct.js";
+import { createAuditRecordService } from "./AuditServices.js";
 
 const productRepository = AppDataSource.getRepository(Product);
 
@@ -9,7 +10,14 @@ const productRepository = AppDataSource.getRepository(Product);
 // ======================================================
 
 export const createProductService = async (
-    productData: Partial<Product>
+    productData: Partial<Product> & {
+        userId?: number;
+        sessionId?: number;
+        ipAddress?: string | null;
+    },
+    userId?: number,
+    sessionId?: number,
+    ipAddress?: string | null
 ) => {
 
     const storeId = productData.store_id;
@@ -104,66 +112,125 @@ export const createProductService = async (
         Number(unitQuantity);
 
 
-    // ==================================================
-    // CHECK DUPLICATE PRODUCT
-    // Same product name is not allowed
-    // inside the same store
-    // ==================================================
+    const actingUserId =
+        userId ??
+        productData.userId ??
+        productData.created_by ??
+        1;
 
-    const existingProduct =
-        await productRepository.findOne({
 
-            where: {
-                store_id: storeId,
-                product_name: trimmedProductName
+    const actingSessionId =
+        sessionId ??
+        productData.sessionId ??
+        1;
+
+
+    const clientIpAddress =
+        ipAddress ??
+        productData.ipAddress ??
+        null;
+
+
+    return await AppDataSource.manager.transaction(
+        async (manager) => {
+
+            // ==================================================
+            // CHECK DUPLICATE PRODUCT
+            // Same product name is not allowed
+            // inside the same store
+            // ==================================================
+
+            const existingProduct =
+                await manager.findOne(Product, {
+                    where: {
+                        store_id: storeId,
+                        product_name: trimmedProductName
+                    }
+                });
+
+
+            if (existingProduct) {
+                throw new Error(
+                    "A product with this name already exists in this store."
+                );
             }
 
-        });
+
+            // ==================================================
+            // CREATE PRODUCT
+            // ==================================================
+
+            const product =
+                manager.create(Product, {
+                    store_id: storeId,
+
+                    product_name:
+                        trimmedProductName,
+
+                    type_id: typeId,
+
+                    brand_id: brandId,
+
+                    unit_id: unitId,
+
+                    unit_quantity: quantity,
+
+                    is_active: true,
+
+                    created_at: new Date(),
+
+                    created_by: actingUserId,
+
+                    updated_at: null,
+
+                    updated_by: null
+                });
 
 
-    if (existingProduct) {
+            // ==================================================
+            // SAVE PRODUCT
+            // ==================================================
 
-        throw new Error(
-            "A product with this name already exists in this store."
-        );
-    }
-
-
-    // ==================================================
-    // CREATE PRODUCT
-    // ==================================================
-
-    const product =
-        productRepository.create({
-
-            store_id: storeId,
-
-            product_name:
-                trimmedProductName,
-
-            type_id: typeId,
-
-            brand_id: brandId,
-
-            unit_id: unitId,
-
-            unit_quantity: quantity,
-
-            is_active: true,
-
-            created_at: new Date(),
-
-            created_by: null,
-
-            updated_at: null,
-
-            updated_by: null
-
-        });
+            const savedProduct =
+                await manager.save(
+                    Product,
+                    product
+                );
 
 
-    return await productRepository.save(
-        product
+            // ==================================================
+            // AUDIT LOGGING (ONLY AUDIT TABLE)
+            // ==================================================
+
+            await createAuditRecordService(
+                manager,
+                {
+                    tableName:
+                        "transactions_product",
+
+                    recordId:
+                        savedProduct.product_id,
+
+                    actionTypeCode:
+                        "INSERT",
+
+                    userId:
+                        actingUserId,
+
+                    storeId:
+                        savedProduct.store_id,
+
+                    sessionId:
+                        actingSessionId,
+
+                    ipAddress:
+                        clientIpAddress
+                }
+            );
+
+
+            return savedProduct;
+        }
     );
 };
 
@@ -181,7 +248,6 @@ export const getAllProductsService = async (
 
     const query =
         productRepository
-
             .createQueryBuilder("product")
 
             .leftJoinAndSelect(
@@ -247,25 +313,20 @@ export const getAllProductsService = async (
     ) {
 
         query.andWhere(
-
             "LOWER(product.product_name) LIKE LOWER(:productName)",
-
             {
                 productName:
                     `%${productName.trim()}%`
             }
-
         );
     }
 
 
     return await query
-
         .orderBy(
             "product.product_id",
             "ASC"
         )
-
         .getMany();
 };
 
@@ -289,27 +350,17 @@ export const getProductByIdService = async (
 
 
     return await productRepository.findOne({
-
         where: {
-
             product_id: productId,
-
             is_active: true
-
         },
 
         relations: [
-
             "store",
-
             "type",
-
             "brand",
-
             "uom"
-
         ]
-
     });
 };
 
@@ -320,250 +371,281 @@ export const getProductByIdService = async (
 
 export const updateProductService = async (
     productId: number,
-    productData: Partial<Product>
+    productData: Partial<Product> & {
+        userId?: number;
+        sessionId?: number;
+        ipAddress?: string | null;
+    },
+    userId?: number,
+    sessionId?: number,
+    ipAddress?: string | null
 ) => {
 
-    const product =
-        await productRepository.findOne({
+    if (
+        !Number.isInteger(productId) ||
+        productId <= 0
+    ) {
+        throw new Error(
+            "Invalid product ID"
+        );
+    }
 
-            where: {
 
-                product_id: productId,
+    return await AppDataSource.manager.transaction(
+        async (manager) => {
 
-                is_active: true
+            const product =
+                await manager.findOne(Product, {
+                    where: {
+                        product_id: productId,
+                        is_active: true
+                    }
+                });
 
+
+            if (!product) {
+                return null;
             }
 
-        });
 
+            // ==================================================
+            // UPDATE STORE
+            // ==================================================
 
-    if (!product) {
+            if (productData.store_id !== undefined) {
 
-        return null;
-
-    }
-
-
-    // ==================================================
-    // UPDATE STORE
-    // ==================================================
-
-    if (
-        productData.store_id !== undefined
-    ) {
-
-        if (
-            !Number.isInteger(
-                productData.store_id
-            ) ||
-            productData.store_id <= 0
-        ) {
-
-            throw new Error(
-                "Invalid store ID"
-            );
-
-        }
-
-        product.store_id =
-            productData.store_id;
-    }
-
-
-    // ==================================================
-    // UPDATE PRODUCT NAME
-    // ==================================================
-
-    if (
-        productData.product_name !== undefined
-    ) {
-
-        const trimmedProductName =
-            productData.product_name.trim();
-
-
-        if (
-            trimmedProductName === ""
-        ) {
-
-            throw new Error(
-                "Product name cannot be empty"
-            );
-
-        }
-
-
-        const existingProduct =
-            await productRepository.findOne({
-
-                where: {
-
-                    store_id:
-                        product.store_id,
-
-                    product_name:
-                        trimmedProductName
-
+                if (
+                    !Number.isInteger(
+                        productData.store_id
+                    ) ||
+                    productData.store_id <= 0
+                ) {
+                    throw new Error(
+                        "Invalid store ID"
+                    );
                 }
 
-            });
+                product.store_id =
+                    productData.store_id;
+            }
 
 
-        if (
-            existingProduct &&
-            existingProduct.product_id !== productId
-        ) {
+            // ==================================================
+            // UPDATE PRODUCT NAME
+            // ==================================================
 
-            throw new Error(
-                "A product with this name already exists in this store."
+            if (productData.product_name !== undefined) {
+
+                const trimmedProductName =
+                    productData.product_name.trim();
+
+
+                if (trimmedProductName === "") {
+                    throw new Error(
+                        "Product name cannot be empty"
+                    );
+                }
+
+
+                const existingProduct =
+                    await manager.findOne(Product, {
+                        where: {
+                            store_id:
+                                product.store_id,
+                            product_name:
+                                trimmedProductName
+                        }
+                    });
+
+
+                if (
+                    existingProduct &&
+                    existingProduct.product_id !== productId
+                ) {
+                    throw new Error(
+                        "A product with this name already exists in this store."
+                    );
+                }
+
+
+                product.product_name =
+                    trimmedProductName;
+            }
+
+
+            // ==================================================
+            // UPDATE PRODUCT TYPE
+            // ==================================================
+
+            if (productData.type_id !== undefined) {
+
+                if (
+                    !Number.isInteger(
+                        productData.type_id
+                    ) ||
+                    productData.type_id <= 0
+                ) {
+                    throw new Error(
+                        "Invalid product type ID"
+                    );
+                }
+
+                product.type_id =
+                    productData.type_id;
+            }
+
+
+            // ==================================================
+            // UPDATE BRAND
+            // ==================================================
+
+            if (productData.brand_id !== undefined) {
+
+                if (
+                    !Number.isInteger(
+                        productData.brand_id
+                    ) ||
+                    productData.brand_id <= 0
+                ) {
+                    throw new Error(
+                        "Invalid brand ID"
+                    );
+                }
+
+                product.brand_id =
+                    productData.brand_id;
+            }
+
+
+            // ==================================================
+            // UPDATE UNIT
+            // ==================================================
+
+            if (productData.unit_id !== undefined) {
+
+                if (
+                    !Number.isInteger(
+                        productData.unit_id
+                    ) ||
+                    productData.unit_id <= 0
+                ) {
+                    throw new Error(
+                        "Invalid unit ID"
+                    );
+                }
+
+                product.unit_id =
+                    productData.unit_id;
+            }
+
+
+            // ==================================================
+            // UPDATE UNIT QUANTITY
+            // ==================================================
+
+            if (productData.unit_quantity !== undefined) {
+
+                const quantity =
+                    Number(
+                        productData.unit_quantity
+                    );
+
+
+                if (quantity <= 0) {
+                    throw new Error(
+                        "Unit quantity must be greater than 0"
+                    );
+                }
+
+                product.unit_quantity =
+                    quantity;
+            }
+
+
+            // ==================================================
+            // UPDATE ACTIVE STATUS
+            // ==================================================
+
+            if (productData.is_active !== undefined) {
+                product.is_active =
+                    productData.is_active;
+            }
+
+
+            const actingUserId =
+                userId ??
+                productData.userId ??
+                productData.updated_by ??
+                1;
+
+
+            const actingSessionId =
+                sessionId ??
+                productData.sessionId ??
+                1;
+
+
+            const clientIpAddress =
+                ipAddress ??
+                productData.ipAddress ??
+                null;
+
+
+            // ==================================================
+            // UPDATE AUDIT FIELDS
+            // ==================================================
+
+            product.updated_at =
+                new Date();
+
+            product.updated_by =
+                actingUserId;
+
+
+            // ==================================================
+            // SAVE PRODUCT
+            // ==================================================
+
+            const updatedProduct =
+                await manager.save(
+                    Product,
+                    product
+                );
+
+
+            // ==================================================
+            // AUDIT LOGGING (ONLY AUDIT TABLE)
+            // ==================================================
+
+            await createAuditRecordService(
+                manager,
+                {
+                    tableName:
+                        "transactions_product",
+
+                    recordId:
+                        updatedProduct.product_id,
+
+                    actionTypeCode:
+                        "UPDATE",
+
+                    userId:
+                        actingUserId,
+
+                    storeId:
+                        updatedProduct.store_id,
+
+                    sessionId:
+                        actingSessionId,
+
+                    ipAddress:
+                        clientIpAddress
+                }
             );
 
+
+            return updatedProduct;
         }
-
-
-        product.product_name =
-            trimmedProductName;
-    }
-
-
-    // ==================================================
-    // UPDATE PRODUCT TYPE
-    // ==================================================
-
-    if (
-        productData.type_id !== undefined
-    ) {
-
-        if (
-            !Number.isInteger(
-                productData.type_id
-            ) ||
-            productData.type_id <= 0
-        ) {
-
-            throw new Error(
-                "Invalid product type ID"
-            );
-
-        }
-
-
-        product.type_id =
-            productData.type_id;
-    }
-
-
-    // ==================================================
-    // UPDATE BRAND
-    // ==================================================
-
-    if (
-        productData.brand_id !== undefined
-    ) {
-
-        if (
-            !Number.isInteger(
-                productData.brand_id
-            ) ||
-            productData.brand_id <= 0
-        ) {
-
-            throw new Error(
-                "Invalid brand ID"
-            );
-
-        }
-
-
-        product.brand_id =
-            productData.brand_id;
-    }
-
-
-    // ==================================================
-    // UPDATE UNIT
-    // ==================================================
-
-    if (
-        productData.unit_id !== undefined
-    ) {
-
-        if (
-            !Number.isInteger(
-                productData.unit_id
-            ) ||
-            productData.unit_id <= 0
-        ) {
-
-            throw new Error(
-                "Invalid unit ID"
-            );
-
-        }
-
-
-        product.unit_id =
-            productData.unit_id;
-    }
-
-
-    // ==================================================
-    // UPDATE UNIT QUANTITY
-    // ==================================================
-
-    if (
-        productData.unit_quantity !== undefined
-    ) {
-
-        const quantity =
-            Number(
-                productData.unit_quantity
-            );
-
-
-        if (
-            quantity <= 0
-        ) {
-
-            throw new Error(
-                "Unit quantity must be greater than 0"
-            );
-
-        }
-
-
-        product.unit_quantity =
-            quantity;
-    }
-
-
-    // ==================================================
-    // UPDATE ACTIVE STATUS
-    // ==================================================
-
-    if (
-        productData.is_active !== undefined
-    ) {
-
-        product.is_active =
-            productData.is_active;
-    }
-
-
-    // ==================================================
-    // UPDATE AUDIT FIELDS
-    // ==================================================
-
-    product.updated_at =
-        new Date();
-
-
-    product.updated_by =
-        null;
-
-
-    return await productRepository.save(
-        product
     );
 };
 
@@ -573,50 +655,110 @@ export const updateProductService = async (
 // ======================================================
 
 export const deleteProductService = async (
-    productId: number
+    productId: number,
+    userId?: number,
+    sessionId?: number,
+    ipAddress?: string | null
 ) => {
 
-    const product =
-        await productRepository.findOne({
-
-            where: {
-
-                product_id: productId,
-
-                is_active: true
-
-            }
-
-        });
-
-
-    if (!product) {
-
-        return null;
-
+    if (
+        !Number.isInteger(productId) ||
+        productId <= 0
+    ) {
+        throw new Error(
+            "Invalid product ID"
+        );
     }
 
 
-    // ==================================================
-    // SOFT DELETE
-    // ==================================================
+    return await AppDataSource.manager.transaction(
+        async (manager) => {
 
-    product.is_active = false;
-
-
-    // ==================================================
-    // UPDATE AUDIT FIELDS
-    // ==================================================
-
-    product.updated_at =
-        new Date();
+            const product =
+                await manager.findOne(Product, {
+                    where: {
+                        product_id: productId,
+                        is_active: true
+                    }
+                });
 
 
-    product.updated_by =
-        null;
+            if (!product) {
+                return null;
+            }
 
 
-    return await productRepository.save(
-        product
+            const actingUserId =
+                userId ?? 1;
+
+            const actingSessionId =
+                sessionId ?? 1;
+
+            const clientIpAddress =
+                ipAddress ?? null;
+
+
+            // ==================================================
+            // SOFT DELETE
+            // ==================================================
+
+            product.is_active = false;
+
+
+            // ==================================================
+            // UPDATE AUDIT FIELDS
+            // ==================================================
+
+            product.updated_at =
+                new Date();
+
+            product.updated_by =
+                actingUserId;
+
+
+            // ==================================================
+            // SAVE PRODUCT
+            // ==================================================
+
+            const deletedProduct =
+                await manager.save(
+                    Product,
+                    product
+                );
+
+
+            // ==================================================
+            // AUDIT LOGGING (ONLY AUDIT TABLE)
+            // ==================================================
+
+            await createAuditRecordService(
+                manager,
+                {
+                    tableName:
+                        "transactions_product",
+
+                    recordId:
+                        deletedProduct.product_id,
+
+                    actionTypeCode:
+                        "DELETE",
+
+                    userId:
+                        actingUserId,
+
+                    storeId:
+                        deletedProduct.store_id,
+
+                    sessionId:
+                        actingSessionId,
+
+                    ipAddress:
+                        clientIpAddress
+                }
+            );
+
+
+            return deletedProduct;
+        }
     );
 };
