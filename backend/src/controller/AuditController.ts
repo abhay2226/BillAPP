@@ -8,7 +8,6 @@ import {
     getAuditsByRecordIdService,
     getAuditsByTableAndRecordIdService,
     getAuditsByStoreService,
-    getAuditsByUserService,
     getAuditsBySessionService,
     getAuditsByActionTypeService
 } from "../services/AuditServices.js";
@@ -389,60 +388,6 @@ export const getAuditsByStoreController = async (
 
 
 
-// GET AUDITS BY USER
-
-export const getAuditsByUserController = async (
-    req: Request,
-    res: Response
-) => {
-
-    try {
-
-        const userId = Number(
-            req.params.userId
-        );
-
-
-        if (
-            !Number.isInteger(userId) ||
-            userId <= 0
-        ) {
-
-            return res.status(400).json({
-
-                message: "Invalid user ID"
-
-            });
-
-        }
-
-
-        const audits =
-            await getAuditsByUserService(
-                userId
-            );
-
-
-        return res.status(200).json({
-
-            message: "Audit records fetched successfully",
-
-            data: audits
-
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            message: "Failed to fetch audit records"
-
-        });
-
-    }
-};
 
 
 

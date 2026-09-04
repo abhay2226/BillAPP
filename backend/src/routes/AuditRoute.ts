@@ -8,7 +8,6 @@ import {
     getAuditsByRecordIdController,
     getAuditsByTableAndRecordIdController,
     getAuditsByStoreController,
-    getAuditsByUserController,
     getAuditsBySessionController,
     getAuditsByActionTypeController
 } from "../controller/AuditController.js";
@@ -88,15 +87,6 @@ AuditRouter.get(
 
 
 
-// GET AUDITS BY USER
-//
-// Example:
-// GET /audit/user/2
-
-AuditRouter.get(
-    "/user/:userId",
-    getAuditsByUserController
-);
 
 
 
