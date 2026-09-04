@@ -1,13 +1,15 @@
 import { AppDataSource } from "../datasource.js";
 import { Inventory } from "../entity/TransactionsInventory.js";
 import { StockMovement } from "../entity/TransactionsStockMovement.js";
+import { ReferenceType } from "../entity/MasterReference.js";
+import { EntityManager } from "typeorm";
 
 export type StockMovementData = {
     inventoryId: number;
     movementTypeId: number;
     quantityChange: number;
-    referenceTypeId?: number;
-    referenceId?: number;
+    referenceTypeCode: string;
+    referenceId: number;
     userId: number;
 };
 
@@ -18,6 +20,29 @@ const validateId = (
     if (!Number.isInteger(value) || value <= 0) {
         throw new Error(message);
     }
+};
+
+const getReferenceType = async (
+    manager: EntityManager,
+    code: string
+): Promise<ReferenceType> => {
+    const referenceType = await manager.findOne(
+        ReferenceType,
+        {
+            where: {
+                code,
+                is_active: true
+            }
+        }
+    );
+
+    if (!referenceType) {
+        throw new Error(
+            `Reference type '${code}' not found or inactive`
+        );
+    }
+
+    return referenceType;
 };
 
 const validateStockMovement = (
@@ -34,6 +59,11 @@ const validateStockMovement = (
     );
 
     validateId(
+        data.referenceId,
+        "Valid reference ID is required"
+    );
+
+    validateId(
         data.userId,
         "Valid user ID is required"
     );
@@ -47,28 +77,12 @@ const validateStockMovement = (
         );
     }
 
-    if (data.referenceId !== undefined) {
-        validateId(
-            data.referenceId,
-            "Invalid reference ID"
-        );
-
-        if (
-            data.referenceType === undefined ||
-            data.referenceType.trim() === ""
-        ) {
-            throw new Error(
-                "Reference type is required when reference ID is provided"
-            );
-        }
-    }
-
     if (
-        data.referenceType !== undefined &&
-        data.referenceType.trim() === ""
+        !data.referenceTypeCode ||
+        data.referenceTypeCode.trim() === ""
     ) {
         throw new Error(
-            "Reference type cannot be empty"
+            "Reference type code is required"
         );
     }
 };
@@ -96,6 +110,12 @@ export const createStockMovementService = async (
                 );
             }
 
+            const referenceType =
+                await getReferenceType(
+                    manager,
+                    data.referenceTypeCode.trim()
+                );
+
             const newQuantity =
                 inventory.qty +
                 data.quantityChange;
@@ -121,7 +141,7 @@ export const createStockMovementService = async (
                 StockMovement,
                 {
                     inventory_id:
-                        data.inventoryId,
+                        inventory.inventory_id,
 
                     movement_type_id:
                         data.movementTypeId,
@@ -129,11 +149,14 @@ export const createStockMovementService = async (
                     quantity_change:
                         data.quantityChange,
 
-                    reference_type:
-                        data.referenceType ?? null,
+                    reference_type_id:
+                        referenceType.reference_type_id,
+
+                    referenceType:
+                        referenceType,
 
                     reference_id:
-                        data.referenceId ?? null,
+                        data.referenceId,
 
                     is_active: true,
 
@@ -167,8 +190,8 @@ export const stockInService = async (
     movementTypeId: number,
     quantity: number,
     userId: number,
-    referenceType?: string,
-    referenceId?: number
+    referenceTypeCode: string,
+    referenceId: number
 ) => {
     if (
         !Number.isInteger(quantity) ||
@@ -184,12 +207,8 @@ export const stockInService = async (
         movementTypeId,
         quantityChange: quantity,
         userId,
-        ...(referenceType !== undefined
-            ? { referenceType }
-            : {}),
-        ...(referenceId !== undefined
-            ? { referenceId }
-            : {})
+        referenceTypeCode,
+        referenceId
     });
 };
 
@@ -198,8 +217,8 @@ export const stockOutService = async (
     movementTypeId: number,
     quantity: number,
     userId: number,
-    referenceType?: string,
-    referenceId?: number
+    referenceTypeCode: string,
+    referenceId: number
 ) => {
     if (
         !Number.isInteger(quantity) ||
@@ -215,12 +234,8 @@ export const stockOutService = async (
         movementTypeId,
         quantityChange: -quantity,
         userId,
-        ...(referenceType !== undefined
-            ? { referenceType }
-            : {}),
-        ...(referenceId !== undefined
-            ? { referenceId }
-            : {})
+        referenceTypeCode,
+        referenceId
     });
 };
 
@@ -240,7 +255,12 @@ export const getStockMovementByIdService = async (
     return await repository.findOne({
         where: {
             movement_id: movementId
-        }
+        },
+        relations: [
+            "inventory",
+            "movementType",
+            "referenceType"
+        ]
     });
 };
 
@@ -255,6 +275,11 @@ export const getAllStockMovementsService =
             where: {
                 is_active: true
             },
+            relations: [
+                "inventory",
+                "movementType",
+                "referenceType"
+            ],
             order: {
                 created_at: "DESC"
             }
@@ -269,6 +294,11 @@ export const getAllStockMovementHistoryService =
             );
 
         return await repository.find({
+            relations: [
+                "inventory",
+                "movementType",
+                "referenceType"
+            ],
             order: {
                 created_at: "DESC"
             }
@@ -294,6 +324,10 @@ export const getInventoryMovementHistoryService =
                 inventory_id: inventoryId,
                 is_active: true
             },
+            relations: [
+                "movementType",
+                "referenceType"
+            ],
             order: {
                 created_at: "DESC"
             }
@@ -320,6 +354,11 @@ export const getMovementsByTypeService =
                     movementTypeId,
                 is_active: true
             },
+            relations: [
+                "inventory",
+                "movementType",
+                "referenceType"
+            ],
             order: {
                 created_at: "DESC"
             }
@@ -328,11 +367,16 @@ export const getMovementsByTypeService =
 
 export const getMovementsByReferenceService =
     async (
-        referenceType: string,
+        referenceTypeCode: string,
         referenceId: number
     ) => {
-        if (referenceType.trim() === "") {
-            throw new Error("Invalid reference type");
+        if (
+            !referenceTypeCode ||
+            referenceTypeCode.trim() === ""
+        ) {
+            throw new Error(
+                "Invalid reference type code"
+            );
         }
 
         validateId(
@@ -345,20 +389,44 @@ export const getMovementsByReferenceService =
                 StockMovement
             );
 
-        return await repository.find({
-            where: {
-                reference_type:
-                    referenceType.trim(),
-
-                reference_id:
-                    referenceId,
-
-                is_active: true
-            },
-            order: {
-                created_at: "DESC"
-            }
-        });
+        return await repository
+            .createQueryBuilder("movement")
+            .leftJoinAndSelect(
+                "movement.referenceType",
+                "referenceType"
+            )
+            .leftJoinAndSelect(
+                "movement.inventory",
+                "inventory"
+            )
+            .leftJoinAndSelect(
+                "movement.movementType",
+                "movementType"
+            )
+            .where(
+                "referenceType.code = :code",
+                {
+                    code:
+                        referenceTypeCode.trim()
+                }
+            )
+            .andWhere(
+                "movement.reference_id = :referenceId",
+                {
+                    referenceId
+                }
+            )
+            .andWhere(
+                "movement.is_active = :isActive",
+                {
+                    isActive: true
+                }
+            )
+            .orderBy(
+                "movement.created_at",
+                "DESC"
+            )
+            .getMany();
     };
 
 export const getMovementsByDateRangeService =
@@ -397,6 +465,18 @@ export const getMovementsByDateRangeService =
 
         return await repository
             .createQueryBuilder("movement")
+            .leftJoinAndSelect(
+                "movement.inventory",
+                "inventory"
+            )
+            .leftJoinAndSelect(
+                "movement.movementType",
+                "movementType"
+            )
+            .leftJoinAndSelect(
+                "movement.referenceType",
+                "referenceType"
+            )
             .where(
                 "movement.created_at BETWEEN :fromDate AND :toDate",
                 {
@@ -459,6 +539,14 @@ export const getInventoryMovementsByDateRangeService =
 
         return await repository
             .createQueryBuilder("movement")
+            .leftJoinAndSelect(
+                "movement.referenceType",
+                "referenceType"
+            )
+            .leftJoinAndSelect(
+                "movement.movementType",
+                "movementType"
+            )
             .where(
                 "movement.inventory_id = :inventoryId",
                 {
