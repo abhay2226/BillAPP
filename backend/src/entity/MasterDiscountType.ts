@@ -41,12 +41,6 @@ export class DiscountType{
     })
     created_at!: Date;
 
-    @Column({
-        name: "created_by",
-        type: "integer",
-        nullable: false
-    })
-    created_by!: number ;
 
     @Column({
         name: "updated_at",
@@ -55,12 +49,6 @@ export class DiscountType{
     })
     updated_at!: Date | null;
 
-    @Column({
-        name: "updated_by",
-        type: "integer",
-        nullable: true
-    })
-    updated_by!: number | null;
 
     @OneToMany(() => Discount, (discount) => discount.discount_type_id)
     discounts!: Discount[];
