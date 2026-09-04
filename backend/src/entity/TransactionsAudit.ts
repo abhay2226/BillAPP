@@ -9,115 +9,162 @@ import {
 import { User } from "./TransactionsUser.js";
 import { Store } from "./TransactionsStore.js";
 import { Session } from "./TransactionsSession.js";
+import { MasterActionType } from "./MasterActionType.js";
 
 @Entity({ name: "transactions_audit" })
 export class Audit {
 
-    @PrimaryGeneratedColumn({
-        name: "audit_id",
-        type: "integer"
-    })
+    // ======================================================
+    // PRIMARY KEY
+    // ======================================================
+
+    @PrimaryGeneratedColumn()
     audit_id!: number;
 
+
+    // ======================================================
+    // TABLE NAME
+    // ======================================================
+
     @Column({
-        name: "table_name",
         type: "varchar",
-        nullable: false
+        length: 100
     })
     table_name!: string;
 
+
+    // ======================================================
+    // RECORD ID
+    // ======================================================
+
     @Column({
-        name: "record_id",
-        type: "integer",
-        nullable: false
+        type: "integer"
     })
     record_id!: number;
 
-    @Column({
-        name: "action_type",
-        type: "varchar",
-        nullable: false
+
+    // ======================================================
+    // ACTION TYPE
+    // ======================================================
+
+    @ManyToOne(
+        () => MasterActionType,
+        {
+            nullable: false
+        }
+    )
+    @JoinColumn({
+        name: "action_type_id"
     })
-    action_type!: string;
+    action_type!: MasterActionType;
+
 
     @Column({
-        name: "updated_by",
         type: "integer",
-        nullable: false
+        name: "action_type_id"
     })
-    updated_by!: number;
-
-    @Column({
-        name: "updated_at",
-        type: "datetime",
-        nullable: false
-    })
-    updated_at!: Date;
-
-    @Column({
-        name: "store_id",
-        type: "integer",
-        nullable: false
-    })
-    store_id!: number;
-
-    @Column({
-        name: "session_id",
-        type: "integer",
-        nullable: false
-    })
-    session_id!: number;
-
-    @Column({
-        name: "ip_address",
-        type: "varchar",
-        nullable: true
-    })
-    ip_address!: string | null;
-
-    @Column({
-        name: "is_active",
-        type: "boolean",
-        default: true
-    })
-    is_active!: boolean;
+    action_type_id!: number;
 
 
-    // Audit -> User
+    // ======================================================
+    // UPDATED BY
+    // ======================================================
 
     @ManyToOne(
         () => User,
-        { nullable: false }
+        {
+            nullable: true
+        }
     )
     @JoinColumn({
-        name: "updated_by",
-        referencedColumnName: "user_id"
+        name: "updated_by"
     })
-    updatedByUser!: User;
+    updated_by_user!: User;
 
 
-    // Audit -> Store
+    @Column({
+        type: "integer",
+        nullable: true
+    })
+    updated_by!: number | null;
+
+
+    // ======================================================
+    // UPDATED AT
+    // ======================================================
+
+    @Column({
+        type: "datetime",
+        default: () => "CURRENT_TIMESTAMP"
+    })
+    updated_at!: Date;
+
+
+    // ======================================================
+    // STORE
+    // ======================================================
 
     @ManyToOne(
         () => Store,
-        { nullable: false }
+        {
+            nullable: true
+        }
     )
     @JoinColumn({
-        name: "store_id",
-        referencedColumnName: "store_id"
+        name: "store_id"
     })
     store!: Store;
 
 
-    // Audit -> Session
+    @Column({
+        type: "integer",
+        nullable: true
+    })
+    store_id!: number | null;
+
+
+    // ======================================================
+    // SESSION
+    // ======================================================
 
     @ManyToOne(
         () => Session,
-        { nullable: false }
+        {
+            nullable: true
+        }
     )
     @JoinColumn({
-        name: "session_id",
-        referencedColumnName: "session_id"
+        name: "session_id"
     })
     session!: Session;
+
+
+    @Column({
+        type: "integer",
+        nullable: true
+    })
+    session_id!: number | null;
+
+
+    // ======================================================
+    // IP ADDRESS
+    // ======================================================
+
+    @Column({
+        type: "varchar",
+        length: 45,
+        nullable: true
+    })
+    ip_address!: string | null;
+
+
+    // ======================================================
+    // ACTIVE FLAG
+    // ======================================================
+
+    @Column({
+        type: "boolean",
+        default: true
+    })
+    is_active!: boolean;
 }
