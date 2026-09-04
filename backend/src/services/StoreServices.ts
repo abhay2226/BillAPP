@@ -3,11 +3,26 @@ import { Role } from "../entity/MasterRole.js";
 import { Store } from "../entity/TransactionsStore.js";
 import { User } from "../entity/TransactionsUser.js";
 import { Audit } from "../entity/TransactionsAudit.js";
+import { ActionType } from "../entity/MasterActionType.js";
 
 import { isUniqueConstraintError } from "./Error.js"
 
 // import { AppError } from "../utils/AppError.js";
-import { In,Not } from "typeorm";
+import { In, Not } from "typeorm";
+
+// Helper: resolve ActionType id by code string (e.g. "UPDATE", "DELETE")
+const getActionTypeId = async (
+    manager: any,
+    code: string
+): Promise<number> => {
+    const actionType = await manager.findOne(ActionType, {
+        where: { code, is_active: true }
+    });
+    if (!actionType) {
+        throw new Error(`Action type with code '${code}' not found or inactive.`);
+    }
+    return actionType.action_type_id;
+};
 
 const storeRepo = AppDataSource.getRepository(Store);
 const userRepo = AppDataSource.getRepository(User);
@@ -343,12 +358,12 @@ export async function updateStore(storeId: number, data: Partial<StoreData>, use
       throw err;
     }
 
+    const updateActionTypeId = await getActionTypeId(manager, "UPDATE");
+
     await auditRepo.insert({
       table_name: "transactions_store",
       record_id: savedStore.store_id,
-      action_type: "UPATE",
-      updated_by: userId,
-      updated_at: new Date(),
+      action_type_id: updateActionTypeId,
       store_id: savedStore.store_id,
       session_id: sessionId,
       ip_address: null,
@@ -441,12 +456,12 @@ export async function deleteStore(storeId: number, userId: number,sessionId: num
 
     const savedStore = await stores.save(existingStore);
 
+    const deleteActionTypeId = await getActionTypeId(manager, "DELETE");
+
     await auditRepo.insert({
       table_name: "transactions_store",
       record_id: savedStore.store_id,
-      action_type: "DELETE",
-      updated_by: userId,
-      updated_at: new Date(),
+      action_type_id: deleteActionTypeId,
       store_id: savedStore.store_id,
       session_id: sessionId,
       ip_address: null,

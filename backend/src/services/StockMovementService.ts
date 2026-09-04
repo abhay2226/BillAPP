@@ -1,8 +1,18 @@
+
 import { AppDataSource } from "../datasource.js";
+
 import { Inventory } from "../entity/TransactionsInventory.js";
 import { StockMovement } from "../entity/TransactionsStockMovement.js";
 import { ReferenceType } from "../entity/MasterReference.js";
+import { ActionType } from "../entity/MasterActionType.js";
+import { Audit } from "../entity/TransactionsAudit.js";
+
 import { EntityManager } from "typeorm";
+
+
+// ======================================================
+// STOCK MOVEMENT DATA
+// ======================================================
 
 export type StockMovementData = {
     inventoryId: number;
@@ -11,30 +21,47 @@ export type StockMovementData = {
     referenceTypeCode: string;
     referenceId: number;
     userId: number;
+    sessionId: number;
 };
+
+
+// ======================================================
+// VALIDATE ID
+// ======================================================
 
 const validateId = (
     value: number,
     message: string
 ): void => {
-    if (!Number.isInteger(value) || value <= 0) {
+
+    if (
+        !Number.isInteger(value) ||
+        value <= 0
+    ) {
         throw new Error(message);
     }
 };
+
+
+// ======================================================
+// GET REFERENCE TYPE BY CODE
+// ======================================================
 
 const getReferenceType = async (
     manager: EntityManager,
     code: string
 ): Promise<ReferenceType> => {
-    const referenceType = await manager.findOne(
-        ReferenceType,
-        {
-            where: {
-                code,
-                is_active: true
+
+    const referenceType =
+        await manager.findOne(
+            ReferenceType,
+            {
+                where: {
+                    code,
+                    is_active: true
+                }
             }
-        }
-    );
+        );
 
     if (!referenceType) {
         throw new Error(
@@ -45,28 +72,151 @@ const getReferenceType = async (
     return referenceType;
 };
 
+
+// ======================================================
+// GET ACTION TYPE BY CODE
+// ======================================================
+
+const getActionType = async (
+    manager: EntityManager,
+    code: string
+): Promise<ActionType> => {
+
+    const actionType =
+        await manager.findOne(
+            ActionType,
+            {
+                where: {
+                    code,
+                    is_active: true
+                }
+            }
+        );
+
+    if (!actionType) {
+        throw new Error(
+            `Action type '${code}' not found or inactive`
+        );
+    }
+
+    return actionType;
+};
+
+
+// ======================================================
+// CREATE AUDIT RECORD
+// ======================================================
+
+const createAuditRecord = async (
+    manager: EntityManager,
+    data: {
+        tableName: string;
+        recordId: number;
+        actionTypeCode: string;
+        userId: number;
+        storeId: number;
+        sessionId: number;
+        ipAddress?: string | null;
+    }
+): Promise<Audit> => {
+
+    // ==================================================
+    // GET ACTION TYPE
+    // ==================================================
+
+    const actionType =
+        await getActionType(
+            manager,
+            data.actionTypeCode.trim().toUpperCase()
+        );
+
+
+    // ==================================================
+    // CREATE AUDIT
+    // ==================================================
+
+    const audit =
+        manager.create(
+            Audit,
+            {
+                table_name:
+                    data.tableName,
+
+                record_id:
+                    data.recordId,
+
+                action_type_id:
+                    actionType.action_type_id,
+
+                action_type:
+                    actionType,
+
+                updated_by:
+                    data.userId,
+
+                updated_at:
+                    new Date(),
+
+                store_id:
+                    data.storeId,
+
+                session_id:
+                    data.sessionId,
+
+                ip_address:
+                    data.ipAddress ?? null,
+
+                is_active:
+                    true
+            }
+        );
+
+
+    return await manager.save(
+        Audit,
+        audit
+    );
+};
+
+
+
+// ======================================================
+// VALIDATE STOCK MOVEMENT
+// ======================================================
+
 const validateStockMovement = (
     data: StockMovementData
 ): void => {
+
     validateId(
         data.inventoryId,
         "Valid inventory ID is required"
     );
+
 
     validateId(
         data.movementTypeId,
         "Valid movement type ID is required"
     );
 
+
     validateId(
         data.referenceId,
         "Valid reference ID is required"
     );
 
+
     validateId(
         data.userId,
         "Valid user ID is required"
     );
+
+
+    validateId(
+        data.sessionId,
+        "Valid session ID is required"
+    );
+
 
     if (
         !Number.isInteger(data.quantityChange) ||
@@ -76,6 +226,7 @@ const validateStockMovement = (
             "Quantity change must be a non-zero integer"
         );
     }
+
 
     if (
         !data.referenceTypeCode ||
@@ -87,22 +238,39 @@ const validateStockMovement = (
     }
 };
 
+
+// ======================================================
+// CREATE STOCK MOVEMENT
+// ======================================================
+
 export const createStockMovementService = async (
     data: StockMovementData
 ) => {
+
     validateStockMovement(data);
+
 
     return await AppDataSource.manager.transaction(
         async (manager) => {
-            const inventory = await manager.findOne(
-                Inventory,
-                {
-                    where: {
-                        inventory_id: data.inventoryId,
-                        is_active: true
+
+            // ==============================================
+            // FIND INVENTORY
+            // ==============================================
+
+            const inventory =
+                await manager.findOne(
+                    Inventory,
+                    {
+                        where: {
+                            inventory_id:
+                                data.inventoryId,
+
+                            is_active:
+                                true
+                        }
                     }
-                }
-            );
+                );
+
 
             if (!inventory) {
                 throw new Error(
@@ -110,15 +278,27 @@ export const createStockMovementService = async (
                 );
             }
 
+
+            // ==============================================
+            // GET REFERENCE TYPE
+            // ==============================================
+
             const referenceType =
                 await getReferenceType(
                     manager,
-                    data.referenceTypeCode.trim()
+                    data.referenceTypeCode
+                        .trim()
                 );
+
+
+            // ==============================================
+            // CALCULATE NEW QUANTITY
+            // ==============================================
 
             const newQuantity =
                 inventory.qty +
                 data.quantityChange;
+
 
             if (newQuantity < 0) {
                 throw new Error(
@@ -126,73 +306,172 @@ export const createStockMovementService = async (
                 );
             }
 
+
             const now = new Date();
 
-            inventory.qty = newQuantity;
-            inventory.updated_at = now;
-            inventory.updated_by = data.userId;
+
+            // ==============================================
+            // UPDATE INVENTORY
+            // ==============================================
+
+            inventory.qty =
+                newQuantity;
+
+            inventory.updated_at =
+                now;
+
+            inventory.updated_by =
+                data.userId;
+
 
             await manager.save(
                 Inventory,
                 inventory
             );
 
-            const movement = manager.create(
-                StockMovement,
-                {
-                    inventory_id:
-                        inventory.inventory_id,
+            const inAudit =
+                await createAuditRecord(
+                    manager,
+                    {
+                        tableName:
+                            "transactions_inventory",
 
-                    movement_type_id:
-                        data.movementTypeId,
+                        recordId:
+                            inventory.inventory_id,
 
-                    quantity_change:
-                        data.quantityChange,
+                        actionTypeCode:
+                            "INSERT",
 
-                    reference_type_id:
-                        referenceType.reference_type_id,
+                        userId:
+                            data.userId,
 
-                    referenceType:
-                        referenceType,
+                        storeId:
+                            inventory.store_id,
 
-                    reference_id:
-                        data.referenceId,
+                        sessionId:
+                            data.sessionId
+                    }
+                );
 
-                    is_active: true,
-
-                    created_at: now,
-
-                    created_by:
-                        data.userId,
-
-                    updated_at: now,
-
-                    updated_by:
-                        data.userId
-                }
+            await manager.save(
+                Audit,
+                inAudit
             );
+
+
+
+            // ==============================================
+            // CREATE STOCK MOVEMENT
+            // ==============================================
+
+            const movement =
+                manager.create(
+                    StockMovement,
+                    {
+                        inventory_id:
+                            inventory.inventory_id,
+
+                        movement_type_id:
+                            data.movementTypeId,
+
+                        quantity_change:
+                            data.quantityChange,
+
+                        reference_type_id:
+                            referenceType.reference_type_id,
+
+                        referenceType:
+                            referenceType,
+
+                        reference_id:
+                            data.referenceId,
+
+                        is_active:
+                            true,
+
+                        created_at:
+                            now,
+
+                        created_by:
+                            data.userId,
+
+                        updated_at:
+                            now,
+
+                        updated_by:
+                            data.userId
+                    }
+                );
+
 
             await manager.save(
                 StockMovement,
                 movement
             );
 
+
+            // ==============================================
+            // AUDIT STOCK MOVEMENT
+            // ==============================================
+
+            const audit =
+                await createAuditRecord(
+                    manager,
+                    {
+                        tableName:
+                            "transactions_stock_movement",
+
+                        recordId:
+                            movement.movement_id,
+
+                        actionTypeCode:
+                            "INSERT",
+
+                        userId:
+                            data.userId,
+
+                        storeId:
+                            inventory.store_id,
+
+                        sessionId:
+                            data.sessionId
+                    }
+                );
+            
+             await manager.save(
+                Audit,
+                audit
+            );
+
+
+            // ==============================================
+            // RETURN RESULT
+            // ==============================================
+
             return {
                 inventory,
-                movement
+                movement,
+                audit
             };
         }
     );
 };
+
+
+// ======================================================
+// STOCK IN
+// ======================================================
 
 export const stockInService = async (
     inventoryId: number,
     movementTypeId: number,
     quantity: number,
     userId: number,
+    sessionId: number,
     referenceTypeCode: string,
     referenceId: number
 ) => {
+
     if (
         !Number.isInteger(quantity) ||
         quantity <= 0
@@ -202,24 +481,41 @@ export const stockInService = async (
         );
     }
 
+
     return await createStockMovementService({
+
         inventoryId,
+
         movementTypeId,
-        quantityChange: quantity,
+
+        quantityChange:
+            quantity,
+
         userId,
+
+        sessionId,
+
         referenceTypeCode,
+
         referenceId
     });
 };
+
+
+// ======================================================
+// STOCK OUT
+// ======================================================
 
 export const stockOutService = async (
     inventoryId: number,
     movementTypeId: number,
     quantity: number,
     userId: number,
+    sessionId: number,
     referenceTypeCode: string,
     referenceId: number
 ) => {
+
     if (
         !Number.isInteger(quantity) ||
         quantity <= 0
@@ -229,33 +525,54 @@ export const stockOutService = async (
         );
     }
 
+
     return await createStockMovementService({
+
         inventoryId,
+
         movementTypeId,
-        quantityChange: -quantity,
+
+        quantityChange:
+            -quantity,
+
         userId,
+
+        sessionId,
+
         referenceTypeCode,
+
         referenceId
     });
 };
 
+
+// ======================================================
+// GET STOCK MOVEMENT BY ID
+// ======================================================
+
 export const getStockMovementByIdService = async (
     movementId: number
 ) => {
+
     validateId(
         movementId,
         "Invalid movement ID"
     );
+
 
     const repository =
         AppDataSource.getRepository(
             StockMovement
         );
 
+
     return await repository.findOne({
+
         where: {
-            movement_id: movementId
+            movement_id:
+                movementId
         },
+
         relations: [
             "inventory",
             "movementType",
@@ -264,112 +581,164 @@ export const getStockMovementByIdService = async (
     });
 };
 
+
+// ======================================================
+// GET ALL ACTIVE STOCK MOVEMENTS
+// ======================================================
+
 export const getAllStockMovementsService =
     async () => {
+
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
 
+
         return await repository.find({
+
             where: {
                 is_active: true
             },
+
             relations: [
                 "inventory",
                 "movementType",
                 "referenceType"
             ],
+
             order: {
                 created_at: "DESC"
             }
         });
     };
 
+
+// ======================================================
+// GET ALL STOCK MOVEMENT HISTORY
+// ======================================================
+
 export const getAllStockMovementHistoryService =
     async () => {
+
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
 
+
         return await repository.find({
+
             relations: [
                 "inventory",
                 "movementType",
                 "referenceType"
             ],
+
             order: {
                 created_at: "DESC"
             }
         });
     };
+
+
+// ======================================================
+// GET INVENTORY MOVEMENT HISTORY
+// ======================================================
 
 export const getInventoryMovementHistoryService =
     async (
         inventoryId: number
     ) => {
+
         validateId(
             inventoryId,
             "Invalid inventory ID"
         );
 
+
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
 
+
         return await repository.find({
+
             where: {
-                inventory_id: inventoryId,
-                is_active: true
+                inventory_id:
+                    inventoryId,
+
+                is_active:
+                    true
             },
+
             relations: [
                 "movementType",
                 "referenceType"
             ],
+
             order: {
                 created_at: "DESC"
             }
         });
     };
+
+
+// ======================================================
+// GET MOVEMENTS BY TYPE
+// ======================================================
 
 export const getMovementsByTypeService =
     async (
         movementTypeId: number
     ) => {
+
         validateId(
             movementTypeId,
             "Invalid movement type ID"
         );
+
 
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
 
+
         return await repository.find({
+
             where: {
                 movement_type_id:
                     movementTypeId,
-                is_active: true
+
+                is_active:
+                    true
             },
+
             relations: [
                 "inventory",
                 "movementType",
                 "referenceType"
             ],
+
             order: {
                 created_at: "DESC"
             }
         });
     };
+
+
+// ======================================================
+// GET MOVEMENTS BY REFERENCE
+// ======================================================
 
 export const getMovementsByReferenceService =
     async (
         referenceTypeCode: string,
         referenceId: number
     ) => {
+
         if (
             !referenceTypeCode ||
             referenceTypeCode.trim() === ""
@@ -379,30 +748,37 @@ export const getMovementsByReferenceService =
             );
         }
 
+
         validateId(
             referenceId,
             "Invalid reference ID"
         );
+
 
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
 
+
         return await repository
             .createQueryBuilder("movement")
+
             .leftJoinAndSelect(
                 "movement.referenceType",
                 "referenceType"
             )
+
             .leftJoinAndSelect(
                 "movement.inventory",
                 "inventory"
             )
+
             .leftJoinAndSelect(
                 "movement.movementType",
                 "movementType"
             )
+
             .where(
                 "referenceType.code = :code",
                 {
@@ -410,30 +786,40 @@ export const getMovementsByReferenceService =
                         referenceTypeCode.trim()
                 }
             )
+
             .andWhere(
                 "movement.reference_id = :referenceId",
                 {
                     referenceId
                 }
             )
+
             .andWhere(
                 "movement.is_active = :isActive",
                 {
                     isActive: true
                 }
             )
+
             .orderBy(
                 "movement.created_at",
                 "DESC"
             )
+
             .getMany();
     };
+
+
+// ======================================================
+// GET MOVEMENTS BY DATE RANGE
+// ======================================================
 
 export const getMovementsByDateRangeService =
     async (
         fromDate: Date,
         toDate: Date
     ) => {
+
         if (
             !(fromDate instanceof Date) ||
             isNaN(fromDate.getTime())
@@ -442,6 +828,7 @@ export const getMovementsByDateRangeService =
                 "Invalid from date"
             );
         }
+
 
         if (
             !(toDate instanceof Date) ||
@@ -452,31 +839,38 @@ export const getMovementsByDateRangeService =
             );
         }
 
+
         if (fromDate > toDate) {
             throw new Error(
                 "From date cannot be greater than to date"
             );
         }
 
+
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
 
+
         return await repository
             .createQueryBuilder("movement")
+
             .leftJoinAndSelect(
                 "movement.inventory",
                 "inventory"
             )
+
             .leftJoinAndSelect(
                 "movement.movementType",
                 "movementType"
             )
+
             .leftJoinAndSelect(
                 "movement.referenceType",
                 "referenceType"
             )
+
             .where(
                 "movement.created_at BETWEEN :fromDate AND :toDate",
                 {
@@ -484,18 +878,26 @@ export const getMovementsByDateRangeService =
                     toDate
                 }
             )
+
             .andWhere(
                 "movement.is_active = :isActive",
                 {
                     isActive: true
                 }
             )
+
             .orderBy(
                 "movement.created_at",
                 "DESC"
             )
+
             .getMany();
     };
+
+
+// ======================================================
+// GET INVENTORY MOVEMENTS BY DATE RANGE
+// ======================================================
 
 export const getInventoryMovementsByDateRangeService =
     async (
@@ -503,10 +905,12 @@ export const getInventoryMovementsByDateRangeService =
         fromDate: Date,
         toDate: Date
     ) => {
+
         validateId(
             inventoryId,
             "Invalid inventory ID"
         );
+
 
         if (
             !(fromDate instanceof Date) ||
@@ -517,6 +921,7 @@ export const getInventoryMovementsByDateRangeService =
             );
         }
 
+
         if (
             !(toDate instanceof Date) ||
             isNaN(toDate.getTime())
@@ -526,33 +931,40 @@ export const getInventoryMovementsByDateRangeService =
             );
         }
 
+
         if (fromDate > toDate) {
             throw new Error(
                 "From date cannot be greater than to date"
             );
         }
 
+
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
 
+
         return await repository
             .createQueryBuilder("movement")
+
             .leftJoinAndSelect(
                 "movement.referenceType",
                 "referenceType"
             )
+
             .leftJoinAndSelect(
                 "movement.movementType",
                 "movementType"
             )
+
             .where(
                 "movement.inventory_id = :inventoryId",
                 {
                     inventoryId
                 }
             )
+
             .andWhere(
                 "movement.created_at BETWEEN :fromDate AND :toDate",
                 {
@@ -560,36 +972,59 @@ export const getInventoryMovementsByDateRangeService =
                     toDate
                 }
             )
+
             .andWhere(
                 "movement.is_active = :isActive",
                 {
                     isActive: true
                 }
             )
+
             .orderBy(
                 "movement.created_at",
                 "DESC"
             )
+
             .getMany();
     };
+
+
+// ======================================================
+// DELETE / DEACTIVATE STOCK MOVEMENT
+// ======================================================
 
 export const deleteStockMovementService =
     async (
         movementId: number,
-        userId: number
+        userId: number,
+        sessionId: number
     ) => {
+
         validateId(
             movementId,
             "Invalid movement ID"
         );
+
 
         validateId(
             userId,
             "Invalid user ID"
         );
 
+
+        validateId(
+            sessionId,
+            "Invalid session ID"
+        );
+
+
         return await AppDataSource.manager.transaction(
             async (manager) => {
+
+                // ==========================================
+                // FIND MOVEMENT
+                // ==========================================
+
                 const movement =
                     await manager.findOne(
                         StockMovement,
@@ -597,16 +1032,24 @@ export const deleteStockMovementService =
                             where: {
                                 movement_id:
                                     movementId,
-                                is_active: true
+
+                                is_active:
+                                    true
                             }
                         }
                     );
+
 
                 if (!movement) {
                     throw new Error(
                         "Active stock movement not found"
                     );
                 }
+
+
+                // ==========================================
+                // FIND INVENTORY
+                // ==========================================
 
                 const inventory =
                     await manager.findOne(
@@ -615,10 +1058,13 @@ export const deleteStockMovementService =
                             where: {
                                 inventory_id:
                                     movement.inventory_id,
-                                is_active: true
+
+                                is_active:
+                                    true
                             }
                         }
                     );
+
 
                 if (!inventory) {
                     throw new Error(
@@ -626,9 +1072,15 @@ export const deleteStockMovementService =
                     );
                 }
 
+
+                // ==========================================
+                // REVERSE QUANTITY
+                // ==========================================
+
                 const newQuantity =
                     inventory.qty -
                     movement.quantity_change;
+
 
                 if (newQuantity < 0) {
                     throw new Error(
@@ -636,7 +1088,13 @@ export const deleteStockMovementService =
                     );
                 }
 
+
                 const now = new Date();
+
+
+                // ==========================================
+                // UPDATE INVENTORY
+                // ==========================================
 
                 inventory.qty =
                     newQuantity;
@@ -647,6 +1105,11 @@ export const deleteStockMovementService =
                 inventory.updated_by =
                     userId;
 
+
+                // ==========================================
+                // DEACTIVATE MOVEMENT
+                // ==========================================
+
                 movement.is_active =
                     false;
 
@@ -656,52 +1119,110 @@ export const deleteStockMovementService =
                 movement.updated_by =
                     userId;
 
+
+                // ==========================================
+                // SAVE INVENTORY
+                // ==========================================
+
                 await manager.save(
                     Inventory,
                     inventory
                 );
+
+
+                // ==========================================
+                // SAVE MOVEMENT
+                // ==========================================
 
                 await manager.save(
                     StockMovement,
                     movement
                 );
 
+
+                // ==========================================
+                // CREATE DELETE AUDIT
+                // ==========================================
+
+                const audit =
+                    await createAuditRecord(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_stock_movement",
+
+                            recordId:
+                                movement.movement_id,
+
+                            actionTypeCode:
+                                "DELETE",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // RETURN RESULT
+                // ==========================================
+
                 return {
                     inventory,
-                    movement
+                    movement,
+                    audit
                 };
             }
         );
     };
 
+
+// ======================================================
+// GET CURRENT STOCK
+// ======================================================
+
 export const getCurrentStockService =
     async (
         inventoryId: number
     ) => {
+
         validateId(
             inventoryId,
             "Invalid inventory ID"
         );
+
 
         const repository =
             AppDataSource.getRepository(
                 Inventory
             );
 
+
         const inventory =
             await repository.findOne({
                 where: {
                     inventory_id:
                         inventoryId,
-                    is_active: true
+
+                    is_active:
+                        true
                 }
             });
+
 
         if (!inventory) {
             return null;
         }
 
+
         return {
+
             inventory_id:
                 inventory.inventory_id,
 
@@ -715,3 +1236,4 @@ export const getCurrentStockService =
                 inventory.qty
         };
     };
+

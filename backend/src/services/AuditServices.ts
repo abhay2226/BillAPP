@@ -2,13 +2,13 @@
 import { AppDataSource } from "../datasource.js";
 
 import { Audit } from "../entity/TransactionsAudit.js";
-import { MasterActionType } from "../entity/MasterActionType.js";
+import { ActionType } from "../entity/MasterActionType.js";
 
 const auditRepository =
     AppDataSource.getRepository(Audit);
 
 const actionTypeRepository =
-    AppDataSource.getRepository(MasterActionType);
+    AppDataSource.getRepository(ActionType);
 
 
 // ======================================================
@@ -42,16 +42,6 @@ export const createAuditService = async (
         auditData.action_type_id <= 0
     ) {
         throw new Error("Valid action type ID is required");
-    }
-
-
-    // UPDATED BY
-    if (
-        auditData.updated_by === undefined ||
-        auditData.updated_by === null ||
-        auditData.updated_by <= 0
-    ) {
-        throw new Error("Valid updated_by is required");
     }
 
 
@@ -106,12 +96,6 @@ export const createAuditService = async (
             action_type_id:
                 auditData.action_type_id,
 
-            updated_by:
-                auditData.updated_by,
-
-            updated_at:
-                new Date(),
-
             store_id:
                 auditData.store_id,
 
@@ -144,7 +128,6 @@ export const getAllAuditsService = async () => {
 
         relations: {
             action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         },
@@ -173,7 +156,6 @@ export const getAuditByIdService = async (
 
         relations: {
             action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         }
@@ -198,7 +180,6 @@ export const getAuditsByTableNameService = async (
 
         relations: {
             action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         },
@@ -227,7 +208,6 @@ export const getAuditsByRecordIdService = async (
 
         relations: {
             action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         },
@@ -258,7 +238,6 @@ export const getAuditsByTableAndRecordIdService = async (
 
         relations: {
             action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         },
@@ -287,36 +266,6 @@ export const getAuditsByStoreService = async (
 
         relations: {
             action_type: true,
-            updated_by_user: true,
-            store: true,
-            session: true
-        },
-
-        order: {
-            audit_id: "DESC"
-        }
-    });
-};
-
-
-// ======================================================
-// GET AUDITS BY USER
-// ======================================================
-
-export const getAuditsByUserService = async (
-    userId: number
-) => {
-
-    return await auditRepository.find({
-
-        where: {
-            updated_by: userId,
-            is_active: true
-        },
-
-        relations: {
-            action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         },
@@ -345,7 +294,6 @@ export const getAuditsBySessionService = async (
 
         relations: {
             action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         },
@@ -374,7 +322,6 @@ export const getAuditsByActionTypeService = async (
 
         relations: {
             action_type: true,
-            updated_by_user: true,
             store: true,
             session: true
         },
