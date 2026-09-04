@@ -1,5 +1,5 @@
-import { AppDataSource } from "./datasource.js";
-import { ReferenceType } from "./entity/MasterReference.js";
+import { AppDataSource } from "../datasource.js";
+import { ReferenceType } from "../entity/MasterReference.js";
 
 async function seedReferenceTypes() {
     try {

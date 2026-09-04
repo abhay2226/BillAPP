@@ -1,5 +1,5 @@
-import { AppDataSource } from "./datasource.js";
-import { MovementType } from "./entity/MasterMovementType.js";
+import { AppDataSource } from "../datasource.js";
+import { MovementType } from "../entity/MasterMovementType.js";
 
 async function seedMovementTypes() {
     try {
