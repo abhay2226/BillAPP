@@ -12,7 +12,11 @@ async function seedDiscountTypes() {
         const discountTypes = [
             {
                 code: "FLAT",
-                description: "New Product is added to the Inventory"
+                description: "apply fixed deduction."
+            },
+            {
+                code: "FLAT",
+                description: "apply percantage formula."
             },
             
         ];
