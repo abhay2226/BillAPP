@@ -1,3 +1,4 @@
+
 import type { Request, Response } from "express";
 
 import {
@@ -9,48 +10,69 @@ import {
     deactivateDamagedGoodsService
 } from "../services/DamageGoodsService.js";
 
-import { verifyToken } from "../utils/jwt.js"; 
+import { verifyToken } from "../utils/jwt.js";
+
+interface AuthPayload {
+    userId: number;
+}
+
+const authenticate = (req: Request): AuthPayload => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        throw new Error("NO_TOKEN");
+    }
+
+    if (!authHeader.startsWith("Bearer ")) {
+        throw new Error("INVALID_TOKEN_FORMAT");
+    }
+
+    const token = authHeader.substring(7);
+
+    if (!token) {
+        throw new Error("NO_TOKEN");
+    }
+
+    const payload = verifyToken(token) as AuthPayload;
+
+    if (!payload || !payload.userId) {
+        throw new Error("INVALID_USER");
+    }
+
+    return payload;
+};
 
 export const createDamagedGoods = async (
     req: Request,
     res: Response
 ) => {
     try {
+        const payload = authenticate(req);
 
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        
         const {
             inventory_id,
             qty,
             reason,
-            unit_cost
+            unit_cost,
+            movement_type_id
         } = req.body;
 
         if (
             inventory_id === undefined ||
             qty === undefined ||
-            unit_cost === undefined
+            unit_cost === undefined ||
+            movement_type_id === undefined
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "inventory_id, qty and unit_cost are required"
+                message: "inventory_id, qty, unit_cost and movement_type_id are required"
             });
         }
 
         const inventoryId = Number(inventory_id);
         const quantity = Number(qty);
         const unitCost = Number(unit_cost);
+        const movementTypeId = Number(movement_type_id);
 
         if (
             !Number.isInteger(inventoryId) ||
@@ -68,8 +90,7 @@ export const createDamagedGoods = async (
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Quantity must be a positive integer"
+                message: "Quantity must be a positive integer"
             });
         }
 
@@ -83,12 +104,13 @@ export const createDamagedGoods = async (
             });
         }
 
-        const userId = payload.userId;
-
-        if (!userId) {
-            return res.status(401).json({
+        if (
+            !Number.isInteger(movementTypeId) ||
+            movementTypeId <= 0
+        ) {
+            return res.status(400).json({
                 success: false,
-                message: "Authenticated user not found"
+                message: "Invalid movement type ID"
             });
         }
 
@@ -100,22 +122,52 @@ export const createDamagedGoods = async (
                     ? undefined
                     : reason,
             unit_cost: unitCost,
-            created_by: userId
+            created_by: payload.userId,
+            movement_type_id: movementTypeId
         });
 
         return res.status(201).json({
             success: true,
-            message:
-                "Damaged goods record created successfully",
+            message: "Damaged goods record created successfully",
             data
         });
     } catch (error: any) {
         console.error(error);
 
+        if (error.message === "NO_TOKEN") {
+            return res.status(401).json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        if (error.message === "INVALID_TOKEN_FORMAT") {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid authorization format"
+            });
+        }
+
+        if (error.message === "INVALID_USER") {
+            return res.status(401).json({
+                success: false,
+                message: "Authenticated user not found"
+            });
+        }
+
+        if (
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
+
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to create damaged goods record"
+            message: "Failed to create damaged goods record"
         });
     }
 };
@@ -125,33 +177,39 @@ export const getAllDamagedGoods = async (
     res: Response
 ) => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const data =
-            await getAllDamagedGoodsService();
+        authenticate(req);
+
+        const data = await getAllDamagedGoodsService();
 
         return res.status(200).json({
             success: true,
-            message:
-                "Damaged goods records fetched successfully",
+            message: "Damaged goods records fetched successfully",
             data
         });
     } catch (error: any) {
         console.error(error);
 
+        if (error.message === "NO_TOKEN") {
+            return res.status(401).json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        if (
+            error.message === "INVALID_TOKEN_FORMAT" ||
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
+
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to fetch damaged goods records"
+            message: "Failed to fetch damaged goods records"
         });
     }
 };
@@ -161,17 +219,8 @@ export const getDamagedGoodsById = async (
     res: Response
 ) => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
+        authenticate(req);
+
         const damageId = Number(req.params.id);
 
         if (
@@ -180,37 +229,48 @@ export const getDamagedGoodsById = async (
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Invalid damage ID parameter"
+                message: "Invalid damage ID parameter"
             });
         }
 
-        const data =
-            await getDamagedGoodsByIdService(
-                damageId
-            );
+        const data = await getDamagedGoodsByIdService(damageId);
 
         if (!data) {
             return res.status(404).json({
                 success: false,
-                message:
-                    "Damaged goods record not found"
+                message: "Damaged goods record not found"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message:
-                "Damaged goods record fetched successfully",
+            message: "Damaged goods record fetched successfully",
             data
         });
     } catch (error: any) {
         console.error(error);
 
+        if (error.message === "NO_TOKEN") {
+            return res.status(401).json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        if (
+            error.message === "INVALID_TOKEN_FORMAT" ||
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
+
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to fetch damaged goods record"
+            message: "Failed to fetch damaged goods record"
         });
     }
 };
@@ -220,19 +280,9 @@ export const getDamagedGoodsByInventory = async (
     res: Response
 ) => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const inventoryId =
-            Number(req.params.inventoryId);
+        authenticate(req);
+
+        const inventoryId = Number(req.params.inventoryId);
 
         if (
             !Number.isInteger(inventoryId) ||
@@ -240,29 +290,42 @@ export const getDamagedGoodsByInventory = async (
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Invalid inventory ID parameter"
+                message: "Invalid inventory ID parameter"
             });
         }
 
         const data =
-            await getDamagedGoodsByInventoryService(
-                inventoryId
-            );
+            await getDamagedGoodsByInventoryService(inventoryId);
 
         return res.status(200).json({
             success: true,
-            message:
-                "Damaged goods records fetched successfully",
+            message: "Damaged goods records fetched successfully",
             data
         });
     } catch (error: any) {
         console.error(error);
 
+        if (error.message === "NO_TOKEN") {
+            return res.status(401).json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        if (
+            error.message === "INVALID_TOKEN_FORMAT" ||
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
+
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to fetch damaged goods records"
+            message: "Failed to fetch damaged goods records"
         });
     }
 };
@@ -272,24 +335,9 @@ export const updateDamagedGoods = async (
     res: Response
 ) => {
     try {
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
-        const damageId = Number(req.params.id);
+        const payload = authenticate(req);
 
-        const {
-            qty,
-            reason,
-            unit_cost
-        } = req.body;
+        const damageId = Number(req.params.id);
 
         if (
             !Number.isInteger(damageId) ||
@@ -297,24 +345,31 @@ export const updateDamagedGoods = async (
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Invalid damage ID parameter"
+                message: "Invalid damage ID parameter"
             });
         }
 
+        const {
+            qty,
+            reason,
+            unit_cost,
+            movement_type_id
+        } = req.body;
+
         if (
             qty === undefined ||
-            unit_cost === undefined
+            unit_cost === undefined ||
+            movement_type_id === undefined
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "qty and unit_cost are required"
+                message: "qty, unit_cost and movement_type_id are required"
             });
         }
 
         const quantity = Number(qty);
         const unitCost = Number(unit_cost);
+        const movementTypeId = Number(movement_type_id);
 
         if (
             !Number.isInteger(quantity) ||
@@ -322,8 +377,7 @@ export const updateDamagedGoods = async (
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Quantity must be a positive integer"
+                message: "Quantity must be a positive integer"
             });
         }
 
@@ -337,47 +391,70 @@ export const updateDamagedGoods = async (
             });
         }
 
-        const userId = payload.userId;
+        if (
+            !Number.isInteger(movementTypeId) ||
+            movementTypeId <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid movement type ID"
+            });
+        }
 
-        if (!userId) {
+        const data = await updateDamagedGoodsService(
+            damageId,
+            quantity,
+            reason === undefined || reason === ""
+                ? null
+                : reason,
+            unitCost,
+            payload.userId,
+            movementTypeId
+        );
+
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Damaged goods record not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Damaged goods record updated successfully",
+            data
+        });
+    } catch (error: any) {
+        console.error(error);
+
+        if (error.message === "NO_TOKEN") {
+            return res.status(401).json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        if (error.message === "INVALID_USER") {
             return res.status(401).json({
                 success: false,
                 message: "Authenticated user not found"
             });
         }
 
-        const data =
-            await updateDamagedGoodsService(
-                damageId,
-                quantity,
-                reason === undefined || reason === ""
-                    ? null
-                    : reason,
-                unitCost,
-                userId
-            );
-
-        if (!data) {
-            return res.status(404).json({
+        if (
+            error.message === "INVALID_TOKEN_FORMAT" ||
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError"
+        ) {
+            return res.status(403).json({
                 success: false,
-                message:
-                    "Damaged goods record not found"
+                message: "Invalid or expired token"
             });
         }
 
-        return res.status(200).json({
-            success: true,
-            message:
-                "Damaged goods record updated successfully",
-            data
-        });
-    } catch (error: any) {
-        console.error(error);
-
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to update damaged goods record"
+            message: "Failed to update damaged goods record"
         });
     }
 };
@@ -387,18 +464,7 @@ export const deactivateDamagedGoods = async (
     res: Response
 ) => {
     try {
-
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-            payload = verifyToken(token);
-        } catch {
-            return res.status(403).json({ message: "Invalid or expired token" });
-        }
+        const payload = authenticate(req);
 
         const damageId = Number(req.params.id);
 
@@ -408,47 +474,74 @@ export const deactivateDamagedGoods = async (
         ) {
             return res.status(400).json({
                 success: false,
-                message:
-                    "Invalid damage ID parameter"
+                message: "Invalid damage ID parameter"
             });
         }
 
-        const userId = payload.userId;
+        const movementTypeId = Number(
+            req.body.movement_type_id
+        );
 
-        if (!userId) {
-            return res.status(401).json({
+        if (
+            !Number.isInteger(movementTypeId) ||
+            movementTypeId <= 0
+        ) {
+            return res.status(400).json({
                 success: false,
-                message: "Authenticated user not found"
+                message: "Valid movement_type_id is required"
             });
         }
 
         const data =
             await deactivateDamagedGoodsService(
                 damageId,
-                userId
+                payload.userId,
+                movementTypeId
             );
 
         if (!data) {
             return res.status(404).json({
                 success: false,
-                message:
-                    "Damaged goods record not found"
+                message: "Damaged goods record not found"
             });
         }
 
         return res.status(200).json({
             success: true,
-            message:
-                "Damaged goods record deactivated successfully",
+            message: "Damaged goods record deactivated successfully",
             data
         });
     } catch (error: any) {
         console.error(error);
 
+        if (error.message === "NO_TOKEN") {
+            return res.status(401).json({
+                success: false,
+                message: "No token provided"
+            });
+        }
+
+        if (error.message === "INVALID_USER") {
+            return res.status(401).json({
+                success: false,
+                message: "Authenticated user not found"
+            });
+        }
+
+        if (
+            error.message === "INVALID_TOKEN_FORMAT" ||
+            error.name === "JsonWebTokenError" ||
+            error.name === "TokenExpiredError"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid or expired token"
+            });
+        }
+
         return res.status(500).json({
             success: false,
-            message:
-                "Failed to deactivate damaged goods record"
+            message: "Failed to deactivate damaged goods record"
         });
     }
 };
