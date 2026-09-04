@@ -120,7 +120,10 @@ export const getActiveDiscountsForStoreService = async (
 // ======================================================
 export const getDiscountByIdService = async (discount_id: number) => {
   const discount = await discountRepo.findOne({
-    where: { discount_id },
+    where: { 
+        discount_id 
+
+    },
     relations: ["discount_type_id", "store_id"]
   });
   if (!discount) {
@@ -129,11 +132,48 @@ export const getDiscountByIdService = async (discount_id: number) => {
   return discount;
 };
 
+
 // ======================================================
 // GET DISCOUNT BY NAME
 // ======================================================
-export const getDiscountByNameForStore= async(discount_name:string)=>{
+export const getDiscountByNameForStore = async (discount_name: string,store_id: number) => {
+    const name = discount_name.trim();
 
+    if (!name) {
+        throw new Error("Discount name is required.");
+    }
+
+    const discount = await discountRepo
+        .createQueryBuilder("discount")
+        .leftJoinAndSelect(
+            "discount.discountType",
+            "discountType"
+        )
+        .leftJoinAndSelect(
+            "discount.store",
+            "store"
+        )
+        .where(
+            "LOWER(discount.discount_name) = LOWER(:discount_name)",
+            { discount_name: name }
+        )
+        .andWhere(
+            "discount.store_id = :store_id",
+            { store_id }
+        )
+        .andWhere(
+            "discount.is_active = :is_active",
+            { is_active: true }
+        )
+        .getOne();
+
+    if (!discount) {
+        throw new Error(
+            "Discount not found for this store."
+        );
+    }
+
+    return discount;
 };
 
 // ======================================================
