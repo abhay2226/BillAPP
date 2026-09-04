@@ -11,7 +11,7 @@ import {
 import { Store } from "./TransactionsStore.js";
 import { Customer } from "./TransactionsCustomer.js";
 import { Discount } from "./TransactionsDiscount.js";
-// import { BillItem } from "./TransactionsBillItem.js";
+import { BillItem } from "./TransactionsBillItem.js";
 
 @Entity({ name: "transactions_bill" })
 // @Unique(
@@ -47,9 +47,10 @@ export class Bill {
 
     @Column({
         name: "discount_id",
-        type: "integer"
+        type: "integer",
+        nullable:true,
     })
-    discount_id?: number;
+    discount_id?: number | null;
 
     @Column({
         name: "subtotal",
@@ -173,11 +174,11 @@ export class Bill {
     })
     discount?: Discount;
 
-//     @OneToMany(
-//         () => BillItem,
-//         billItem => billItem.bill
-//     )
-//     billItems!: BillItem[];
+    @OneToMany(
+        () => BillItem,
+        billItem => billItem.bill
+    )
+    billItems!: BillItem[];
 
 
  }

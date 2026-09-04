@@ -14,6 +14,7 @@ import { User } from "./entity/TransactionsUser.js";
 import { Store } from "./entity/TransactionsStore.js";
 import { Customer } from "./entity/TransactionsCustomer.js";
 import { Bill } from "./entity/TransactionsBill.js";
+import { BillItem } from "./entity/TransactionsBillItem.js";
 import { Inventory } from "./entity/TransactionsInventory.js";
 import { Product } from "./entity/TransactionsProduct.js";
 import { Discount } from "./entity/TransactionsDiscount.js";
@@ -42,7 +43,8 @@ export const AppDataSource = new DataSource({
         Role,                  
         UoM,                 
         Audit,           
-        Bill,          
+        Bill, 
+        BillItem,         
         Customer,          
         DamagedGoods,  
         Discount,   

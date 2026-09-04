@@ -119,19 +119,30 @@ export async function getSignupRolesController(req:Request,res:Response){
 //=========================================================================
 //getSignupStores
 //=========================================================================
-export async function getSignupStoresController(req:Request,res:Response){
-    try{
-        const result=await getSignupStores();
+export async function getSignupStoresController(
+    req: Request,
+    res: Response
+) {
+    try {
+        const search =
+            typeof req.query.search === "string"
+                ? req.query.search
+                : undefined;
+
+        const result = await getSignupStores(search);
+
         return res.status(200).json({
             success: true,
             message: "Signup stores retrieved successfully.",
             data: result
         });
-    }catch (error) {
-        console.error("Get signup stores error:", error);
+    } catch (error) {
         return res.status(400).json({
             success: false,
-            message: error instanceof Error ? error.message : "Failed to retrieve signup stores.",
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to retrieve signup stores."
         });
     }
 }

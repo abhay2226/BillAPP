@@ -18,6 +18,20 @@ export class Discount{
     discount_id!: number;
     
     @Column({
+        name:"store_id",
+        type: "integer",
+        nullable: false,
+    })
+    store_id!: number;
+
+    @Column({
+        name:"discount_type_id",
+        type: "integer",
+        nullable: false,
+    })
+    discount_type_id!: number;
+
+    @Column({
         name:"discount_name",
         type: "varchar",
         nullable: false,
@@ -64,7 +78,7 @@ export class Discount{
         type: "datetime",
         nullable: true
     })
-    discount_to!: Date;    
+    discount_to!: Date | null;    
 
     @Column({
         name:"description",
@@ -113,12 +127,12 @@ export class Discount{
     @JoinColumn({name:"store_id",
         referencedColumnName:"store_id"
     })
-    store_id!: Store;
+    store!: Store;
 
     @ManyToOne(() => DiscountType,(discountType) => discountType.discounts)
     @JoinColumn({name:"discount_type_id",
         referencedColumnName:"discount_type_id"
     })
-    discount_type_id!: DiscountType;
+    discountType!: DiscountType;
 
 }
