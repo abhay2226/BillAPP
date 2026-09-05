@@ -3,6 +3,7 @@ import { Discount } from "../entity/TransactionsDiscount.js";
 import { DiscountType } from "../entity/MasterDiscountType.js";
 import { Store } from "../entity/TransactionsStore.js";
 
+
 const discountRepo = AppDataSource.getRepository(Discount);
 const discountTypeRepo = AppDataSource.getRepository(DiscountType);
 const storeRepo = AppDataSource.getRepository(Store);
