@@ -14,11 +14,7 @@ import {
     getCustomerBills
 } from "../controller/CustomerController.js";
 
-import { verifyToken } from "../utils/jwt.js";
-
 const router = Router();
-
-router.use(verifyToken);
 
 router.post("/", createCustomer);
 
