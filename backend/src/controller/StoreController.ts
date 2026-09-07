@@ -40,10 +40,7 @@ export async function updateStoreController(req: Request, res: Response) {
     }
     try {
     const storeId = Number(req.params.id);
-    const actingUserId = Number(req.body.actingUserId);
-    if (!actingUserId) {
-      return res.status(400).json({ success: false, message: "actingUserId is required." });
-    }
+    const actingUserId = payload.userId;
     const sessionId =Number(payload.sessionId);
     const store = await updateStore(storeId, req.body, actingUserId,sessionId);
     return res.status(200).json({ success: true, message: "Store updated.", data: store });
@@ -85,10 +82,7 @@ export async function deleteStoreController(req: Request, res: Response) {
     }
     try {
     const storeId = Number(req.params.id);
-    const actingUserId = Number(req.body.actingUserId);
-    if (!actingUserId) {
-      return res.status(400).json({ success: false, message: "actingUserId is required." });
-    }
+    const actingUserId = payload.userId;
     const sessionId =Number(payload.sessionId);
     await deleteStore(storeId, actingUserId,sessionId);
     return res.status(200).json({ success: true, message: "Store deactivated." });
