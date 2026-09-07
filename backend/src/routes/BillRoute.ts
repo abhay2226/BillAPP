@@ -6,7 +6,7 @@ import {
   getBillByIdController,
   getBillItemsController,
   getBillHistoryController,
-} from "../controller/BillController.js";
+} from "../controller/BillsController.js";
 
 const billRouter = Router();
 
