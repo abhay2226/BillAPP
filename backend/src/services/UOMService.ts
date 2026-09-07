@@ -1,285 +1,959 @@
-// import { EntityManager } from "typeorm";
-// import { AppDataSource } from "../datasource.js";
-// import { UoM } from "../entity/MasterUoM.js";
-// import { ReferenceType } from "../entity/MasterReference.js";
-// import { createAuditRecordService } from "./AuditServices.js";
+import { AppDataSource } from "../datasource.js";
 
-// const uomRepository = AppDataSource.getRepository(UoM);
-// const UOM_REFERENCE_CODE = "UOM";
+import { UoM } from "../entity/MasterUoM.js";
+import { ReferenceType } from "../entity/MasterReference.js";
 
-// interface AuditContext {
-//     userId?: number;
-//     storeId?: number;
-//     sessionId?: number;
-//     ipAddress?: string;
-// }
+import { createAuditRecordService } from "./AuditServices.js";
 
-// /**
-//  * Validates mandatory audit context and checks if the ReferenceType exists.
-//  */
-// async function validateContextAndReference(
-//     manager: EntityManager,
-//     context: AuditContext,
-//     fallbackUserId?: number
-// ): Promise<{ userId: number; storeId: number; sessionId: number; referenceType: ReferenceType }> {
-//     const userId = context.userId ?? fallbackUserId;
-//     if (!userId) throw new Error("User ID is required");
-//     if (!context.storeId) throw new Error("Store ID is required");
-//     if (!context.sessionId) throw new Error("Session ID is required");
+import { EntityManager } from "typeorm";
 
-//     const referenceType = await manager.findOneBy(ReferenceType, {
-//         code: UOM_REFERENCE_CODE,
-//         is_active: true
-//     });
 
-//     if (!referenceType) {
-//         throw new Error(`Reference type '${UOM_REFERENCE_CODE}' not found`);
-//     }
+// ======================================================
+// REPOSITORIES
+// ======================================================
 
-//     return {
-//         userId,
-//         storeId: context.storeId,
-//         sessionId: context.sessionId,
-//         referenceType
-//     };
-// }
+const uomRepository =
+    AppDataSource.getRepository(UoM);
 
-// // ======================================================
-// // CREATE UOM
-// // ======================================================
+const referenceTypeRepository =
+    AppDataSource.getRepository(ReferenceType);
 
-// export const createUOMService = async (
-//     uomData: Partial<UoM> & AuditContext
-// ) => {
-//     const queryRunner = AppDataSource.createQueryRunner();
-//     await queryRunner.connect();
-//     await queryRunner.startTransaction();
 
-//     try {
-//         const { userId, storeId, sessionId } = await validateContextAndReference(
-//             queryRunner.manager,
-//             uomData,
-//             uomData.created_by
-//         );
+// ======================================================
+// CONSTANTS
+// ======================================================
 
-//         if (!uomData.unit_name || !uomData.unit_name.trim()) {
-//             throw new Error("Unit name is required");
-//         }
+const UOM_REFERENCE_CODE = "UOM";
 
-//         if (!uomData.unit_type || !uomData.unit_type.trim()) {
-//             throw new Error("Unit type is required");
-//         }
 
-//         // Check duplicates ONLY among active units
-//         const existingUOM = await queryRunner.manager.findOneBy(UoM, {
-//             unit_name: uomData.unit_name.trim(),
-//             is_active: true
-//         });
+// ======================================================
+// VALIDATE ID
+// ======================================================
 
-//         if (existingUOM) {
-//             throw new Error("UOM with this unit name already exists");
-//         }
+const validateId = (
+    value: number,
+    message: string
+): void => {
 
-//         const uom = queryRunner.manager.create(UoM, {
-//             unit_name: uomData.unit_name.trim(),
-//             unit_type: uomData.unit_type.trim(),
-//             is_active: uomData.is_active ?? true,
-//             created_at: uomData.created_at ?? new Date(),
-//             created_by: userId
-//         });
+    if (
+        !Number.isInteger(value) ||
+        value <= 0
+    ) {
+        throw new Error(message);
+    }
+};
 
-//         const savedUOM = await queryRunner.manager.save(UoM, uom);
 
-//         // Audit Record Insertion
-//         await createAuditRecordService(queryRunner.manager, {
-//             tableName: "master_uom",
-//             recordId: savedUOM.unit_id,
-//             actionTypeCode: "INSERT",
-//             userId,
-//             storeId,
-//             sessionId,
-//             ipAddress: uomData.ipAddress
-//         });
+// ======================================================
+// CHECK UOM REFERENCE TYPE
+// ======================================================
 
-//         await queryRunner.commitTransaction();
-//         return savedUOM;
-//     } catch (error: any) {
-//         await queryRunner.rollbackTransaction();
-//         throw new Error(`Failed to create UOM: ${error.message}`);
-//     } finally {
-//         await queryRunner.release();
-//     }
-// };
+const getUOMReferenceType = async (
+    manager: EntityManager
+): Promise<ReferenceType> => {
 
-// // ======================================================
-// // GET ALL UOM
-// // ======================================================
+    const referenceType =
+        await manager.findOneBy(
+            ReferenceType,
+            {
+                code:
+                    UOM_REFERENCE_CODE,
 
-// export const getAllUOMService = async () => {
-//     return await uomRepository.find({
-//         where: { is_active: true },
-//         order: { unit_id: "ASC" }
-//     });
-// };
+                is_active:
+                    true
+            }
+        );
 
-// // ======================================================
-// // GET UOM BY ID
-// // ======================================================
 
-// export const getUOMByIdService = async (unit_id: number) => {
-//     const uom = await uomRepository.findOneBy({
-//         unit_id,
-//         is_active: true
-//     });
+    if (!referenceType) {
 
-//     if (!uom) {
-//         throw new Error("UOM not found");
-//     }
+        throw new Error(
+            `Reference type '${UOM_REFERENCE_CODE}' not found or inactive`
+        );
+    }
 
-//     return uom;
-// };
 
-// // ======================================================
-// // UPDATE UOM
-// // ======================================================
+    return referenceType;
+};
 
-// export const updateUOMService = async (
-//     unit_id: number,
-//     uomData: Partial<UoM> & AuditContext
-// ) => {
-//     const queryRunner = AppDataSource.createQueryRunner();
-//     await queryRunner.connect();
-//     await queryRunner.startTransaction();
 
-//     try {
-//         const { userId, storeId, sessionId } = await validateContextAndReference(
-//             queryRunner.manager,
-//             uomData,
-//             uomData.updated_by
-//         );
+// ======================================================
+// CREATE UOM
+// ======================================================
 
-//         const uom = await queryRunner.manager.findOneBy(UoM, {
-//             unit_id,
-//             is_active: true
-//         });
+export const createUOMService = async (
+    uomData: Partial<UoM> & {
+        userId?: number;
+        storeId?: number;
+        sessionId?: number;
+    }
+) => {
 
-//         if (!uom) {
-//             throw new Error("UOM not found");
-//         }
+    const queryRunner =
+        AppDataSource.createQueryRunner();
 
-//         // Validate unit name updates
-//         if (uomData.unit_name !== undefined) {
-//             const trimmedName = uomData.unit_name.trim();
-//             if (!trimmedName) {
-//                 throw new Error("Unit name cannot be empty");
-//             }
 
-//             if (trimmedName !== uom.unit_name) {
-//                 const existingUOM = await queryRunner.manager.findOneBy(UoM, {
-//                     unit_name: trimmedName,
-//                     is_active: true
-//                 });
+    await queryRunner.connect();
 
-//                 if (existingUOM && existingUOM.unit_id !== unit_id) {
-//                     throw new Error("UOM with this unit name already exists");
-//                 }
-//             }
-//             uom.unit_name = trimmedName;
-//         }
+    await queryRunner.startTransaction();
 
-//         // Validate unit type updates
-//         if (uomData.unit_type !== undefined) {
-//             const trimmedType = uomData.unit_type.trim();
-//             if (!trimmedType) {
-//                 throw new Error("Unit type cannot be empty");
-//             }
-//             uom.unit_type = trimmedType;
-//         }
 
-//         if (uomData.is_active !== undefined) {
-//             uom.is_active = uomData.is_active;
-//         }
+    try {
 
-//         uom.updated_at = new Date();
-//         uom.updated_by = userId;
+        // ==================================================
+        // USER ID
+        // ==================================================
 
-//         const savedUOM = await queryRunner.manager.save(UoM, uom);
+        const userId =
+            uomData.userId ??
+            uomData.created_by;
 
-//         // Audit Record Update
-//         await createAuditRecordService(queryRunner.manager, {
-//             tableName: "master_uom",
-//             recordId: savedUOM.unit_id,
-//             actionTypeCode: "UPDATE",
-//             userId,
-//             storeId,
-//             sessionId,
-//             ipAddress: uomData.ipAddress
-//         });
 
-//         await queryRunner.commitTransaction();
-//         return savedUOM;
-//     } catch (error: any) {
-//         await queryRunner.rollbackTransaction();
-//         throw new Error(`Failed to update UOM: ${error.message}`);
-//     } finally {
-//         await queryRunner.release();
-//     }
-// };
+        if (
+            userId === undefined ||
+            userId === null
+        ) {
 
-// // ======================================================
-// // DELETE UOM - SOFT DELETE
-// // ======================================================
+            throw new Error(
+                "User ID is required"
+            );
+        }
 
-// export const deleteUOMService = async (
-//     unit_id: number,
-//     userData: AuditContext
-// ) => {
-//     const queryRunner = AppDataSource.createQueryRunner();
-//     await queryRunner.connect();
-//     await queryRunner.startTransaction();
 
-//     try {
-//         const { userId, storeId, sessionId } = await validateContextAndReference(
-//             queryRunner.manager,
-//             userData
-//         );
+        validateId(
+            userId,
+            "Valid user ID is required"
+        );
 
-//         const uom = await queryRunner.manager.findOneBy(UoM, {
-//             unit_id,
-//             is_active: true
-//         });
 
-//         if (!uom) {
-//             throw new Error("UOM not found");
-//         }
+        // ==================================================
+        // STORE ID
+        // ==================================================
 
-//         uom.is_active = false;
-//         uom.updated_at = new Date();
-//         uom.updated_by = userId;
+        const storeId =
+            uomData.storeId;
 
-//         const savedUOM = await queryRunner.manager.save(UoM, uom);
 
-//         // Audit Record Soft Delete (Action: DELETE)
-//         await createAuditRecordService(queryRunner.manager, {
-//             tableName: "master_uom",
-//             recordId: savedUOM.unit_id,
-//             actionTypeCode: "DELETE",
-//             userId,
-//             storeId,
-//             sessionId,
-//             ipAddress: userData.ipAddress
-//         });
+        if (
+            storeId === undefined ||
+            storeId === null
+        ) {
 
-//         await queryRunner.commitTransaction();
+            throw new Error(
+                "Store ID is required"
+            );
+        }
 
-//         return {
-//             message: "UOM deleted successfully",
-//             deletedUOM: savedUOM
-//         };
-//     } catch (error: any) {
-//         await queryRunner.rollbackTransaction();
-//         throw new Error(`Failed to delete UOM: ${error.message}`);
-//     } finally {
-//         await queryRunner.release();
-//     }
-// };
+
+        validateId(
+            storeId,
+            "Valid store ID is required"
+        );
+
+
+        // ==================================================
+        // SESSION ID
+        // ==================================================
+
+        const sessionId =
+            uomData.sessionId;
+
+
+        if (
+            sessionId === undefined ||
+            sessionId === null
+        ) {
+
+            throw new Error(
+                "Session ID is required"
+            );
+        }
+
+
+        validateId(
+            sessionId,
+            "Valid session ID is required"
+        );
+
+
+        // ==================================================
+        // CHECK UOM REFERENCE TYPE
+        // ==================================================
+
+        await getUOMReferenceType(
+            queryRunner.manager
+        );
+
+
+        // ==================================================
+        // VALIDATE UNIT NAME
+        // ==================================================
+
+        if (
+            uomData.unit_name === undefined ||
+            uomData.unit_name === null ||
+            uomData.unit_name.trim() === ""
+        ) {
+
+            throw new Error(
+                "Unit name is required"
+            );
+        }
+
+
+        const unitName =
+            uomData.unit_name.trim();
+
+
+        // ==================================================
+        // VALIDATE UNIT TYPE
+        // ==================================================
+
+        if (
+            uomData.unit_type === undefined ||
+            uomData.unit_type === null ||
+            uomData.unit_type.trim() === ""
+        ) {
+
+            throw new Error(
+                "Unit type is required"
+            );
+        }
+
+
+        const unitType =
+            uomData.unit_type.trim();
+
+
+        // ==================================================
+        // CHECK DUPLICATE UNIT NAME
+        // Only active UOM is considered duplicate
+        // ==================================================
+
+        const existingUOM =
+            await queryRunner.manager.findOne(
+                UoM,
+                {
+                    where: {
+                        unit_name:
+                            unitName,
+
+                        is_active:
+                            true
+                    }
+                }
+            );
+
+
+        if (existingUOM) {
+
+            throw new Error(
+                "UOM with this unit name already exists"
+            );
+        }
+
+
+        // ==================================================
+        // CREATE UOM
+        // ==================================================
+
+        const uom =
+            queryRunner.manager.create(
+                UoM,
+                {
+                    unit_name:
+                        unitName,
+
+                    unit_type:
+                        unitType,
+
+                    is_active:
+                        uomData.is_active ??
+                        true,
+
+                    created_at:
+                        uomData.created_at ??
+                        new Date(),
+
+                    created_by:
+                        userId,
+
+                    updated_at:
+                        null,
+
+                    updated_by:
+                        null
+                }
+            );
+
+
+        // ==================================================
+        // SAVE UOM
+        // ==================================================
+
+        const savedUOM =
+            await queryRunner.manager.save(
+                UoM,
+                uom
+            );
+
+
+        // ==================================================
+        // AUDIT INSERT
+        // ==================================================
+
+        await createAuditRecordService(
+            queryRunner.manager,
+            {
+                tableName:
+                    "master_uom",
+
+                recordId:
+                    savedUOM.unit_id,
+
+                actionTypeName:
+                    "INSERT",
+
+                userId:
+                    userId,
+
+                storeId:
+                    storeId,
+
+                sessionId:
+                    sessionId
+            }
+        );
+
+
+        // ==================================================
+        // COMMIT
+        // ==================================================
+
+        await queryRunner.commitTransaction();
+
+
+        return savedUOM;
+
+    } catch (error: any) {
+
+        await queryRunner.rollbackTransaction();
+
+
+        throw new Error(
+            `Failed to create UOM: ${error.message}`
+        );
+
+    } finally {
+
+        await queryRunner.release();
+    }
+};
+
+
+// ======================================================
+// GET ALL ACTIVE UOM
+// ======================================================
+
+export const getAllUOMService = async () => {
+
+    return await uomRepository.find({
+
+        where: {
+            is_active:
+                true
+        },
+
+        order: {
+            unit_id:
+                "ASC"
+        }
+    });
+};
+
+
+// ======================================================
+// GET UOM BY ID
+// ======================================================
+
+export const getUOMByIdService = async (
+    unit_id: number
+) => {
+
+    validateId(
+        unit_id,
+        "Valid UOM ID is required"
+    );
+
+
+    const uom =
+        await uomRepository.findOne({
+
+            where: {
+                unit_id:
+                    unit_id,
+
+                is_active:
+                    true
+            }
+        });
+
+
+    if (!uom) {
+
+        throw new Error(
+            "UOM not found"
+        );
+    }
+
+
+    return uom;
+};
+
+
+// ======================================================
+// UPDATE UOM
+// ======================================================
+
+export const updateUOMService = async (
+    unit_id: number,
+
+    uomData: Partial<UoM> & {
+        userId?: number;
+        storeId?: number;
+        sessionId?: number;
+    }
+) => {
+
+    validateId(
+        unit_id,
+        "Valid UOM ID is required"
+    );
+
+
+    const queryRunner =
+        AppDataSource.createQueryRunner();
+
+
+    await queryRunner.connect();
+
+    await queryRunner.startTransaction();
+
+
+    try {
+
+        // ==================================================
+        // USER ID
+        // ==================================================
+
+        const userId =
+            uomData.userId ??
+            uomData.updated_by;
+
+
+        if (
+            userId === undefined ||
+            userId === null
+        ) {
+
+            throw new Error(
+                "User ID is required"
+            );
+        }
+
+
+        validateId(
+            userId,
+            "Valid user ID is required"
+        );
+
+
+        // ==================================================
+        // STORE ID
+        // ==================================================
+
+        const storeId =
+            uomData.storeId;
+
+
+        if (
+            storeId === undefined ||
+            storeId === null
+        ) {
+
+            throw new Error(
+                "Store ID is required"
+            );
+        }
+
+
+        validateId(
+            storeId,
+            "Valid store ID is required"
+        );
+
+
+        // ==================================================
+        // SESSION ID
+        // ==================================================
+
+        const sessionId =
+            uomData.sessionId;
+
+
+        if (
+            sessionId === undefined ||
+            sessionId === null
+        ) {
+
+            throw new Error(
+                "Session ID is required"
+            );
+        }
+
+
+        validateId(
+            sessionId,
+            "Valid session ID is required"
+        );
+
+
+        // ==================================================
+        // CHECK UOM REFERENCE TYPE
+        // ==================================================
+
+        await getUOMReferenceType(
+            queryRunner.manager
+        );
+
+
+        // ==================================================
+        // FIND ACTIVE UOM
+        // ==================================================
+
+        const uom =
+            await queryRunner.manager.findOne(
+                UoM,
+                {
+                    where: {
+                        unit_id:
+                            unit_id,
+
+                        is_active:
+                            true
+                    }
+                }
+            );
+
+
+        if (!uom) {
+
+            throw new Error(
+                "UOM not found"
+            );
+        }
+
+
+        // ==================================================
+        // UPDATE UNIT NAME
+        // ==================================================
+
+        if (
+            uomData.unit_name !==
+            undefined
+        ) {
+
+            const unitName =
+                uomData.unit_name.trim();
+
+
+            if (
+                unitName === ""
+            ) {
+
+                throw new Error(
+                    "Unit name cannot be empty"
+                );
+            }
+
+
+            if (
+                unitName !==
+                uom.unit_name
+            ) {
+
+                const existingUOM =
+                    await queryRunner.manager.findOne(
+                        UoM,
+                        {
+                            where: {
+                                unit_name:
+                                    unitName,
+
+                                is_active:
+                                    true
+                            }
+                        }
+                    );
+
+
+                if (
+                    existingUOM &&
+                    existingUOM.unit_id !==
+                        unit_id
+                ) {
+
+                    throw new Error(
+                        "UOM with this unit name already exists"
+                    );
+                }
+            }
+
+
+            uom.unit_name =
+                unitName;
+        }
+
+
+        // ==================================================
+        // UPDATE UNIT TYPE
+        // ==================================================
+
+        if (
+            uomData.unit_type !==
+            undefined
+        ) {
+
+            const unitType =
+                uomData.unit_type.trim();
+
+
+            if (
+                unitType === ""
+            ) {
+
+                throw new Error(
+                    "Unit type cannot be empty"
+                );
+            }
+
+
+            uom.unit_type =
+                unitType;
+        }
+
+
+        // ==================================================
+        // UPDATE ACTIVE STATUS
+        // ==================================================
+
+        if (
+            uomData.is_active !==
+            undefined
+        ) {
+
+            uom.is_active =
+                uomData.is_active;
+        }
+
+
+        // ==================================================
+        // UPDATE AUDIT FIELDS
+        // ==================================================
+
+        uom.updated_at =
+            new Date();
+
+        uom.updated_by =
+            userId;
+
+
+        // ==================================================
+        // SAVE UOM
+        // ==================================================
+
+        const savedUOM =
+            await queryRunner.manager.save(
+                UoM,
+                uom
+            );
+
+
+        // ==================================================
+        // AUDIT UPDATE
+        // ==================================================
+
+        await createAuditRecordService(
+            queryRunner.manager,
+            {
+                tableName:
+                    "master_uom",
+
+                recordId:
+                    savedUOM.unit_id,
+
+                actionTypeName:
+                    "UPDATE",
+
+                userId:
+                    userId,
+
+                storeId:
+                    storeId,
+
+                sessionId:
+                    sessionId
+            }
+        );
+
+
+        // ==================================================
+        // COMMIT
+        // ==================================================
+
+        await queryRunner.commitTransaction();
+
+
+        return savedUOM;
+
+    } catch (error: any) {
+
+        await queryRunner.rollbackTransaction();
+
+
+        throw new Error(
+            `Failed to update UOM: ${error.message}`
+        );
+
+    } finally {
+
+        await queryRunner.release();
+    }
+};
+
+
+// ======================================================
+// DELETE UOM - SOFT DELETE
+// ======================================================
+
+export const deleteUOMService = async (
+    unit_id: number,
+
+    userData: {
+        userId?: number;
+        storeId?: number;
+        sessionId?: number;
+    }
+) => {
+
+    validateId(
+        unit_id,
+        "Valid UOM ID is required"
+    );
+
+
+    const queryRunner =
+        AppDataSource.createQueryRunner();
+
+
+    await queryRunner.connect();
+
+    await queryRunner.startTransaction();
+
+
+    try {
+
+        // ==================================================
+        // USER ID
+        // ==================================================
+
+        const userId =
+            userData.userId;
+
+
+        if (
+            userId === undefined ||
+            userId === null
+        ) {
+
+            throw new Error(
+                "User ID is required"
+            );
+        }
+
+
+        validateId(
+            userId,
+            "Valid user ID is required"
+        );
+
+
+        // ==================================================
+        // STORE ID
+        // ==================================================
+
+        const storeId =
+            userData.storeId;
+
+
+        if (
+            storeId === undefined ||
+            storeId === null
+        ) {
+
+            throw new Error(
+                "Store ID is required"
+            );
+        }
+
+
+        validateId(
+            storeId,
+            "Valid store ID is required"
+        );
+
+
+        // ==================================================
+        // SESSION ID
+        // ==================================================
+
+        const sessionId =
+            userData.sessionId;
+
+
+        if (
+            sessionId === undefined ||
+            sessionId === null
+        ) {
+
+            throw new Error(
+                "Session ID is required"
+            );
+        }
+
+
+        validateId(
+            sessionId,
+            "Valid session ID is required"
+        );
+
+
+        // ==================================================
+        // CHECK UOM REFERENCE TYPE
+        // ==================================================
+
+        await getUOMReferenceType(
+            queryRunner.manager
+        );
+
+
+        // ==================================================
+        // FIND ACTIVE UOM
+        // ==================================================
+
+        const uom =
+            await queryRunner.manager.findOne(
+                UoM,
+                {
+                    where: {
+                        unit_id:
+                            unit_id,
+
+                        is_active:
+                            true
+                    }
+                }
+            );
+
+
+        if (!uom) {
+
+            throw new Error(
+                "UOM not found"
+            );
+        }
+
+
+        // ==================================================
+        // SOFT DELETE
+        // ==================================================
+
+        uom.is_active =
+            false;
+
+        uom.updated_at =
+            new Date();
+
+        uom.updated_by =
+            userId;
+
+
+        // ==================================================
+        // SAVE UOM
+        // ==================================================
+
+        const savedUOM =
+            await queryRunner.manager.save(
+                UoM,
+                uom
+            );
+
+
+        // ==================================================
+        // AUDIT DELETE
+        // ==================================================
+
+        await createAuditRecordService(
+            queryRunner.manager,
+            {
+                tableName:
+                    "master_uom",
+
+                recordId:
+                    savedUOM.unit_id,
+
+                actionTypeName:
+                    "DELETE",
+
+                userId:
+                    userId,
+
+                storeId:
+                    storeId,
+
+                sessionId:
+                    sessionId
+            }
+        );
+
+
+        // ==================================================
+        // COMMIT
+        // ==================================================
+
+        await queryRunner.commitTransaction();
+
+
+        return {
+
+            message:
+                "UOM deleted successfully",
+
+            deletedUOM:
+                savedUOM
+        };
+
+    } catch (error: any) {
+
+        await queryRunner.rollbackTransaction();
+
+
+        throw new Error(
+            `Failed to delete UOM: ${error.message}`
+        );
+
+    } finally {
+
+        await queryRunner.release();
+    }
+};
