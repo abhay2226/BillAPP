@@ -14,6 +14,7 @@ import { verifyToken } from "../utils/jwt.js";
 
 interface AuthPayload {
     userId: number;
+    sessionId: number;
 }
 
 const authenticate = (req: Request): AuthPayload => {
@@ -49,30 +50,35 @@ export const createDamagedGoods = async (
     try {
         const payload = authenticate(req);
 
+        if (!payload.sessionId) {
+            return res.status(401).json({
+                success: false,
+                message: "Session ID missing from token"
+            });
+        }
+
         const {
             inventory_id,
             qty,
             reason,
-            unit_cost,
-            movement_type_id
+            unit_cost
         } = req.body;
 
         if (
             inventory_id === undefined ||
             qty === undefined ||
             unit_cost === undefined ||
-            movement_type_id === undefined
+            reason === undefined
         ) {
             return res.status(400).json({
                 success: false,
-                message: "inventory_id, qty, unit_cost and movement_type_id are required"
+                message: "inventory_id, qty, unit_cost and reason are required"
             });
         }
 
         const inventoryId = Number(inventory_id);
         const quantity = Number(qty);
         const unitCost = Number(unit_cost);
-        const movementTypeId = Number(movement_type_id);
 
         if (
             !Number.isInteger(inventoryId) ||
@@ -95,6 +101,16 @@ export const createDamagedGoods = async (
         }
 
         if (
+            typeof reason !== "string" ||
+            reason.trim() === ""
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Damage reason is required"
+            });
+        }
+
+        if (
             !Number.isFinite(unitCost) ||
             unitCost < 0
         ) {
@@ -104,27 +120,14 @@ export const createDamagedGoods = async (
             });
         }
 
-        if (
-            !Number.isInteger(movementTypeId) ||
-            movementTypeId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid movement type ID"
-            });
-        }
-
-        const data = await createDamagedGoodsService({
-            inventory_id: inventoryId,
-            qty: quantity,
-            reason:
-                reason === undefined || reason === ""
-                    ? undefined
-                    : reason,
-            unit_cost: unitCost,
-            created_by: payload.userId,
-            movement_type_id: movementTypeId
-        });
+        const data = await createDamagedGoodsService(
+            inventoryId,
+            quantity,
+            reason.trim(),
+            unitCost,
+            payload.userId,
+            payload.sessionId
+        );
 
         return res.status(201).json({
             success: true,
@@ -167,7 +170,7 @@ export const createDamagedGoods = async (
 
         return res.status(500).json({
             success: false,
-            message: "Failed to create damaged goods record"
+            message: error.message || "Failed to create damaged goods record"
         });
     }
 };
@@ -337,6 +340,13 @@ export const updateDamagedGoods = async (
     try {
         const payload = authenticate(req);
 
+        if (!payload.sessionId) {
+            return res.status(401).json({
+                success: false,
+                message: "Session ID missing from token"
+            });
+        }
+
         const damageId = Number(req.params.id);
 
         if (
@@ -352,24 +362,22 @@ export const updateDamagedGoods = async (
         const {
             qty,
             reason,
-            unit_cost,
-            movement_type_id
+            unit_cost
         } = req.body;
 
         if (
             qty === undefined ||
             unit_cost === undefined ||
-            movement_type_id === undefined
+            reason === undefined
         ) {
             return res.status(400).json({
                 success: false,
-                message: "qty, unit_cost and movement_type_id are required"
+                message: "qty, unit_cost and reason are required"
             });
         }
 
         const quantity = Number(qty);
         const unitCost = Number(unit_cost);
-        const movementTypeId = Number(movement_type_id);
 
         if (
             !Number.isInteger(quantity) ||
@@ -378,6 +386,16 @@ export const updateDamagedGoods = async (
             return res.status(400).json({
                 success: false,
                 message: "Quantity must be a positive integer"
+            });
+        }
+
+        if (
+            typeof reason !== "string" ||
+            reason.trim() === ""
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Damage reason is required"
             });
         }
 
@@ -391,25 +409,13 @@ export const updateDamagedGoods = async (
             });
         }
 
-        if (
-            !Number.isInteger(movementTypeId) ||
-            movementTypeId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid movement type ID"
-            });
-        }
-
         const data = await updateDamagedGoodsService(
             damageId,
             quantity,
-            reason === undefined || reason === ""
-                ? null
-                : reason,
+            reason.trim(),
             unitCost,
             payload.userId,
-            movementTypeId
+            payload.sessionId
         );
 
         if (!data) {
@@ -454,7 +460,7 @@ export const updateDamagedGoods = async (
 
         return res.status(500).json({
             success: false,
-            message: "Failed to update damaged goods record"
+            message: error.message || "Failed to update damaged goods record"
         });
     }
 };
@@ -465,6 +471,13 @@ export const deactivateDamagedGoods = async (
 ) => {
     try {
         const payload = authenticate(req);
+
+        if (!payload.sessionId) {
+            return res.status(401).json({
+                success: false,
+                message: "Session ID missing from token"
+            });
+        }
 
         const damageId = Number(req.params.id);
 
@@ -478,25 +491,11 @@ export const deactivateDamagedGoods = async (
             });
         }
 
-        const movementTypeId = Number(
-            req.body.movement_type_id
-        );
-
-        if (
-            !Number.isInteger(movementTypeId) ||
-            movementTypeId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Valid movement_type_id is required"
-            });
-        }
-
         const data =
             await deactivateDamagedGoodsService(
                 damageId,
                 payload.userId,
-                movementTypeId
+                payload.sessionId
             );
 
         if (!data) {
@@ -541,7 +540,7 @@ export const deactivateDamagedGoods = async (
 
         return res.status(500).json({
             success: false,
-            message: "Failed to deactivate damaged goods record"
+            message: error.message || "Failed to deactivate damaged goods record"
         });
     }
 };
