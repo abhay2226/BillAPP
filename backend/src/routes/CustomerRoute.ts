@@ -14,27 +14,33 @@ import {
     getCustomerBills
 } from "../controller/CustomerController.js";
 
+import { authenticate } from "../middleware/Authenticate.js";
+import { authorize } from "../middleware/Authorize.js";
+import { requireStoreAccess } from "../middleware/requireStoreAccess.js";
+
+
 const router = Router();
+router.use(authenticate);
 
-router.post("/", createCustomer);
+router.post("/",authorize("OWNER", "STAFF"), createCustomer);
 
-router.get("/", getAllCustomers);
+router.get("/",authorize("OWNER", "ADMIN", "STAFF"), getAllCustomers);
 
-router.get("/active", getActiveCustomers);
+router.get("/active",authorize("OWNER", "ADMIN", "STAFF"), getActiveCustomers);
 
-router.get("/phone", getCustomerByPhone);
+router.get("/phone",authorize("OWNER", "STAFF"), getCustomerByPhone);
 
-router.get("/search", searchCustomers);
+router.get("/search",authorize("OWNER","STAFF"), searchCustomers);
 
-router.get("/:id", getCustomerById);
+router.get("/:id",authorize("OWNER", "ADMIN", "STAFF"), getCustomerById);
 
-router.get("/:id/bills", getCustomerBills);
+router.get("/:id/bills",authorize("OWNER","STAFF"), getCustomerBills);
 
-router.put("/:id", updateCustomer);
+router.put("/:id",authorize("OWNER","STAFF"), updateCustomer);
 
-router.patch("/:id/deactivate", deactivateCustomer);
+router.patch("/:id/deactivate",authorize("OWNER","STAFF","ADMIN"), deactivateCustomer);
 
-router.patch("/:id/activate", activateCustomer);
+router.patch("/:id/activate",authorize("OWNER","STAFF","ADMIN"), activateCustomer);
 
 export default router;
 

@@ -12,14 +12,17 @@ import {
     getAuditsByActionTypeController
 } from "../controller/AuditController.js";
 
+import { authenticate } from "../middleware/Authenticate.js";
+import { authorize } from "../middleware/Authorize.js";
+import { requireStoreAccess } from "../middleware/requireStoreAccess.js";
+
+
 
 const AuditRouter = Router();
-
+AuditRouter.use(authenticate);
 
 
 // AUDIT ROUTES
-
-
 
 // CREATE AUDIT RECORD
 
@@ -33,7 +36,7 @@ AuditRouter.post(
 // GET ALL AUDIT RECORDS
 
 AuditRouter.get(
-    "/",
+    "/",authorize("OWNER" ),
     getAllAuditsController
 );
 
@@ -45,7 +48,7 @@ AuditRouter.get(
 // GET /audit/table/transactions_product/record/10
 
 AuditRouter.get(
-    "/table/:tableName/record/:recordId",
+    "/table/:tableName/record/:recordId",authorize("OWNER" ),
     getAuditsByTableAndRecordIdController
 );
 
@@ -57,7 +60,7 @@ AuditRouter.get(
 // GET /audit/table/transactions_product
 
 AuditRouter.get(
-    "/table/:tableName",
+    "/table/:tableName",authorize("OWNER" ),
     getAuditsByTableNameController
 );
 
@@ -69,7 +72,7 @@ AuditRouter.get(
 // GET /audit/record/10
 
 AuditRouter.get(
-    "/record/:recordId",
+    "/record/:recordId",authorize("OWNER" ),
     getAuditsByRecordIdController
 );
 
@@ -81,7 +84,7 @@ AuditRouter.get(
 // GET /audit/store/1
 
 AuditRouter.get(
-    "/store/:storeId",
+    "/store/:storeId",authorize("OWNER" ),
     getAuditsByStoreController
 );
 
@@ -96,7 +99,7 @@ AuditRouter.get(
 // GET /audit/session/25
 
 AuditRouter.get(
-    "/session/:sessionId",
+    "/session/:sessionId",authorize("OWNER" ),
     getAuditsBySessionController
 );
 
@@ -108,7 +111,7 @@ AuditRouter.get(
 // GET /audit/action/UPDATE
 
 AuditRouter.get(
-    "/action/:actionType",
+    "/action/:actionType",authorize("OWNER" ),
     getAuditsByActionTypeController
 );
 
@@ -119,7 +122,7 @@ AuditRouter.get(
 // This must remain at the bottom.
 
 AuditRouter.get(
-    "/:id",
+    "/:id",authorize("OWNER" ),
     getAuditByIdController
 );
 

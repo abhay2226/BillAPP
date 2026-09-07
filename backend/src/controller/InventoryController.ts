@@ -12,37 +12,37 @@ import {
 
 import { verifyToken } from "../utils/jwt.js";
 
-const getAuthenticatedUserId = (
-    req: Request
-): number => {
-    const authHeader = req.headers.authorization;
+// const getAuthenticatedUserId = (
+//     req: Request
+// ): number => {
+//     const authHeader = req.headers.authorization;
 
-    if (
-        !authHeader ||
-        !authHeader.startsWith("Bearer ")
-    ) {
-        throw new Error("Bearer token is required");
-    }
+//     if (
+//         !authHeader ||
+//         !authHeader.startsWith("Bearer ")
+//     ) {
+//         throw new Error("Bearer token is required");
+//     }
 
-    const token = authHeader.slice(7).trim();
+//     const token = authHeader.slice(7).trim();
 
-    if (!token) {
-        throw new Error("Bearer token is required");
-    }
+//     if (!token) {
+//         throw new Error("Bearer token is required");
+//     }
 
-    const payload = verifyToken(token);
+//     const payload = verifyToken(token);
 
-    if (
-        !Number.isInteger(payload.userId) ||
-        payload.userId <= 0
-    ) {
-        throw new Error(
-            "Authenticated user not found"
-        );
-    }
+//     if (
+//         !Number.isInteger(payload.userId) ||
+//         payload.userId <= 0
+//     ) {
+//         throw new Error(
+//             "Authenticated user not found"
+//         );
+//     }
 
-    return payload.userId;
-};
+//     return payload.userId;
+// };
 
 const handleError = (
     error: unknown,
@@ -91,8 +91,6 @@ export const createInventory = async (
     res: Response
 ): Promise<void> => {
     try {
-        const userId =
-            getAuthenticatedUserId(req);
 
         const {
             product_id,
@@ -205,7 +203,7 @@ export const createInventory = async (
                 qty: quantity,
                 cost_price: costPrice,
                 selling_price: sellingPrice,
-                created_by: userId
+                created_by: Number(req.params.userId)
             });
 
         res.status(201).json({
@@ -228,7 +226,6 @@ export const getInventoryByStore = async (
     res: Response
 ): Promise<void> => {
     try {
-        getAuthenticatedUserId(req);
 
         const storeId =
             Number(req.params.storeId);
@@ -321,8 +318,6 @@ export const getInventoryById = async (
     res: Response
 ): Promise<void> => {
     try {
-        getAuthenticatedUserId(req);
-
         const inventoryId =
             Number(req.params.id);
 
@@ -372,8 +367,6 @@ export const updateInventoryPricing = async (
     res: Response
 ): Promise<void> => {
     try {
-        const userId =
-            getAuthenticatedUserId(req);
 
         const inventoryId =
             Number(req.params.id);
@@ -447,7 +440,7 @@ export const updateInventoryPricing = async (
                 inventoryId,
                 costPrice,
                 sellingPrice,
-                userId
+                Number(req.params.userId)
             );
 
         if (!data) {
@@ -479,8 +472,6 @@ export const updateInventoryQuantity = async (
     res: Response
 ): Promise<void> => {
     try {
-        const userId =
-            getAuthenticatedUserId(req);
 
         const inventoryId =
             Number(req.params.id);
@@ -613,7 +604,7 @@ export const updateInventoryQuantity = async (
                 movementTypeId,
                 referenceTypeCode,
                 referenceId,
-                userId
+                Number(req.params.userId)
             );
 
         if (!data) {
@@ -645,9 +636,6 @@ export const deactivateInventory = async (
     res: Response
 ): Promise<void> => {
     try {
-        const userId =
-            getAuthenticatedUserId(req);
-
         const inventoryId =
             Number(req.params.id);
 
@@ -666,7 +654,7 @@ export const deactivateInventory = async (
         const data =
             await deactivateInventoryService(
                 inventoryId,
-                userId
+                Number(req.params.userId)
             );
 
         if (!data) {

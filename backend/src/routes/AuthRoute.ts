@@ -9,16 +9,19 @@ import {
     getSignupStoresController
 } from "../controller/AuthController.js"
 
-const LoginRouter=Router();
+const authRouter=Router();
 
-LoginRouter.post("/signup",signupController);
+authRouter.post("/signup",signupController);
 
-LoginRouter.post("/login",loginController);
+authRouter.post("/login",loginController);
 
-LoginRouter.get("/signup/roles",getSignupRolesController);
+authRouter.get("/signup-roles",getSignupRolesController);
 
-LoginRouter.get("/signup/stores",getSignupStoresController);
+authRouter.get("/signup-stores",getSignupStoresController);
 
-export default LoginRouter;
+authRouter.get("/logout", logoutController);
+
+
+export default authRouter;
 
 

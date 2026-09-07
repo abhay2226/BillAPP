@@ -30,12 +30,12 @@ function getAuthUser(req: Request) {
 
 export async function createBillController(req: Request, res: Response) {
   try {
-    const payload = getAuthUser(req);
-    if (!payload.sessionId) {
-      return res.status(401).json({ success: false, message: "Session ID missing from token." });
+    
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
+    if (!actingUserId || !sessionId) {
+      return res.status(400).json({ success: false, message: "actingUserId and sessionId are required." });
     }
-    const actingUserId = payload.userId;
-    const sessionId = payload.sessionId;
     const bill = await createBillService(req.body, actingUserId, sessionId);
     return res.status(201).json({ success: true, message: "Bill created.", data: bill });
   } catch (error) {
@@ -47,12 +47,12 @@ export async function createBillController(req: Request, res: Response) {
 
 export async function deleteBillController(req: Request, res: Response) {
   try {
-    const payload = getAuthUser(req);
-    if (!payload.sessionId) {
-      return res.status(401).json({ success: false, message: "Session ID missing from token." });
+    
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
+    if (!actingUserId || !sessionId) {
+      return res.status(400).json({ success: false, message: "actingUserId and sessionId are required." });
     }
-    const actingUserId = payload.userId;
-    const sessionId = payload.sessionId;
     const bill = await deleteBillService(Number(req.params.id), actingUserId, sessionId);
     return res.status(200).json({ success: true, message: "Bill cancelled.", data: bill });
   } catch (error) {
@@ -64,7 +64,8 @@ export async function deleteBillController(req: Request, res: Response) {
 
 export async function getBillByIdController(req: Request, res: Response) {
   try {
-    getAuthUser(req);
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
     const bill = await getBillById(Number(req.params.storeId), Number(req.params.id));
     return res.status(200).json({ success: true, data: bill });
   } catch (error) {
@@ -76,7 +77,8 @@ export async function getBillByIdController(req: Request, res: Response) {
 
 export async function getBillItemsController(req: Request, res: Response) {
   try {
-    getAuthUser(req);
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
     const items = await getBillItemsForBill(Number(req.params.id));
     return res.status(200).json({ success: true, data: items });
   } catch (error) {
@@ -88,17 +90,10 @@ export async function getBillItemsController(req: Request, res: Response) {
 
 export async function getBillHistoryController(req: Request, res: Response) {
   try {
-    const payload = getAuthUser(req);
-
-    if (!payload.sessionId) {
-        return res.status(401).json({
-            success: false,
-            message: "Session ID missing from token."
-        });
-    }
     
-    const actingUserId = payload.userId;
-    const sessionId = payload.sessionId;
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
+    // const { date, dateFrom, dateTo, invoiceNumber, customerPhone } = req.query;
     const filters: BillHistoryFilters = {};
 
     if (typeof req.query.date === "string") {

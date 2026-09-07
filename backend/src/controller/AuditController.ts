@@ -1,7 +1,6 @@
 
 import type { Request, Response } from "express";
 
-import { verifyToken } from "../utils/jwt.js";
 
 import {
     createAuditService,
@@ -15,36 +14,10 @@ import {
     getAuditsByActionTypeService
 } from "../services/AuditServices.js";
 
-
-// ======================================================
-// VERIFY AUTH USER
-// ======================================================
-
-function getAuthUser(req: Request) {
-
-    const token =
-        req.headers.authorization?.split(" ")[1];
+import { verifyToken } from "../utils/jwt.js";
 
 
-    if (!token) {
 
-        const err: any =
-            new Error(
-                "Unauthorized: missing token."
-            );
-
-        err.status =
-            401;
-
-        throw err;
-    }
-
-
-    return verifyToken(token);
-}
-
-
-// ======================================================
 // CREATE AUDIT RECORD
 // ======================================================
 
@@ -54,15 +27,10 @@ export const createAuditController = async (
 ) => {
 
     try {
-
-        getAuthUser(req);
-
-
-        const audit =
-            await createAuditService(
-                req.body
-            );
-
+        
+        const audit = await createAuditService(
+            req.body
+        );
 
         return res.status(201).json({
 
@@ -105,8 +73,6 @@ export const getAllAuditsController = async (
 ) => {
 
     try {
-
-        getAuthUser(req);
 
 
         const audits =
@@ -154,8 +120,6 @@ export const getAuditByIdController = async (
 ) => {
 
     try {
-
-        getAuthUser(req);
 
 
         const auditId =
@@ -237,8 +201,6 @@ export const getAuditsByTableNameController = async (
 
     try {
 
-        getAuthUser(req);
-
 
         const tableName =
             String(
@@ -304,9 +266,6 @@ export const getAuditsByRecordIdController = async (
 ) => {
 
     try {
-
-        getAuthUser(req);
-
 
         const recordId =
             Number(
@@ -376,9 +335,6 @@ export const getAuditsByTableAndRecordIdController =
     ) => {
 
         try {
-
-            getAuthUser(req);
-
 
             const tableName =
                 String(
@@ -466,8 +422,6 @@ export const getAuditsByStoreController = async (
 
     try {
 
-        getAuthUser(req);
-
 
         const storeId =
             Number(
@@ -537,9 +491,6 @@ export const getAuditsBySessionController = async (
 
     try {
 
-        getAuthUser(req);
-
-
         const sessionId =
             Number(
                 req.params.sessionId
@@ -607,9 +558,6 @@ export const getAuditsByActionTypeController = async (
 ) => {
 
     try {
-
-        getAuthUser(req);
-
 
         // ==================================================
         // ACTION TYPE IS NOW CODE / NAME

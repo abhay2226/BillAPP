@@ -8,40 +8,35 @@ import {
 
 import { verifyToken } from "../utils/jwt.js";
 
+
+export async function getStoresController(req: Request, res: Response) {
+  try {
+    const roles = await getStores();
+    return res.status(200).json({ success: true, data: roles });
+  } catch (error) {
+    console.error("Get roles error:", error);
+    return res.status(500).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch roles." });
+  }
+}
+
+export async function getStoresByIdController(req: Request, res: Response) {
+  try {
+    const role = await getStoreById(Number(req.params.id));
+    return res.status(200).json({ success: true, data: role });
+  } catch (error) {
+    console.error("Get role error:", error);
+    return res.status(404).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch role." });
+  }
+}
+
 export async function updateStoreController(req: Request, res: Response) {
-    const authHeader = req.headers.authorization;
-    if (
-        !authHeader ||
-        !authHeader.startsWith("Bearer ")
-    ) {
-        res.status(401).json({
-            success: false,
-            message: "Bearer token is required"
-        });
-        return;
-    }
-    const token = authHeader.substring(7).trim();
-    if (!token) {
-        res.status(401).json({
-            success: false,
-            message: "Bearer token is required"
-        });
-        return;
-    }
-    let payload;
-    try {
-        payload = verifyToken(token);
-    } catch {
-        res.status(403).json({
-            success: false,
-            message: "Invalid or expired token"
-        });
-        return;
-    }
     try {
     const storeId = Number(req.params.id);
-    const actingUserId = payload.userId;
-    const sessionId =Number(payload.sessionId);
+    const sessionId=Number(req.params.sessionId);
+    const actingUserId = Number(req.body.actingUserId);
+    if (!actingUserId) {
+      return res.status(400).json({ success: false, message: "actingUserId is required." });
+    }
     const store = await updateStore(storeId, req.body, actingUserId,sessionId);
     return res.status(200).json({ success: true, message: "Store updated.", data: store });
   } catch (error) {
@@ -51,39 +46,13 @@ export async function updateStoreController(req: Request, res: Response) {
 }
 
 export async function deleteStoreController(req: Request, res: Response) {
-    const authHeader = req.headers.authorization;
-    if (
-        !authHeader ||
-        !authHeader.startsWith("Bearer ")
-    ) {
-        res.status(401).json({
-            success: false,
-            message: "Bearer token is required"
-        });
-        return;
-    }
-    const token = authHeader.substring(7).trim();
-    if (!token) {
-        res.status(401).json({
-            success: false,
-            message: "Bearer token is required"
-        });
-        return;
-    }
-    let payload;
-    try {
-        payload = verifyToken(token);
-    } catch {
-        res.status(403).json({
-            success: false,
-            message: "Invalid or expired token"
-        });
-        return;
-    }
     try {
     const storeId = Number(req.params.id);
-    const actingUserId = payload.userId;
-    const sessionId =Number(payload.sessionId);
+    const sessionId=Number(req.params.sessionId);
+    const actingUserId = Number(req.body.actingUserId);
+    if (!actingUserId) {
+      return res.status(400).json({ success: false, message: "actingUserId is required." });
+    }
     await deleteStore(storeId, actingUserId,sessionId);
     return res.status(200).json({ success: true, message: "Store deactivated." });
   } catch (error) {

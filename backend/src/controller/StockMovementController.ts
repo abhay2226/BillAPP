@@ -12,40 +12,6 @@ export const adjustStock = async (
     res: Response
 ): Promise<void> => {
     try {
-        const authHeader = req.headers.authorization;
-
-        if (
-            !authHeader ||
-            !authHeader.startsWith("Bearer ")
-        ) {
-            res.status(401).json({
-                success: false,
-                message: "Bearer token is required"
-            });
-            return;
-        }
-
-        const token = authHeader.substring(7).trim();
-
-        if (!token) {
-            res.status(401).json({
-                success: false,
-                message: "Bearer token is required"
-            });
-            return;
-        }
-
-        let payload;
-
-        try {
-            payload = verifyToken(token);
-        } catch {
-            res.status(403).json({
-                success: false,
-                message: "Invalid or expired token"
-            });
-            return;
-        }
 
         const {
             inventory_id,
@@ -125,8 +91,8 @@ export const adjustStock = async (
                 quantityChange,
                 referenceTypeCode,
                 referenceId,
-                userId: payload.userId,
-                sessionId: Number(payload.sessionId),
+                userId: Number(req.params.userId),
+                sessionId: Number(req.params.sessionId),
             });
 
         res.status(200).json({

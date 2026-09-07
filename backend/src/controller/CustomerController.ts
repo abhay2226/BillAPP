@@ -15,44 +15,44 @@ import {
 
 import { verifyToken } from "../utils/jwt.js";
 
-interface AuthPayload {
-    userId: number;
-    sessionId?: number;
-}
+// interface AuthPayload {
+//     userId: number;
+//     sessionId?: number;
+// }
 
-const authenticate = (req: Request): AuthPayload => {
-    const reqUser = (req as any).user;
-    if (reqUser && (reqUser.userId || reqUser.user_id)) {
-        return {
-            userId: Number(reqUser.userId || reqUser.user_id),
-            sessionId: reqUser.sessionId || reqUser.session_id
-        };
-    }
+// const authenticate = (req: Request): AuthPayload => {
+//     const reqUser = (req as any).user;
+//     if (reqUser && (reqUser.userId || reqUser.user_id)) {
+//         return {
+//             userId: Number(reqUser.userId || reqUser.user_id),
+//             sessionId: reqUser.sessionId || reqUser.session_id
+//         };
+//     }
 
-    const authHeader = req.headers.authorization;
+//     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
-        throw new Error("NO_TOKEN");
-    }
+//     if (!authHeader) {
+//         throw new Error("NO_TOKEN");
+//     }
 
-    if (!authHeader.startsWith("Bearer ")) {
-        throw new Error("INVALID_TOKEN_FORMAT");
-    }
+//     if (!authHeader.startsWith("Bearer ")) {
+//         throw new Error("INVALID_TOKEN_FORMAT");
+//     }
 
-    const token = authHeader.substring(7).trim();
+//     const token = authHeader.substring(7).trim();
 
-    if (!token) {
-        throw new Error("NO_TOKEN");
-    }
+//     if (!token) {
+//         throw new Error("NO_TOKEN");
+//     }
 
-    const payload = verifyToken(token) as AuthPayload;
+//     const payload = verifyToken(token) as AuthPayload;
 
-    if (!payload || !payload.userId) {
-        throw new Error("INVALID_USER");
-    }
+//     if (!payload || !payload.userId) {
+//         throw new Error("INVALID_USER");
+//     }
 
-    return payload;
-};
+//     return payload;
+// };
 
 const handleAuthError = (error: any, res: Response): boolean => {
     if (error.message === "NO_TOKEN") {
@@ -103,7 +103,7 @@ export const createCustomer = async (
     res: Response
 ) => {
     try {
-        const payload = authenticate(req);
+        // const payload = authenticate(req);
 
         const { phone_no } = req.body;
 
@@ -116,7 +116,7 @@ export const createCustomer = async (
 
         const customer = await createCustomerService(
             phone_no.trim(),
-            payload.userId
+            Number(req.params.userId)
         );
 
         return res.status(201).json({
@@ -146,7 +146,7 @@ export const getAllCustomers = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
+        // authenticate(req);
 
         const customers =
             await getAllCustomersService();
@@ -178,7 +178,7 @@ export const getActiveCustomers = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
+        // authenticate(req);
 
         const customers =
             await getActiveCustomersService();
@@ -210,7 +210,7 @@ export const getCustomerById = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
+        // authenticate(req);
 
         const customer_id =
             Number(req.params.id);
@@ -251,7 +251,7 @@ export const getCustomerByPhone = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
+        // authenticate(req);
 
         const phone_no =
             req.query.phone as string;
@@ -292,7 +292,7 @@ export const searchCustomers = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
+        // authenticate(req);
 
         const search =
             req.query.search as string;
@@ -334,7 +334,7 @@ export const updateCustomer = async (
     res: Response
 ) => {
     try {
-        const payload = authenticate(req);
+        // const payload = authenticate(req);
 
         const customer_id =
             Number(req.params.id);
@@ -359,7 +359,7 @@ export const updateCustomer = async (
             await updateCustomerService(
                 customer_id,
                 phone_no.trim(),
-                payload.userId
+                Number(req.params.userId)
             );
 
         return res.status(200).json({
@@ -388,7 +388,7 @@ export const deactivateCustomer = async (
     res: Response
 ) => {
     try {
-        const payload = authenticate(req);
+        // const payload = authenticate(req);
 
         const customer_id =
             Number(req.params.id);
@@ -403,7 +403,7 @@ export const deactivateCustomer = async (
         const customer =
             await deactivateCustomerService(
                 customer_id,
-                payload.userId
+                Number(req.params.userId)
             );
 
         return res.status(200).json({
@@ -432,7 +432,7 @@ export const activateCustomer = async (
     res: Response
 ) => {
     try {
-        const payload = authenticate(req);
+        // const payload = authenticate(req);
 
         const customer_id =
             Number(req.params.id);
@@ -447,7 +447,7 @@ export const activateCustomer = async (
         const customer =
             await activateCustomerService(
                 customer_id,
-                payload.userId
+                Number(req.params.userId)
             );
 
         return res.status(200).json({
@@ -476,7 +476,6 @@ export const getCustomerBills = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
 
         const customer_id =
             Number(req.params.id);
