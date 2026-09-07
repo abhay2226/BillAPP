@@ -1,52 +1,298 @@
 import type { Request, Response } from "express";
-import { getRoles, getRoleById, createRole, updateRole, deleteRole } from "../services/Role.js";
 
-export async function getRolesController(req: Request, res: Response) {
-  try {
-    const roles = await getRoles();
-    return res.status(200).json({ success: true, data: roles });
-  } catch (error) {
-    console.error("Get roles error:", error);
-    return res.status(500).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch roles." });
-  }
+import { verifyToken } from "../utils/jwt.js";
+
+import {
+    getRoles,
+    getRoleById,
+    createRole,
+    updateRole,
+    deleteRole
+} from "../services/Role.js";
+
+
+// ======================================================
+// JWT PAYLOAD
+// ======================================================
+
+interface AuthPayload {
+    userId: number;
+    storeId: number;
+    sessionId: number;
+    roleId?: number;
+    roleName?: string;
+    role?: string;
 }
 
-export async function getRoleByIdController(req: Request, res: Response) {
-  try {
-    const role = await getRoleById(Number(req.params.id));
-    return res.status(200).json({ success: true, data: role });
-  } catch (error) {
-    console.error("Get role error:", error);
-    return res.status(404).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch role." });
-  }
+
+// ======================================================
+// AUTH USER
+// ======================================================
+
+function getAuthUser(req: Request): AuthPayload {
+
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+
+        const err: any = new Error(
+            "Unauthorized: missing token."
+        );
+
+        err.status = 401;
+
+        throw err;
+    }
+
+    return verifyToken(token) as AuthPayload;
 }
 
-export async function createRoleController(req: Request, res: Response) {
-  try {
-    const role = await createRole(req.body);
-    return res.status(201).json({ success: true, message: "Role created.", data: role });
-  } catch (error) {
-    console.error("Create role error:", error);
-    return res.status(400).json({ success: false, message: error instanceof Error ? error.message : "Failed to create role." });
-  }
+
+// ======================================================
+// REQUIRE OWNER
+// ======================================================
+
+function requireOwner(payload: AuthPayload) {
+
+    const isOwner =
+        payload.roleName === "OWNER" ||
+        payload.role === "OWNER";
+
+    if (!isOwner) {
+
+        const err: any = new Error(
+            "Forbidden: only Owner can manage roles."
+        );
+
+        err.status = 403;
+
+        throw err;
+    }
 }
 
-export async function updateRoleController(req: Request, res: Response) {
-  try {
-    const role = await updateRole(Number(req.params.id), req.body);
-    return res.status(200).json({ success: true, message: "Role updated.", data: role });
-  } catch (error) {
-    console.error("Update role error:", error);
-    return res.status(400).json({ success: false, message: error instanceof Error ? error.message : "Failed to update role." });
-  }
+
+// ======================================================
+// GET ALL ACTIVE ROLES
+// ======================================================
+
+export async function getRolesController(
+    req: Request,
+    res: Response
+) {
+
+    try {
+
+        getAuthUser(req);
+
+        const roles = await getRoles();
+
+        return res.status(200).json({
+            success: true,
+            data: roles
+        });
+
+    } catch (error) {
+
+        console.error("Get roles error:", error);
+
+        const status =
+            (error as any)?.status ?? 500;
+
+        return res.status(status).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to fetch roles."
+        });
+    }
 }
 
-export async function deleteRoleController(req: Request, res: Response) {
-  try {
-    await deleteRole(Number(req.params.id));
-    return res.status(200).json({ success: true, message: "Role deactivated." });
-  } catch (error) {
-    console.error("Delete role error:", error);
-    return res.status(400).json({ success: false, message: error instanceof Error ? error.message : "Failed to deactivate role." });
-  }
+
+// ======================================================
+// GET ROLE BY ID
+// ======================================================
+
+export async function getRoleByIdController(
+    req: Request,
+    res: Response
+) {
+
+    try {
+
+        getAuthUser(req);
+
+        const roleId = Number(req.params.id);
+
+        const role = await getRoleById(roleId);
+
+        return res.status(200).json({
+            success: true,
+            data: role
+        });
+
+    } catch (error) {
+
+        console.error("Get role error:", error);
+
+        const status =
+            (error as any)?.status ?? 404;
+
+        return res.status(status).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to fetch role."
+        });
+    }
+}
+
+
+// ======================================================
+// CREATE ROLE
+// ======================================================
+
+export async function createRoleController(
+    req: Request,
+    res: Response
+) {
+
+    try {
+
+        const payload = getAuthUser(req);
+
+        requireOwner(payload);
+
+        const role = await createRole(
+            req.body,
+            {
+                userId: payload.userId,
+                storeId: payload.storeId,
+                sessionId: payload.sessionId
+            }
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: "Role created.",
+            data: role
+        });
+
+    } catch (error) {
+
+        console.error("Create role error:", error);
+
+        const status =
+            (error as any)?.status ?? 400;
+
+        return res.status(status).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to create role."
+        });
+    }
+}
+
+
+// ======================================================
+// UPDATE ROLE
+// ======================================================
+
+export async function updateRoleController(
+    req: Request,
+    res: Response
+) {
+
+    try {
+
+        const payload = getAuthUser(req);
+
+        requireOwner(payload);
+
+        const roleId = Number(req.params.id);
+
+        const role = await updateRole(
+            roleId,
+            req.body,
+            {
+                userId: payload.userId,
+                storeId: payload.storeId,
+                sessionId: payload.sessionId
+            }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Role updated.",
+            data: role
+        });
+
+    } catch (error) {
+
+        console.error("Update role error:", error);
+
+        const status =
+            (error as any)?.status ?? 400;
+
+        return res.status(status).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update role."
+        });
+    }
+}
+
+
+// ======================================================
+// DELETE / DEACTIVATE ROLE
+// ======================================================
+
+export async function deleteRoleController(
+    req: Request,
+    res: Response
+) {
+
+    try {
+
+        const payload = getAuthUser(req);
+
+        requireOwner(payload);
+
+        const roleId = Number(req.params.id);
+
+        const role = await deleteRole(
+            roleId,
+            {
+                userId: payload.userId,
+                storeId: payload.storeId,
+                sessionId: payload.sessionId
+            }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "Role deactivated.",
+            data: role
+        });
+
+    } catch (error) {
+
+        console.error("Delete role error:", error);
+
+        const status =
+            (error as any)?.status ?? 400;
+
+        return res.status(status).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Failed to deactivate role."
+        });
+    }
 }

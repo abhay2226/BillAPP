@@ -1,8 +1,17 @@
+
 import { AppDataSource } from "../datasource.js";
+
 import { Product } from "../entity/TransactionsProduct.js";
+
 import { createAuditRecordService } from "./AuditServices.js";
 
-const productRepository = AppDataSource.getRepository(Product);
+
+// ======================================================
+// REPOSITORY
+// ======================================================
+
+const productRepository =
+    AppDataSource.getRepository(Product);
 
 
 // ======================================================
@@ -15,89 +24,120 @@ export const createProductService = async (
         sessionId?: number;
         ipAddress?: string | null;
     },
+
     userId?: number,
     sessionId?: number,
     ipAddress?: string | null
+
 ) => {
 
-    const storeId = productData.store_id;
-    const productName = productData.product_name;
-    const typeId = productData.type_id;
-    const brandId = productData.brand_id;
-    const unitId = productData.unit_id;
-    const unitQuantity = productData.unit_quantity;
+    const storeId =
+        productData.store_id;
+
+    const productName =
+        productData.product_name;
+
+    const typeId =
+        productData.type_id;
+
+    const brandId =
+        productData.brand_id;
+
+    const unitId =
+        productData.unit_id;
+
+    const unitQuantity =
+        productData.unit_quantity;
 
 
+    // ==================================================
     // VALIDATE STORE ID
+    // ==================================================
 
     if (
         storeId === undefined ||
         !Number.isInteger(storeId) ||
         storeId <= 0
     ) {
+
         throw new Error(
             "Valid store ID is required"
         );
     }
 
 
+    // ==================================================
     // VALIDATE PRODUCT NAME
+    // ==================================================
 
     if (
         productName === undefined ||
         productName.trim() === ""
     ) {
+
         throw new Error(
             "Product name is required"
         );
     }
 
 
+    // ==================================================
     // VALIDATE PRODUCT TYPE
+    // ==================================================
 
     if (
         typeId === undefined ||
         !Number.isInteger(typeId) ||
         typeId <= 0
     ) {
+
         throw new Error(
             "Valid product type ID is required"
         );
     }
 
 
+    // ==================================================
     // VALIDATE BRAND
+    // ==================================================
 
     if (
         brandId === undefined ||
         !Number.isInteger(brandId) ||
         brandId <= 0
     ) {
+
         throw new Error(
             "Valid brand ID is required"
         );
     }
 
 
+    // ==================================================
     // VALIDATE UNIT
+    // ==================================================
 
     if (
         unitId === undefined ||
         !Number.isInteger(unitId) ||
         unitId <= 0
     ) {
+
         throw new Error(
             "Valid unit ID is required"
         );
     }
 
 
+    // ==================================================
     // VALIDATE UNIT QUANTITY
+    // ==================================================
 
     if (
         unitQuantity === undefined ||
         Number(unitQuantity) <= 0
     ) {
+
         throw new Error(
             "Unit quantity must be greater than 0"
         );
@@ -112,6 +152,10 @@ export const createProductService = async (
         Number(unitQuantity);
 
 
+    // ==================================================
+    // GET ACTING USER
+    // ==================================================
+
     const actingUserId =
         userId ??
         productData.userId ??
@@ -119,11 +163,19 @@ export const createProductService = async (
         1;
 
 
+    // ==================================================
+    // GET ACTING SESSION
+    // ==================================================
+
     const actingSessionId =
         sessionId ??
         productData.sessionId ??
         1;
 
+
+    // ==================================================
+    // GET CLIENT IP
+    // ==================================================
 
     const clientIpAddress =
         ipAddress ??
@@ -131,65 +183,88 @@ export const createProductService = async (
         null;
 
 
+    // ==================================================
+    // TRANSACTION
+    // ==================================================
+
     return await AppDataSource.manager.transaction(
         async (manager) => {
 
-            // ==================================================
+
+            // ==============================================
             // CHECK DUPLICATE PRODUCT
-            // Same product name is not allowed
-            // inside the same store
-            // ==================================================
+            // ==============================================
 
             const existingProduct =
-                await manager.findOne(Product, {
-                    where: {
-                        store_id: storeId,
-                        product_name: trimmedProductName
+                await manager.findOne(
+                    Product,
+                    {
+                        where: {
+                            store_id:
+                                storeId,
+
+                            product_name:
+                                trimmedProductName
+                        }
                     }
-                });
+                );
 
 
             if (existingProduct) {
+
                 throw new Error(
                     "A product with this name already exists in this store."
                 );
             }
 
 
-            // ==================================================
+            // ==============================================
             // CREATE PRODUCT
-            // ==================================================
+            // ==============================================
 
             const product =
-                manager.create(Product, {
-                    store_id: storeId,
+                manager.create(
+                    Product,
+                    {
+                        store_id:
+                            storeId,
 
-                    product_name:
-                        trimmedProductName,
+                        product_name:
+                            trimmedProductName,
 
-                    type_id: typeId,
+                        type_id:
+                            typeId,
 
-                    brand_id: brandId,
+                        brand_id:
+                            brandId,
 
-                    unit_id: unitId,
+                        unit_id:
+                            unitId,
 
-                    unit_quantity: quantity,
+                        unit_quantity:
+                            quantity,
 
-                    is_active: true,
+                        is_active:
+                            true,
 
-                    created_at: new Date(),
+                        created_at:
+                            new Date(),
 
-                    created_by: actingUserId,
+                        created_by:
+                            actingUserId,
 
-                    updated_at: null,
+                        updated_at:
+                            null,
 
-                    updated_by: null
-                });
+                        updated_by:
+                            null
+                    }
+                );
 
 
-            // ==================================================
+            // ==============================================
             // SAVE PRODUCT
-            // ==================================================
+            // ==============================================
 
             const savedProduct =
                 await manager.save(
@@ -198,9 +273,9 @@ export const createProductService = async (
                 );
 
 
-            // ==================================================
-            // AUDIT LOGGING (ONLY AUDIT TABLE)
-            // ==================================================
+            // ==============================================
+            // AUDIT PRODUCT INSERT
+            // ==============================================
 
             await createAuditRecordService(
                 manager,
@@ -211,7 +286,7 @@ export const createProductService = async (
                     recordId:
                         savedProduct.product_id,
 
-                    actionTypeCode:
+                    actionTypeName:
                         "INSERT",
 
                     userId:
@@ -273,7 +348,8 @@ export const getAllProductsService = async (
             .where(
                 "product.is_active = :isActive",
                 {
-                    isActive: true
+                    isActive:
+                        true
                 }
             );
 
@@ -288,6 +364,7 @@ export const getAllProductsService = async (
             !Number.isInteger(storeId) ||
             storeId <= 0
         ) {
+
             throw new Error(
                 "Invalid store ID"
             );
@@ -297,7 +374,8 @@ export const getAllProductsService = async (
         query.andWhere(
             "product.store_id = :storeId",
             {
-                storeId: storeId
+                storeId:
+                    storeId
             }
         );
     }
@@ -322,6 +400,10 @@ export const getAllProductsService = async (
     }
 
 
+    // ==================================================
+    // RETURN PRODUCTS
+    // ==================================================
+
     return await query
         .orderBy(
             "product.product_id",
@@ -343,25 +425,31 @@ export const getProductByIdService = async (
         !Number.isInteger(productId) ||
         productId <= 0
     ) {
+
         throw new Error(
             "Invalid product ID"
         );
     }
 
 
-    return await productRepository.findOne({
-        where: {
-            product_id: productId,
-            is_active: true
-        },
+    return await productRepository.findOne(
+        {
+            where: {
+                product_id:
+                    productId,
 
-        relations: [
-            "store",
-            "type",
-            "brand",
-            "uom"
-        ]
-    });
+                is_active:
+                    true
+            },
+
+            relations: [
+                "store",
+                "type",
+                "brand",
+                "uom"
+            ]
+        }
+    );
 };
 
 
@@ -371,36 +459,55 @@ export const getProductByIdService = async (
 
 export const updateProductService = async (
     productId: number,
+
     productData: Partial<Product> & {
         userId?: number;
         sessionId?: number;
         ipAddress?: string | null;
     },
+
     userId?: number,
     sessionId?: number,
     ipAddress?: string | null
+
 ) => {
 
     if (
         !Number.isInteger(productId) ||
         productId <= 0
     ) {
+
         throw new Error(
             "Invalid product ID"
         );
     }
 
 
+    // ==================================================
+    // TRANSACTION
+    // ==================================================
+
     return await AppDataSource.manager.transaction(
         async (manager) => {
 
+
+            // ==============================================
+            // FIND PRODUCT
+            // ==============================================
+
             const product =
-                await manager.findOne(Product, {
-                    where: {
-                        product_id: productId,
-                        is_active: true
+                await manager.findOne(
+                    Product,
+                    {
+                        where: {
+                            product_id:
+                                productId,
+
+                            is_active:
+                                true
+                        }
                     }
-                });
+                );
 
 
             if (!product) {
@@ -408,11 +515,14 @@ export const updateProductService = async (
             }
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE STORE
-            // ==================================================
+            // ==============================================
 
-            if (productData.store_id !== undefined) {
+            if (
+                productData.store_id !==
+                undefined
+            ) {
 
                 if (
                     !Number.isInteger(
@@ -420,27 +530,36 @@ export const updateProductService = async (
                     ) ||
                     productData.store_id <= 0
                 ) {
+
                     throw new Error(
                         "Invalid store ID"
                     );
                 }
+
 
                 product.store_id =
                     productData.store_id;
             }
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE PRODUCT NAME
-            // ==================================================
+            // ==============================================
 
-            if (productData.product_name !== undefined) {
+            if (
+                productData.product_name !==
+                undefined
+            ) {
 
                 const trimmedProductName =
-                    productData.product_name.trim();
+                    productData.product_name
+                        .trim();
 
 
-                if (trimmedProductName === "") {
+                if (
+                    trimmedProductName === ""
+                ) {
+
                     throw new Error(
                         "Product name cannot be empty"
                     );
@@ -448,20 +567,26 @@ export const updateProductService = async (
 
 
                 const existingProduct =
-                    await manager.findOne(Product, {
-                        where: {
-                            store_id:
-                                product.store_id,
-                            product_name:
-                                trimmedProductName
+                    await manager.findOne(
+                        Product,
+                        {
+                            where: {
+                                store_id:
+                                    product.store_id,
+
+                                product_name:
+                                    trimmedProductName
+                            }
                         }
-                    });
+                    );
 
 
                 if (
                     existingProduct &&
-                    existingProduct.product_id !== productId
+                    existingProduct.product_id !==
+                        productId
                 ) {
+
                     throw new Error(
                         "A product with this name already exists in this store."
                     );
@@ -473,11 +598,14 @@ export const updateProductService = async (
             }
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE PRODUCT TYPE
-            // ==================================================
+            // ==============================================
 
-            if (productData.type_id !== undefined) {
+            if (
+                productData.type_id !==
+                undefined
+            ) {
 
                 if (
                     !Number.isInteger(
@@ -485,21 +613,26 @@ export const updateProductService = async (
                     ) ||
                     productData.type_id <= 0
                 ) {
+
                     throw new Error(
                         "Invalid product type ID"
                     );
                 }
+
 
                 product.type_id =
                     productData.type_id;
             }
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE BRAND
-            // ==================================================
+            // ==============================================
 
-            if (productData.brand_id !== undefined) {
+            if (
+                productData.brand_id !==
+                undefined
+            ) {
 
                 if (
                     !Number.isInteger(
@@ -507,21 +640,26 @@ export const updateProductService = async (
                     ) ||
                     productData.brand_id <= 0
                 ) {
+
                     throw new Error(
                         "Invalid brand ID"
                     );
                 }
+
 
                 product.brand_id =
                     productData.brand_id;
             }
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE UNIT
-            // ==================================================
+            // ==============================================
 
-            if (productData.unit_id !== undefined) {
+            if (
+                productData.unit_id !==
+                undefined
+            ) {
 
                 if (
                     !Number.isInteger(
@@ -529,21 +667,26 @@ export const updateProductService = async (
                     ) ||
                     productData.unit_id <= 0
                 ) {
+
                     throw new Error(
                         "Invalid unit ID"
                     );
                 }
+
 
                 product.unit_id =
                     productData.unit_id;
             }
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE UNIT QUANTITY
-            // ==================================================
+            // ==============================================
 
-            if (productData.unit_quantity !== undefined) {
+            if (
+                productData.unit_quantity !==
+                undefined
+            ) {
 
                 const quantity =
                     Number(
@@ -551,26 +694,38 @@ export const updateProductService = async (
                     );
 
 
-                if (quantity <= 0) {
+                if (
+                    quantity <= 0
+                ) {
+
                     throw new Error(
                         "Unit quantity must be greater than 0"
                     );
                 }
+
 
                 product.unit_quantity =
                     quantity;
             }
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE ACTIVE STATUS
-            // ==================================================
+            // ==============================================
 
-            if (productData.is_active !== undefined) {
+            if (
+                productData.is_active !==
+                undefined
+            ) {
+
                 product.is_active =
                     productData.is_active;
             }
 
+
+            // ==============================================
+            // GET ACTING USER
+            // ==============================================
 
             const actingUserId =
                 userId ??
@@ -579,11 +734,19 @@ export const updateProductService = async (
                 1;
 
 
+            // ==============================================
+            // GET ACTING SESSION
+            // ==============================================
+
             const actingSessionId =
                 sessionId ??
                 productData.sessionId ??
                 1;
 
+
+            // ==============================================
+            // GET CLIENT IP
+            // ==============================================
 
             const clientIpAddress =
                 ipAddress ??
@@ -591,9 +754,9 @@ export const updateProductService = async (
                 null;
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE AUDIT FIELDS
-            // ==================================================
+            // ==============================================
 
             product.updated_at =
                 new Date();
@@ -602,9 +765,9 @@ export const updateProductService = async (
                 actingUserId;
 
 
-            // ==================================================
+            // ==============================================
             // SAVE PRODUCT
-            // ==================================================
+            // ==============================================
 
             const updatedProduct =
                 await manager.save(
@@ -613,9 +776,9 @@ export const updateProductService = async (
                 );
 
 
-            // ==================================================
-            // AUDIT LOGGING (ONLY AUDIT TABLE)
-            // ==================================================
+            // ==============================================
+            // AUDIT PRODUCT UPDATE
+            // ==============================================
 
             await createAuditRecordService(
                 manager,
@@ -626,7 +789,7 @@ export const updateProductService = async (
                     recordId:
                         updatedProduct.product_id,
 
-                    actionTypeCode:
+                    actionTypeName:
                         "UPDATE",
 
                     userId:
@@ -656,31 +819,49 @@ export const updateProductService = async (
 
 export const deleteProductService = async (
     productId: number,
+
     userId?: number,
     sessionId?: number,
     ipAddress?: string | null
+
 ) => {
 
     if (
         !Number.isInteger(productId) ||
         productId <= 0
     ) {
+
         throw new Error(
             "Invalid product ID"
         );
     }
 
 
+    // ==================================================
+    // TRANSACTION
+    // ==================================================
+
     return await AppDataSource.manager.transaction(
         async (manager) => {
 
+
+            // ==============================================
+            // FIND PRODUCT
+            // ==============================================
+
             const product =
-                await manager.findOne(Product, {
-                    where: {
-                        product_id: productId,
-                        is_active: true
+                await manager.findOne(
+                    Product,
+                    {
+                        where: {
+                            product_id:
+                                productId,
+
+                            is_active:
+                                true
+                        }
                     }
-                });
+                );
 
 
             if (!product) {
@@ -688,26 +869,41 @@ export const deleteProductService = async (
             }
 
 
+            // ==============================================
+            // GET ACTING USER
+            // ==============================================
+
             const actingUserId =
                 userId ?? 1;
 
+
+            // ==============================================
+            // GET ACTING SESSION
+            // ==============================================
+
             const actingSessionId =
                 sessionId ?? 1;
+
+
+            // ==============================================
+            // GET CLIENT IP
+            // ==============================================
 
             const clientIpAddress =
                 ipAddress ?? null;
 
 
-            // ==================================================
+            // ==============================================
             // SOFT DELETE
-            // ==================================================
+            // ==============================================
 
-            product.is_active = false;
+            product.is_active =
+                false;
 
 
-            // ==================================================
+            // ==============================================
             // UPDATE AUDIT FIELDS
-            // ==================================================
+            // ==============================================
 
             product.updated_at =
                 new Date();
@@ -716,9 +912,9 @@ export const deleteProductService = async (
                 actingUserId;
 
 
-            // ==================================================
+            // ==============================================
             // SAVE PRODUCT
-            // ==================================================
+            // ==============================================
 
             const deletedProduct =
                 await manager.save(
@@ -727,9 +923,9 @@ export const deleteProductService = async (
                 );
 
 
-            // ==================================================
-            // AUDIT LOGGING (ONLY AUDIT TABLE)
-            // ==================================================
+            // ==============================================
+            // AUDIT PRODUCT DELETE
+            // ==============================================
 
             await createAuditRecordService(
                 manager,
@@ -740,7 +936,7 @@ export const deleteProductService = async (
                     recordId:
                         deletedProduct.product_id,
 
-                    actionTypeCode:
+                    actionTypeName:
                         "DELETE",
 
                     userId:
@@ -762,3 +958,4 @@ export const deleteProductService = async (
         }
     );
 };
+

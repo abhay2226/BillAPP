@@ -1,4 +1,6 @@
+
 import type { Request, Response } from "express";
+
 
 import {
     createAuditService,
@@ -17,6 +19,7 @@ import { verifyToken } from "../utils/jwt.js";
 
 
 // CREATE AUDIT RECORD
+// ======================================================
 
 export const createAuditController = async (
     req: Request,
@@ -31,9 +34,11 @@ export const createAuditController = async (
 
         return res.status(201).json({
 
-            message: "Audit record created successfully",
+            message:
+                "Audit record created successfully",
 
-            data: audit
+            data:
+                audit
 
         });
 
@@ -41,18 +46,26 @@ export const createAuditController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to create audit record"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to create audit record"
 
         });
-
     }
 };
 
 
-
+// ======================================================
 // GET ALL AUDIT RECORDS
+// ======================================================
 
 export const getAllAuditsController = async (
     req: Request,
@@ -61,13 +74,18 @@ export const getAllAuditsController = async (
 
     try {
 
-        const audits = await getAllAuditsService();
+
+        const audits =
+            await getAllAuditsService();
+
 
         return res.status(200).json({
 
-            message: "Audit records fetched successfully",
+            message:
+                "Audit records fetched successfully",
 
-            data: audits
+            data:
+                audits
 
         });
 
@@ -75,18 +93,26 @@ export const getAllAuditsController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to fetch audit records"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to fetch audit records"
 
         });
-
     }
 };
 
 
-
+// ======================================================
 // GET AUDIT BY ID
+// ======================================================
 
 export const getAuditByIdController = async (
     req: Request,
@@ -95,9 +121,11 @@ export const getAuditByIdController = async (
 
     try {
 
-        const auditId = Number(
-            req.params.id
-        );
+
+        const auditId =
+            Number(
+                req.params.id
+            );
 
 
         if (
@@ -107,10 +135,10 @@ export const getAuditByIdController = async (
 
             return res.status(400).json({
 
-                message: "Invalid audit ID"
+                message:
+                    "Invalid audit ID"
 
             });
-
         }
 
 
@@ -124,18 +152,20 @@ export const getAuditByIdController = async (
 
             return res.status(404).json({
 
-                message: "Audit record not found"
+                message:
+                    "Audit record not found"
 
             });
-
         }
 
 
         return res.status(200).json({
 
-            message: "Audit record fetched successfully",
+            message:
+                "Audit record fetched successfully",
 
-            data: audit
+            data:
+                audit
 
         });
 
@@ -143,18 +173,26 @@ export const getAuditByIdController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to fetch audit record"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to fetch audit record"
 
         });
-
     }
 };
 
 
-
+// ======================================================
 // GET AUDITS BY TABLE NAME
+// ======================================================
 
 export const getAuditsByTableNameController = async (
     req: Request,
@@ -163,18 +201,21 @@ export const getAuditsByTableNameController = async (
 
     try {
 
+
         const tableName =
-            String(req.params.tableName);
+            String(
+                req.params.tableName
+            );
 
 
         if (!tableName.trim()) {
 
             return res.status(400).json({
 
-                message: "Table name is required"
+                message:
+                    "Table name is required"
 
             });
-
         }
 
 
@@ -186,9 +227,11 @@ export const getAuditsByTableNameController = async (
 
         return res.status(200).json({
 
-            message: "Audit records fetched successfully",
+            message:
+                "Audit records fetched successfully",
 
-            data: audits
+            data:
+                audits
 
         });
 
@@ -196,18 +239,26 @@ export const getAuditsByTableNameController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to fetch audit records"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to fetch audit records"
 
         });
-
     }
 };
 
 
-
+// ======================================================
 // GET AUDITS BY RECORD ID
+// ======================================================
 
 export const getAuditsByRecordIdController = async (
     req: Request,
@@ -216,9 +267,10 @@ export const getAuditsByRecordIdController = async (
 
     try {
 
-        const recordId = Number(
-            req.params.recordId
-        );
+        const recordId =
+            Number(
+                req.params.recordId
+            );
 
 
         if (
@@ -228,10 +280,10 @@ export const getAuditsByRecordIdController = async (
 
             return res.status(400).json({
 
-                message: "Invalid record ID"
+                message:
+                    "Invalid record ID"
 
             });
-
         }
 
 
@@ -243,9 +295,11 @@ export const getAuditsByRecordIdController = async (
 
         return res.status(200).json({
 
-            message: "Audit records fetched successfully",
+            message:
+                "Audit records fetched successfully",
 
-            data: audits
+            data:
+                audits
 
         });
 
@@ -253,87 +307,113 @@ export const getAuditsByRecordIdController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to fetch audit records"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to fetch audit records"
 
         });
-
     }
 };
 
 
-
+// ======================================================
 // GET AUDITS BY TABLE NAME + RECORD ID
+// ======================================================
 
-export const getAuditsByTableAndRecordIdController = async (
-    req: Request,
-    res: Response
-) => {
+export const getAuditsByTableAndRecordIdController =
+    async (
+        req: Request,
+        res: Response
+    ) => {
 
-    try {
+        try {
 
-        const tableName = String(
-            req.params.tableName
-        );
+            const tableName =
+                String(
+                    req.params.tableName
+                );
 
-        const recordId = Number(
-            req.params.recordId
-        );
 
-        if (!tableName.trim()) {
+            const recordId =
+                Number(
+                    req.params.recordId
+                );
 
-            return res.status(400).json({
 
-                message: "Table name is required"
+            if (!tableName.trim()) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Table name is required"
+
+                });
+            }
+
+
+            if (
+                !Number.isInteger(recordId) ||
+                recordId <= 0
+            ) {
+
+                return res.status(400).json({
+
+                    message:
+                        "Invalid record ID"
+
+                });
+            }
+
+
+            const audits =
+                await getAuditsByTableAndRecordIdService(
+                    tableName,
+                    recordId
+                );
+
+
+            return res.status(200).json({
+
+                message:
+                    "Audit records fetched successfully",
+
+                data:
+                    audits
 
             });
 
-        }
+        } catch (error) {
 
-        if (
-            !Number.isInteger(recordId) ||
-            recordId <= 0
-        ) {
+            console.error(error);
 
-            return res.status(400).json({
 
-                message: "Invalid record ID"
+            const status =
+                (error as any)?.status ?? 500;
+
+
+            return res.status(status).json({
+
+                message:
+                    status === 401
+                        ? "Unauthorized"
+                        : "Failed to fetch audit records"
 
             });
-
         }
-
-        const audits =
-            await getAuditsByTableAndRecordIdService(
-                tableName,
-                recordId
-            );
-
-        return res.status(200).json({
-
-            message: "Audit records fetched successfully",
-
-            data: audits
-
-        });
-
-    } catch (error) {
-
-        console.error(error);
-
-        return res.status(500).json({
-
-            message: "Failed to fetch audit records"
-
-        });
-
-    }
-};
+    };
 
 
-
+// ======================================================
 // GET AUDITS BY STORE
+// ======================================================
 
 export const getAuditsByStoreController = async (
     req: Request,
@@ -342,9 +422,11 @@ export const getAuditsByStoreController = async (
 
     try {
 
-        const storeId = Number(
-            req.params.storeId
-        );
+
+        const storeId =
+            Number(
+                req.params.storeId
+            );
 
 
         if (
@@ -354,10 +436,10 @@ export const getAuditsByStoreController = async (
 
             return res.status(400).json({
 
-                message: "Invalid store ID"
+                message:
+                    "Invalid store ID"
 
             });
-
         }
 
 
@@ -369,9 +451,11 @@ export const getAuditsByStoreController = async (
 
         return res.status(200).json({
 
-            message: "Audit records fetched successfully",
+            message:
+                "Audit records fetched successfully",
 
-            data: audits
+            data:
+                audits
 
         });
 
@@ -379,21 +463,26 @@ export const getAuditsByStoreController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to fetch audit records"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to fetch audit records"
 
         });
-
     }
 };
 
 
-
-
-
-
+// ======================================================
 // GET AUDITS BY SESSION
+// ======================================================
 
 export const getAuditsBySessionController = async (
     req: Request,
@@ -402,9 +491,10 @@ export const getAuditsBySessionController = async (
 
     try {
 
-        const sessionId = Number(
-            req.params.sessionId
-        );
+        const sessionId =
+            Number(
+                req.params.sessionId
+            );
 
 
         if (
@@ -414,10 +504,10 @@ export const getAuditsBySessionController = async (
 
             return res.status(400).json({
 
-                message: "Invalid session ID"
+                message:
+                    "Invalid session ID"
 
             });
-
         }
 
 
@@ -429,9 +519,11 @@ export const getAuditsBySessionController = async (
 
         return res.status(200).json({
 
-            message: "Audit records fetched successfully",
+            message:
+                "Audit records fetched successfully",
 
-            data: audits
+            data:
+                audits
 
         });
 
@@ -439,18 +531,26 @@ export const getAuditsBySessionController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to fetch audit records"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to fetch audit records"
 
         });
-
     }
 };
 
 
-
+// ======================================================
 // GET AUDITS BY ACTION TYPE
+// ======================================================
 
 export const getAuditsByActionTypeController = async (
     req: Request,
@@ -459,36 +559,44 @@ export const getAuditsByActionTypeController = async (
 
     try {
 
-        const actionTypeId = Number(
-            req.params.actionTypeId
-        );
+        // ==================================================
+        // ACTION TYPE IS NOW CODE / NAME
+        // Example:
+        // INSERT
+        // UPDATE
+        // DELETE
+        // ==================================================
+
+        const actionTypeName =
+            String(
+                req.params.actionTypeName
+            );
 
 
-        if (
-            !Number.isInteger(actionTypeId) ||
-            actionTypeId <= 0
-        ) {
+        if (!actionTypeName.trim()) {
 
             return res.status(400).json({
 
-                message: "Invalid action type ID"
+                message:
+                    "Action type name is required"
 
             });
-
         }
 
 
         const audits =
             await getAuditsByActionTypeService(
-                actionTypeId
+                actionTypeName
             );
 
 
         return res.status(200).json({
 
-            message: "Audit records fetched successfully",
+            message:
+                "Audit records fetched successfully",
 
-            data: audits
+            data:
+                audits
 
         });
 
@@ -496,11 +604,18 @@ export const getAuditsByActionTypeController = async (
 
         console.error(error);
 
-        return res.status(500).json({
 
-            message: "Failed to fetch audit records"
+        const status =
+            (error as any)?.status ?? 500;
+
+
+        return res.status(status).json({
+
+            message:
+                status === 401
+                    ? "Unauthorized"
+                    : "Failed to fetch audit records"
 
         });
-
     }
 };
