@@ -1,30 +1,21 @@
 import { AppDataSource } from "../datasource.js";
-import { Audit } from "../entity/TransactionsAudit.js";
+import type { EntityManager, EntityTarget, ObjectLiteral } from "typeorm";
 
-
+import { Bill } from "../entity/TransactionsBill.js";
 import { BillItem } from "../entity/TransactionsBillItem.js";
 import { Customer } from "../entity/TransactionsCustomer.js";
 import { MovementType } from "../entity/MasterMovementType.js";
 import { ReferenceType } from "../entity/MasterReference.js";
-import { Role } from "../entity/MasterRole.js";
 import { Store } from "../entity/TransactionsStore.js";
-import { User } from "../entity/TransactionsUser.js";
-import { Product } from "../entity/TransactionsProduct.js";
 import { Inventory } from "../entity/TransactionsInventory.js";
-import { Bill } from "../entity/TransactionsBill.js";
 import { Discount } from "../entity/TransactionsDiscount.js";
 import { StockMovement } from "../entity/TransactionsStockMovement.js";
 
 import { resolveDiscountAmount } from "./DiscountServices.js";
+import { createAuditRecordService } from "../services/AuditServices.js";
 
 const billRepo = AppDataSource.getRepository(Bill);
-const userRepo = AppDataSource.getRepository(User);
-const storeRepo = AppDataSource.getRepository(Store);
-const discountRepo = AppDataSource.getRepository(Discount);
-const inventoryRepo = AppDataSource.getRepository(Inventory);
-const productRepo = AppDataSource.getRepository(Product);
-
-
+const billItemRepo = AppDataSource.getRepository(BillItem);
 
 export interface BillItemInput {
   inventory_id: number;
@@ -39,141 +30,35 @@ export interface CreateBillInput {
   tax_total?: number;
 }
 
-export async function getBills(storeId: number){
-    const existingBills = await billRepo.find({
-        where:{
-            store_id:storeId,
-            is_active: true
-        },
-        order:{
-            bill_id:"ASC"
-        },
-    });
-
-    return existingBills;
+export interface BillHistoryFilters {
+  date?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  invoiceNumber?: string;
+  customerPhone?: string;
 }
 
-export async function getBillById(storeId:number,billId:number) {
-    const existingBill = await billRepo.findOne({ 
-        where: { 
-            store_id:storeId,
-            bill_id: billId,
-            is_active:true
-        },
-        relations: ["billItems"],
-        order: { created_at: "DESC" }
-        
-    });
+const round2 = (n: number) => Math.round(n * 100) / 100;
+const TEN_MINUTES_MS = 10 * 60 * 1000;
 
-    if (!existingBill) {
-         throw new Error("User not found."); 
-    }
-
-    return existingBill;
-}
-
-export const getBillsByStoreService = async (store_id: number) => {
-  return await billRepo.find({
-    where: { store_id },
-    relations: ["billItems"],
-    order: { created_at: "DESC" }
-  });
-};
-
-export async function getBillByDate(){
-
-}
-
-export async function createBill() {
-// Core function: validate store and customer are active.
-// Loop through items:
-// Check inventory availability.
-// Reduce stock.
-// Log stock movement.
-// Calculate line totals.
-// Apply discount if provided.
-// Calculate subtotal, tax, rounding, grand total.
-// Save bill header.
-// Return saved bill.
-}
-
-export async function deleteBill() {
-// Core function: validate store and customer are active.
-// check if the exiting bill 
-// check if created time is not 5 mins from delete call
-// access the stockmovements for each inventory deductions related to this bill
-// then access inventory to make changes 
-// check if discount was applied are not 
-// Calculate subtotal,discount if any, tax, rounding, grand total.
-// give alert to pay back the total amount
-// deactivate bill
-}
-
-export async function getProductAvailability(){
-    
-}
-export async function getProductsPrice(){
-
-}
-
-export async function calculateSubtotal() {
-    
-}
-
-export async function calculateDiscountAmount() {
-    
-}
-
-export async function calculateTaxAmount() {
-    
-}
-
-export async function calculateRoundingAdj() {
-    
-}
-
-export async function calculateGrandTotal() {
-    
-}
-
-
-
-
-
-
-
-// Same lookup-by-code helper pattern used in the damaged goods service.
-const getCode = async (
-  manager: any,
-  entityClass: any,
+const getCode = async <T extends ObjectLiteral>(
+  manager: EntityManager,
+  entityClass: EntityTarget<T>,
   code: string,
   label: string
-) => {
-  const row = await manager.findOne(entityClass, {
-    where: { code, is_active: true }
-  });
+): Promise<T> => {
+  const row = await manager.findOne(entityClass, { where: { code, is_active: true } as any });
   if (!row) {
     throw new Error(`${label} with code '${code}' not found or inactive.`);
   }
   return row;
 };
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
-
-const generateInvoiceNumber = async (
-  manager: any,
-  store_id: number
-) => {
+const generateInvoiceNumber = async (manager: EntityManager, store_id: number) => {
   const today = new Date();
-  const datePart = `${today.getFullYear()}${String(
-    today.getMonth() + 1
-  ).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
+  const datePart = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-  const startOfDay = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
   const seq = await manager
     .createQueryBuilder(Bill, "bill")
     .where("bill.store_id = :store_id", { store_id })
@@ -183,16 +68,156 @@ const generateInvoiceNumber = async (
   return `INV-${store_id}-${datePart}-${String(seq + 1).padStart(4, "0")}`;
 };
 
-// ======================================================
-// CREATE BILL
-// ======================================================
-export const createBillService = async (
-  input: CreateBillInput,
-  userId: number
-) => {
+//=========================================================================
+// validate + price cart items against live inventory (write-path helper)
+//=========================================================================
+async function validateAndPriceCartItems(manager: EntityManager, storeId: number, items: BillItemInput[]) {
+  const sortedItems = [...items].sort((a, b) => a.inventory_id - b.inventory_id);
+
+  const lineItems: { inventory: Inventory; qty: number; unit_price: number; line_total: number }[] = [];
+  let subtotal = 0;
+
+  for (const item of sortedItems) {
+    const inventory = await manager.findOne(Inventory, {
+      where: { inventory_id: item.inventory_id },
+      relations: ["product"],
+      lock: { mode: "pessimistic_write" },
+    });
+    if (!inventory) {
+      throw new Error(`Inventory ${item.inventory_id} not found.`);
+    }
+    if (!inventory.is_active) {
+      throw new Error(`Inventory ${item.inventory_id} (${inventory.product?.product_name ?? ""}) is inactive.`);
+    }
+    if (inventory.store_id !== storeId) {
+      throw new Error(`Inventory ${item.inventory_id} does not belong to store ${storeId}.`);
+    }
+    if (inventory.qty < item.qty) {
+      throw new Error(
+        `Insufficient stock for ${inventory.product?.product_name ?? `inventory ${item.inventory_id}`}. Available: ${inventory.qty}, requested: ${item.qty}.`
+      );
+    }
+
+    const unit_price = Number(inventory.selling_price);
+    const line_total = round2(unit_price * item.qty);
+    subtotal = round2(subtotal + line_total);
+
+    lineItems.push({ inventory, qty: item.qty, unit_price, line_total });
+  }
+
+  return { lineItems, subtotal };
+}
+
+//=========================================================================
+// create bill_item rows + reduce inventory + log stock movement (write-path)
+// Audits at the same granularity your AuditServices/StockMovementServices
+// already use elsewhere: one row per table touched, per line item.
+//=========================================================================
+async function createBillItemRows(
+  manager: EntityManager,
+  billId: number,
+  storeId: number,
+  lineItems: { inventory: Inventory; qty: number; unit_price: number; line_total: number }[],
+  movementTypeId: number,
+  referenceTypeId: number,
+  userId: number,
+  sessionId: number
+) {
+  const now = new Date();
+
+  for (const line of lineItems) {
+    const billItem = manager.create(BillItem, {
+      bill_id: billId,
+      inventory_id: line.inventory.inventory_id,
+      product_name_snapshot: line.inventory.product?.product_name ?? "",
+      qty: line.qty,
+      unit_price: line.unit_price,
+      line_total: line.line_total,
+      is_active: true,
+      created_at: now,
+      created_by: userId,
+      updated_at: null,
+      updated_by: null,
+    });
+    const savedBillItem = await manager.save(BillItem, billItem);
+
+    await createAuditRecordService(manager, {
+      tableName: "transactions_bill_item",
+      recordId: savedBillItem.bill_item_id,
+      actionTypeCode: "INSERT",
+      userId,
+      storeId,
+      sessionId,
+    });
+
+    line.inventory.qty -= line.qty;
+    line.inventory.updated_at = now;
+    line.inventory.updated_by = userId;
+    await manager.save(Inventory, line.inventory);
+
+    await createAuditRecordService(manager, {
+      tableName: "transactions_inventory",
+      recordId: line.inventory.inventory_id,
+      actionTypeCode: "UPDATE",
+      userId,
+      storeId,
+      sessionId,
+    });
+
+    const stockMovement = manager.create(StockMovement, {
+      inventory_id: line.inventory.inventory_id,
+      movement_type_id: movementTypeId,
+      reference_type_id: referenceTypeId,
+      quantity_change: -line.qty,
+      reference_id: savedBillItem.bill_item_id,
+      is_active: true,
+      created_at: now,
+      created_by: userId,
+      updated_at: now,
+      updated_by: userId,
+    });
+    const savedMovement = await manager.save(StockMovement, stockMovement);
+
+    await createAuditRecordService(manager, {
+      tableName: "transactions_stock_movement",
+      recordId: savedMovement.movement_id,
+      actionTypeCode: "INSERT",
+      userId,
+      storeId,
+      sessionId,
+    });
+  }
+}
+
+//=========================================================================
+// bill items of a bill, joined with product info (read-path, for display)
+//=========================================================================
+export async function getBillItemsForBill(billId: number) {
+  const items = await billItemRepo.find({
+    where: { bill_id: billId },
+    relations: ["inventory", "inventory.product"],
+    order: { bill_item_id: "ASC" },
+  });
+
+  return items.map((item) => ({
+    billItemId: item.bill_item_id,
+    inventoryId: item.inventory_id,
+    productId: item.inventory?.product?.product_id ?? null,
+    productName: item.product_name_snapshot || item.inventory?.product?.product_name || "Unknown product",
+    qty: item.qty,
+    unitPrice: Number(item.unit_price),
+    lineTotal: Number(item.line_total),
+  }));
+}
+
+//=========================================================================
+// create bill
+//=========================================================================
+export const createBillService = async (input: CreateBillInput, userId: number, sessionId: number) => {
   if (!input.items || input.items.length === 0) {
     throw new Error("A bill needs at least one item.");
   }
+
   const seenInventoryIds = new Set<number>();
   for (const item of input.items) {
     if (!Number.isInteger(item.inventory_id) || item.inventory_id <= 0) {
@@ -202,9 +227,7 @@ export const createBillService = async (
       throw new Error("Every item's qty must be a positive integer.");
     }
     if (seenInventoryIds.has(item.inventory_id)) {
-      throw new Error(
-        `inventory_id ${item.inventory_id} appears more than once — merge quantities into a single line before submitting.`
-      );
+      throw new Error(`inventory_id ${item.inventory_id} appears more than once — merge quantities into a single line before submitting.`);
     }
     seenInventoryIds.add(item.inventory_id);
   }
@@ -212,107 +235,44 @@ export const createBillService = async (
     throw new Error("tax_total cannot be negative.");
   }
 
-  return await AppDataSource.transaction(async (manager) => {
-    const store = await manager.findOne(Store, {
-      where: { store_id: input.store_id, is_active: true }
-    });
+  return AppDataSource.transaction(async (manager) => {
+    const store = await manager.findOne(Store, { where: { store_id: input.store_id, is_active: true } });
     if (!store) {
       throw new Error("Store not found or inactive.");
     }
 
-    const customer = await manager.findOne(Customer, {
-      where: { customer_id: input.customer_id, is_active: true }
-    });
+    const customer = await manager.findOne(Customer, { where: { customer_id: input.customer_id, is_active: true } });
     if (!customer) {
       throw new Error("Customer not found or inactive.");
     }
 
-    const movementType = await getCode(
-      manager,
-      MovementType,
-      "SALE",
-      "Movement type"
-    );
-    const referenceType = await getCode(
-      manager,
-      ReferenceType,
-      "BILCRE",
-      "Reference type"
-    );
+    const movementType = await getCode(manager, MovementType, "SALE", "Movement type");
+    const referenceType = await getCode(manager, ReferenceType, "BILCRE", "Reference type");
 
-    
-    const sortedItems = [...input.items].sort(
-      (a, b) => a.inventory_id - b.inventory_id
-    );
-
-    const lineItems: {
-      inventory: Inventory;
-      qty: number;
-      unit_price: number;
-      line_total: number;
-    }[] = [];
-
-    let subtotal = 0;
-
-    for (const item of sortedItems) {
-      const inventory = await manager.findOne(Inventory, {
-        where: { inventory_id: item.inventory_id },
-        relations: ["product"],
-        lock: { mode: "pessimistic_write" }
-      });
-      if (!inventory) {
-        throw new Error(`Inventory ${item.inventory_id} not found.`);
-      }
-      if (!inventory.is_active) {
-        throw new Error(
-          `Inventory ${item.inventory_id} (${inventory.product?.product_name ?? ""}) is inactive.`
-        );
-      }
-      if (inventory.store_id !== input.store_id) {
-        throw new Error(
-          `Inventory ${item.inventory_id} does not belong to store ${input.store_id}.`
-        );
-      }
-      if (inventory.qty < item.qty) {
-        throw new Error(
-          `Insufficient stock for ${inventory.product?.product_name ?? `inventory ${item.inventory_id}`}. Available: ${inventory.qty}, requested: ${item.qty}.`
-        );
-      }
-
-      const unit_price = Number(inventory.selling_price);
-      const line_total = round2(unit_price * item.qty);
-      subtotal = round2(subtotal + line_total);
-
-      lineItems.push({ inventory, qty: item.qty, unit_price, line_total });
-    }
+    const { lineItems, subtotal } = await validateAndPriceCartItems(manager, input.store_id, input.items);
 
     let bill_discount_total = 0;
     let discount: Discount | null = null;
     if (input.discount_id) {
       discount = await manager.findOne(Discount, {
         where: { discount_id: input.discount_id },
-        // NOTE: on your Discount entity, the "store_id" property is
-        // actually the ManyToOne relation object (typed Store), not a
-        // plain number — same naming pattern as discount_type_id. It
-        // has to be loaded as a relation to be checked.
-        relations: ["discountType", "store"]
+        relations: ["discountType", "store"],
       });
       if (!discount) {
         throw new Error("Discount not found.");
       }
-      if (discount.store_id !== input.store_id) {
+      if (discount.store.store_id !== input.store_id) {
         throw new Error("This discount does not belong to the selling store.");
       }
-      bill_discount_total = await resolveDiscountAmount(
-        discount ,
-        subtotal
-      );
+      // resolveDiscountAmount already checks is_active, date range, and
+      // min_bill_amount, and handles PERCENT vs FLAT + the max_discount_amount
+      // cap — nothing needs duplicating here.
+      bill_discount_total = await resolveDiscountAmount(discount as Discount & { discountType: any }, subtotal);
     }
 
-    // ---- Tax & rounding ----
     const tax_total = round2(input.tax_total ?? 0);
     const rawGrandTotal = subtotal - bill_discount_total + tax_total;
-    const grand_total = Math.round(rawGrandTotal); // round to nearest whole currency unit
+    const grand_total = Math.round(rawGrandTotal);
     const rounding_adjustment = round2(grand_total - rawGrandTotal);
 
     if (grand_total < 0) {
@@ -326,7 +286,7 @@ export const createBillService = async (
       invoice_number,
       store_id: input.store_id,
       customer_id: input.customer_id,
-      discount_id: discount? discount.discount_id :null,
+      discount_id: discount ? discount.discount_id : null,
       subtotal,
       bill_discount_total,
       tax_total,
@@ -337,103 +297,68 @@ export const createBillService = async (
       created_at: now,
       created_by: userId,
       updated_at: null,
-      updated_by: null
+      updated_by: null,
     });
     const savedBill = await manager.save(Bill, bill);
 
-    for (const line of lineItems) {
-      const billItem = manager.create(BillItem, {
-        bill_id: savedBill.bill_id,
-        inventory_id: line.inventory.inventory_id,
-        product_name_snapshot: line.inventory.product?.product_name ?? "",
-        qty: line.qty,
-        unit_price: line.unit_price,
-        line_total: line.line_total,
-        is_active: true,
-        created_at: now,
-        created_by: userId,
-        updated_at: null,
-        updated_by: null
-      });
-      const savedBillItem = await manager.save(BillItem, billItem);
+    await createBillItemRows(
+      manager,
+      savedBill.bill_id,
+      input.store_id,
+      lineItems,
+      movementType.movement_type_id,
+      referenceType.reference_type_id,
+      userId,
+      sessionId
+    );
 
-      line.inventory.qty -= line.qty;
-      line.inventory.updated_at = now;
-      line.inventory.updated_by = userId;
-      await manager.save(Inventory, line.inventory);
+    await createAuditRecordService(manager, {
+      tableName: "transactions_bill",
+      recordId: savedBill.bill_id,
+      actionTypeCode: "INSERT",
+      userId,
+      storeId: savedBill.store_id,
+      sessionId,
+    });
 
-      const stockMovement = manager.create(StockMovement, {
-        inventory_id: line.inventory.inventory_id,
-        movement_type_id: movementType.movement_type_id,
-        reference_type_id: referenceType.reference_type_id,
-        quantity_change: -line.qty,
-        reference_id: savedBillItem.bill_item_id,
-        is_active: true,
-        created_at: now,
-        created_by: userId,
-        updated_at: now,
-        updated_by: userId
-      });
-      await manager.save(StockMovement, stockMovement);
-    }
-
-    return await manager.findOne(Bill, {
+    return manager.findOne(Bill, {
       where: { bill_id: savedBill.bill_id },
-      relations: ["billItems", "customer", "store", "discount"]
+      relations: ["billItems", "customer", "store", "discount"],
     });
   });
 };
 
-// ======================================================
-// VOID BILL
-// NOT a refund/return. Only reverses a bill that was just
-// created in error — restores stock exactly, marks the bill
-// VOID, and stops there. No partial-item voids, no reasoning
-// about used/damaged goods, no time-window leniency baked in
-// here (add that check in the controller if you want one,
-// e.g. "only within 15 minutes of created_at").
-// ======================================================
-export const voidBillService = async (
-  bill_id: number,
-  userId: number
-) => {
-  return await AppDataSource.transaction(async (manager) => {
-    const bill = await manager.findOne(Bill, {
-      where: { bill_id },
-      relations: ["billItems"]
-    });
+//=========================================================================
+// delete (void) bill — only within 10 minutes of creation, restores stock
+//=========================================================================
+export const deleteBillService = async (bill_id: number, userId: number, sessionId: number) => {
+  return AppDataSource.transaction(async (manager) => {
+    const bill = await manager.findOne(Bill, { where: { bill_id }, relations: ["billItems"] });
     if (!bill) {
       throw new Error("Bill not found.");
     }
     if (bill.status === "VOID") {
-      throw new Error("This bill has already been voided.");
+      throw new Error("This bill has already been cancelled.");
     }
     if (bill.status !== "COMPLETED") {
-      throw new Error(`Bill in status '${bill.status}' cannot be voided.`);
+      throw new Error(`Bill in status '${bill.status}' cannot be cancelled.`);
     }
 
-    const movementType = await getCode(
-      manager,
-      MovementType,
-      "RESTOCK",
-      "Movement type"
-    );
-    const referenceType = await getCode(
-      manager,
-      ReferenceType,
-      "BILDEL",
-      "Reference type"
-    );
+    const ageMs = Date.now() - bill.created_at.getTime();
+    if (ageMs > TEN_MINUTES_MS) {
+      throw new Error("Bills can only be cancelled within 10 minutes of creation.");
+    }
+
+    const movementType = await getCode(manager, MovementType, "RESTOCK", "Movement type");
+    const referenceType = await getCode(manager, ReferenceType, "BILDEL", "Reference type");
 
     const now = new Date();
-    const sortedItems = [...bill.billItems].sort(
-      (a, b) => a.inventory_id - b.inventory_id
-    );
+    const sortedItems = [...bill.billItems].sort((a, b) => a.inventory_id - b.inventory_id);
 
     for (const item of sortedItems) {
       const inventory = await manager.findOne(Inventory, {
         where: { inventory_id: item.inventory_id },
-        lock: { mode: "pessimistic_write" }
+        lock: { mode: "pessimistic_write" },
       });
       if (!inventory) {
         throw new Error(`Inventory ${item.inventory_id} not found.`);
@@ -443,6 +368,15 @@ export const voidBillService = async (
       inventory.updated_at = now;
       inventory.updated_by = userId;
       await manager.save(Inventory, inventory);
+
+      await createAuditRecordService(manager, {
+        tableName: "transactions_inventory",
+        recordId: inventory.inventory_id,
+        actionTypeCode: "UPDATE",
+        userId,
+        storeId: inventory.store_id,
+        sessionId,
+      });
 
       const stockMovement = manager.create(StockMovement, {
         inventory_id: item.inventory_id,
@@ -454,22 +388,89 @@ export const voidBillService = async (
         created_at: now,
         created_by: userId,
         updated_at: now,
-        updated_by: userId
+        updated_by: userId,
       });
-      await manager.save(StockMovement, stockMovement);
+      const savedMovement = await manager.save(StockMovement, stockMovement);
+
+      await createAuditRecordService(manager, {
+        tableName: "transactions_stock_movement",
+        recordId: savedMovement.movement_id,
+        actionTypeCode: "INSERT",
+        userId,
+        storeId: inventory.store_id,
+        sessionId,
+      });
     }
 
     bill.status = "VOID";
     bill.is_active = false;
     bill.updated_at = now;
     bill.updated_by = userId;
-    return await manager.save(Bill, bill);
+    const savedBill = await manager.save(Bill, bill);
+
+    await createAuditRecordService(manager, {
+      tableName: "transactions_bill",
+      recordId: savedBill.bill_id,
+      actionTypeCode: "DELETE",
+      userId,
+      storeId: savedBill.store_id,
+      sessionId,
+    });
+
+    return savedBill;
   });
 };
 
-// ======================================================
-// READ HELPERS
-// ======================================================
+//=========================================================================
+// single bill by id, with its items
+//=========================================================================
+export async function getBillById(storeId: number, billId: number) {
+  const existingBill = await billRepo.findOne({
+    where: { store_id: storeId, bill_id: billId, is_active: true },
+    relations: ["billItems", "customer"],
+  });
 
+  if (!existingBill) {
+    throw new Error("Bill not found.");
+  }
 
+  return existingBill;
+}
 
+//=========================================================================
+// bill history — filterable by date, invoice number, customer phone
+//=========================================================================
+export async function getBillHistory(storeId: number, filters: BillHistoryFilters) {
+  const qb = billRepo
+    .createQueryBuilder("bill")
+    .leftJoinAndSelect("bill.customer", "customer")
+    .where("bill.store_id = :storeId", { storeId });
+
+  if (filters.invoiceNumber) {
+    qb.andWhere("bill.invoice_number LIKE :invoiceNumber", { invoiceNumber: `%${filters.invoiceNumber}%` });
+  }
+
+  if (filters.customerPhone) {
+    qb.andWhere("customer.phone_no LIKE :phone", { phone: `%${filters.customerPhone}%` });
+  }
+
+  if (filters.date) {
+    const start = new Date(filters.date);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    qb.andWhere("bill.created_at >= :start AND bill.created_at < :end", { start, end });
+  } else {
+    if (filters.dateFrom) {
+      qb.andWhere("bill.created_at >= :dateFrom", { dateFrom: new Date(filters.dateFrom) });
+    }
+    if (filters.dateTo) {
+      const end = new Date(filters.dateTo);
+      end.setDate(end.getDate() + 1);
+      qb.andWhere("bill.created_at < :dateTo", { dateTo: end });
+    }
+  }
+
+  qb.orderBy("bill.created_at", "DESC");
+
+  return qb.getMany();
+}
