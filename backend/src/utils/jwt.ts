@@ -10,9 +10,9 @@ if (!JWT_SECRET){
 export interface TokenPayload{
     userId: number;
     email: string;
-    roleId?: number;
-    storeId?: number;
-    sessionId?: number;
+    roleId: number;
+    storeId: number;
+    sessionId: number;
 }
 
 export function signToken(payload:TokenPayload):string{

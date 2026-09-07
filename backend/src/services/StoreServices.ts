@@ -5,7 +5,7 @@ import { User } from "../entity/TransactionsUser.js";
 import { Audit } from "../entity/TransactionsAudit.js";
 import { ActionType } from "../entity/MasterActionType.js";
 
-import { isUniqueConstraintError } from "./Error.js"
+import { isUniqueConstraintError } from "./Errors.js"
 
 // import { AppError } from "../utils/AppError.js";
 import { In, Not } from "typeorm";
@@ -471,9 +471,3 @@ export async function deleteStore(storeId: number, userId: number,sessionId: num
     return savedStore;
   });
 }
-
-
-
-
-
-

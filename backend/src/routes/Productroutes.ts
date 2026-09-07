@@ -7,23 +7,24 @@ import {
     updateProductController,
     deleteProductController
 } from "../controller/ProductController.js";
+import { authenticate } from "../middleware/Authenticate.js";
+import { authorize } from "../middleware/Authorize.js";
 
 const ProductRouter = Router();
-
+ProductRouter.use(authenticate);
 
 // PRODUCT ROUTES
 
 
+ProductRouter.get("/",authorize("OWNER", "ADMIN", "STAFF"), getAllProductsController);
 
-ProductRouter.post("/", createProductController);
+ProductRouter.get("/:id",authorize("OWNER", "ADMIN", "STAFF"), getProductByIdController);
 
-ProductRouter.get("/", getAllProductsController);
+ProductRouter.post("/",authorize("OWNER", "ADMIN"), createProductController);
 
-ProductRouter.get("/:id", getProductByIdController);
+ProductRouter.put("/:id",authorize("OWNER", "ADMIN"), updateProductController);
 
-ProductRouter.put("/:id", updateProductController);
-
-ProductRouter.delete("/:id", deleteProductController);
+ProductRouter.delete("/:id",authorize("OWNER", "ADMIN"), deleteProductController);
 
 
 export default ProductRouter;

@@ -9,18 +9,28 @@ import {
     deactivateInventory
 } from "../controller/InventoryController.js";
 
+import { authenticate } from "../middleware/Authenticate.js";
+import { authorize } from "../middleware/Authorize.js";
+import { requireStoreAccess } from "../middleware/requireStoreAccess.js";
+
 const router = Router();
 
-router.post("/", createInventory);
+router.use(authenticate);
 
-router.get("/store/:storeId", getInventoryByStore);
 
-router.get("/:id", getInventoryById);
 
-router.put("/pricing/:id", updateInventoryPricing);
+router.get("/store/:storeId",authorize("OWNER", "ADMIN", "STAFF"),requireStoreAccess("params", "storeId"), getInventoryByStore);
 
-router.put("/quantity/:id", updateInventoryQuantity);
+router.get("/:id",authorize("OWNER", "ADMIN","STAFF"), getInventoryById);
 
-router.patch("/deactivate/:id", deactivateInventory);
+
+
+router.post("/",authorize("OWNER"), createInventory);
+
+router.put("/pricing/:id",authorize("OWNER"), updateInventoryPricing);
+
+router.put("/quantity/:id",authorize("OWNER"), updateInventoryQuantity);
+
+router.patch("/deactivate/:id",authorize("OWNER"), deactivateInventory);
 
 export default router;

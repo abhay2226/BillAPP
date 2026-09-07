@@ -12,6 +12,8 @@ import {
     getAuditsByActionTypeService
 } from "../services/AuditServices.js";
 
+import { verifyToken } from "../utils/jwt.js";
+
 
 
 // CREATE AUDIT RECORD
@@ -22,7 +24,7 @@ export const createAuditController = async (
 ) => {
 
     try {
-
+        
         const audit = await createAuditService(
             req.body
         );

@@ -11,17 +11,6 @@ import { verifyToken } from "../utils/jwt.js";
 
 export async function getUsersController(req:Request,res:Response){
     try{
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-          payload = verifyToken(token);
-        } catch {
-          return res.status(403).json({ message: "Invalid or expired token" });
-        }
         const result=await getUsers();
         return res.status(200).json({
             success: true, 
@@ -39,17 +28,6 @@ export async function getUsersController(req:Request,res:Response){
 
 export async function getUserByIdController(req:Request,res:Response){
     try{
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-          payload = verifyToken(token);
-        } catch {
-          return res.status(403).json({ message: "Invalid or expired token" });
-        }
         const userId = Number(req.params.userId);
         if(isNaN(userId) || userId <= 0){
             return res.status(400).json({
@@ -74,17 +52,6 @@ export async function getUserByIdController(req:Request,res:Response){
 
 export async function updateUserController(req:Request,res:Response){
     try{
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-          payload = verifyToken(token);
-        } catch {
-          return res.status(403).json({ message: "Invalid or expired token" });
-        }
         const userId = Number(req.params.userId);
         if(isNaN(userId) || userId <= 0){
             return res.status(400).json({
@@ -111,17 +78,6 @@ export async function updateUserController(req:Request,res:Response){
 
 export async function deleteUserController(req:Request,res:Response) {
     try{
-        const authHeader = req.headers["authorization"];
-        if (!authHeader) {
-            return res.status(401).json({ message: "No token provided" });
-        }
-        const token = authHeader.slice("Bearer ".length);
-        let payload;
-        try {
-          payload = verifyToken(token);
-        } catch {
-          return res.status(403).json({ message: "Invalid or expired token" });
-        }
         const userId = Number(req.params.userId);
         if(isNaN(userId) || userId <= 0){
             return res.status(400).json({

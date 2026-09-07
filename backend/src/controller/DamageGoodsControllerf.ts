@@ -12,45 +12,44 @@ import {
 
 import { verifyToken } from "../utils/jwt.js";
 
-interface AuthPayload {
-    userId: number;
-    sessionId: number;
-}
+// interface AuthPayload {
+//     userId: number;
+//     sessionId: number;
+// }
 
-const authenticate = (req: Request): AuthPayload => {
-    const authHeader = req.headers.authorization;
+// const authenticate = (req: Request): AuthPayload => {
+//     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
-        throw new Error("NO_TOKEN");
-    }
+//     if (!authHeader) {
+//         throw new Error("NO_TOKEN");
+//     }
 
-    if (!authHeader.startsWith("Bearer ")) {
-        throw new Error("INVALID_TOKEN_FORMAT");
-    }
+//     if (!authHeader.startsWith("Bearer ")) {
+//         throw new Error("INVALID_TOKEN_FORMAT");
+//     }
 
-    const token = authHeader.substring(7);
+//     const token = authHeader.substring(7);
 
-    if (!token) {
-        throw new Error("NO_TOKEN");
-    }
+//     if (!token) {
+//         throw new Error("NO_TOKEN");
+//     }
 
-    const payload = verifyToken(token) as AuthPayload;
+//     const payload = verifyToken(token) as AuthPayload;
 
-    if (!payload || !payload.userId) {
-        throw new Error("INVALID_USER");
-    }
+//     if (!payload || !payload.userId) {
+//         throw new Error("INVALID_USER");
+//     }
 
-    return payload;
-};
+//     return payload;
+// };
 
 export const createDamagedGoods = async (
     req: Request,
     res: Response
 ) => {
     try {
-        const payload = authenticate(req);
 
-        if (!payload.sessionId) {
+        if (!req.params.sessionId) {
             return res.status(401).json({
                 success: false,
                 message: "Session ID missing from token"
@@ -125,8 +124,8 @@ export const createDamagedGoods = async (
             quantity,
             reason.trim(),
             unitCost,
-            payload.userId,
-            payload.sessionId
+            Number(req.params.userId),
+            Number(req.params.sessionId)
         );
 
         return res.status(201).json({
@@ -180,8 +179,7 @@ export const getAllDamagedGoods = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
-
+        
         const data = await getAllDamagedGoodsService();
 
         return res.status(200).json({
@@ -222,7 +220,6 @@ export const getDamagedGoodsById = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
 
         const damageId = Number(req.params.id);
 
@@ -283,7 +280,6 @@ export const getDamagedGoodsByInventory = async (
     res: Response
 ) => {
     try {
-        authenticate(req);
 
         const inventoryId = Number(req.params.inventoryId);
 
@@ -338,9 +334,8 @@ export const updateDamagedGoods = async (
     res: Response
 ) => {
     try {
-        const payload = authenticate(req);
 
-        if (!payload.sessionId) {
+        if (!req.params.sessionId) {
             return res.status(401).json({
                 success: false,
                 message: "Session ID missing from token"
@@ -414,8 +409,8 @@ export const updateDamagedGoods = async (
             quantity,
             reason.trim(),
             unitCost,
-            payload.userId,
-            payload.sessionId
+            Number(req.params.userId),
+            Number(req.params.sessionId)
         );
 
         if (!data) {
@@ -470,9 +465,8 @@ export const deactivateDamagedGoods = async (
     res: Response
 ) => {
     try {
-        const payload = authenticate(req);
 
-        if (!payload.sessionId) {
+        if (!req.params.sessionId) {
             return res.status(401).json({
                 success: false,
                 message: "Session ID missing from token"
@@ -494,8 +488,8 @@ export const deactivateDamagedGoods = async (
         const data =
             await deactivateDamagedGoodsService(
                 damageId,
-                payload.userId,
-                payload.sessionId
+                Number(req.params.userId),
+                Number(req.params.sessionId)
             );
 
         if (!data) {

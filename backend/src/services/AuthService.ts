@@ -13,7 +13,7 @@ import { hashPassword , comparePassword } from "../utils/passwords.js";
 
 import { signToken, verifyToken } from "../utils/jwt.js";
 
-import { isUniqueConstraintError } from "./Error.js";
+import { isUniqueConstraintError } from "./Errors.js";
 
 
 //repositories
@@ -81,13 +81,14 @@ export async function signUp(data: SignUpData) {
 
   const passwordHash = await hashPassword(password);
 
-  const savedUser = await AppDataSource.manager.transaction(async (manager) => {
+  const { savedUser, savedSess } = await AppDataSource.manager.transaction(async (manager) => {
     const stores = manager.getRepository(Store);
     const users = manager.getRepository(User);
-
+    const sessions = manager.getRepository(Session);
+  
     let targetStoreId: number;
     let createdNewStore = false;
-
+  
     if (store_id) {
       if (roleName === "OWNER") {
         throw new Error("Cannot register as OWNER of an existing store.");
@@ -103,19 +104,19 @@ export async function signUp(data: SignUpData) {
       }
       if (!store_name) throw new Error("Store name is required to create a new store.");
       if (!gst_no) throw new Error("Gst_no is required to create a new store.");
-
+  
       const existingByName = await stores.findOne({ where: { store_name } });
       if (existingByName) throw new Error("Store already exists.");
       const existingByGst = await stores.findOne({ where: { gst_no } });
       if (existingByGst) throw new Error("A store with this GST number already exists.");
-
+  
       const newStore = stores.create({
         store_name,
         gst_no,
         location: location ?? null,
         is_active: true,
         created_at: new Date(),
-        created_by: null,   // the future owner doesn't exist yet
+        created_by: null,
         updated_at: null,
         updated_by: null,
       });
@@ -123,7 +124,7 @@ export async function signUp(data: SignUpData) {
       targetStoreId = savedStore.store_id;
       createdNewStore = true;
     }
-
+  
     const newUser = users.create({
       firstname,
       lastname: lastname || null,
@@ -132,34 +133,54 @@ export async function signUp(data: SignUpData) {
       role_id,
       store_id: targetStoreId,
       created_at: new Date(),
-      created_by: null,   // self-registered — no one "created" this account
+      created_by: null,
       updated_at: null,
       updated_by: null,
     });
-
+  
     let savedUser;
+    let savedSess;
     try {
       savedUser = await users.save(newUser);
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 86400 * 1000);
+  
+      const session = sessions.create({
+        user_id: savedUser.user_id,
+        store_id: savedUser.store_id,
+        login_at: now,
+        logout_at: null,
+        expires_at: expiresAt,
+        last_active_at: now,
+        ip_address: null,
+        device_type: null,
+        device_info: null,
+        status: "ACTIVE",
+        is_active: true,
+        created_at: now,
+      });
+  
+      savedSess = await sessions.save(session);
     } catch (err) {
       if (isUniqueConstraintError(err)) {
         throw new Error("An user with this email exists already.");
       }
       throw err;
     }
-
+  
     if (createdNewStore) {
-      // Now that the user has a real ID, credit them as the store's creator
       await stores.update({ store_id: targetStoreId }, { created_by: savedUser.user_id });
     }
-
-    return savedUser;
+  
+    return { savedUser, savedSess };
   });
 
   const token = signToken({
-    userId: savedUser.user_id,
+    userId:savedUser.user_id,
     email: savedUser.email,
     roleId: savedUser.role_id,
     storeId: savedUser.store_id,
+    sessionId: savedSess.session_id,
   });
 
   return {
@@ -182,7 +203,7 @@ export async function signUp(data: SignUpData) {
 //=========================================================================
 
 export async function logIn(
-    data:SignUpData,
+    data:LogInData,
     // req: Request, 
     // res: Response
 ){
@@ -248,7 +269,7 @@ export async function logIn(
         const token=signToken({
             userId: existingUser.user_id,
             email: existingUser.email,
-            // roleId: existingUser.role_id,
+            roleId: existingUser.role_id,
             storeId: existingUser.store_id,
             sessionId: savedSess.session_id,
         })
@@ -258,7 +279,7 @@ export async function logIn(
             user:{
                 userId: existingUser.user_id,
                 firstname:existingUser.firstname,
-                lastname:existingUser.firstname,
+                lastname:existingUser.lastname,
                 email: existingUser.email,
                 roleId: existingUser.role_id,
                 storeId: existingUser.store_id,

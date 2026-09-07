@@ -12,8 +12,9 @@ import { verifyToken } from "../utils/jwt.js";
 
 export async function createBillController(req: Request, res: Response) {
   try {
-    const actingUserId = Number(req.body.actingUserId);
-    const sessionId = Number(req.body.sessionId);
+    
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
     if (!actingUserId || !sessionId) {
       return res.status(400).json({ success: false, message: "actingUserId and sessionId are required." });
     }
@@ -27,8 +28,9 @@ export async function createBillController(req: Request, res: Response) {
 
 export async function deleteBillController(req: Request, res: Response) {
   try {
-    const actingUserId = Number(req.body.actingUserId);
-    const sessionId = Number(req.body.sessionId);
+    
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
     if (!actingUserId || !sessionId) {
       return res.status(400).json({ success: false, message: "actingUserId and sessionId are required." });
     }
@@ -42,6 +44,8 @@ export async function deleteBillController(req: Request, res: Response) {
 
 export async function getBillByIdController(req: Request, res: Response) {
   try {
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
     const bill = await getBillById(Number(req.params.storeId), Number(req.params.id));
     return res.status(200).json({ success: true, data: bill });
   } catch (error) {
@@ -52,6 +56,8 @@ export async function getBillByIdController(req: Request, res: Response) {
 
 export async function getBillItemsController(req: Request, res: Response) {
   try {
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
     const items = await getBillItemsForBill(Number(req.params.id));
     return res.status(200).json({ success: true, data: items });
   } catch (error) {
@@ -62,37 +68,9 @@ export async function getBillItemsController(req: Request, res: Response) {
 
 export async function getBillHistoryController(req: Request, res: Response) {
   try {
-        const authHeader = req.headers.authorization;
     
-    if (!authHeader?.startsWith("Bearer ")) {
-        return res.status(401).json({
-            success: false,
-            message: "Authorization header missing or invalid."
-        });
-    }
-    
-    const token = authHeader.slice("Bearer ".length);
-    
-    let payload;
-    
-    try {
-        payload = verifyToken(token);
-    } catch {
-        return res.status(403).json({
-            success: false,
-            message: "Invalid or expired token."
-        });
-    }
-    
-    if (!payload.sessionId) {
-        return res.status(401).json({
-            success: false,
-            message: "Session ID missing from token."
-        });
-    }
-    
-    const actingUserId = payload.userId;
-    const sessionId = payload.sessionId;
+    const actingUserId = Number(req.params.userId);
+    const sessionId = Number(req.params.sessionId);
     // const { date, dateFrom, dateTo, invoiceNumber, customerPhone } = req.query;
     const filters: BillHistoryFilters = {};
 
