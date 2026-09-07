@@ -6,6 +6,11 @@ import { ActionType } from "../entity/MasterActionType.js";
 
 import { EntityManager } from "typeorm";
 
+
+// ======================================================
+// REPOSITORIES
+// ======================================================
+
 const auditRepository =
     AppDataSource.getRepository(Audit);
 
@@ -32,45 +37,68 @@ const validateId = (
 
 
 // ======================================================
-// GET ACTION TYPE BY CODE
+// GET ACTION TYPE BY NAME
 // ======================================================
 
 const getActionType = async (
     manager: EntityManager,
-    code: string
+    actionTypeName: string
 ): Promise<ActionType> => {
+
+    if (
+        !actionTypeName ||
+        !actionTypeName.trim()
+    ) {
+        throw new Error(
+            "Action type name is required"
+        );
+    }
+
+
+    const normalizedName =
+        actionTypeName
+            .trim()
+            .toUpperCase();
+
 
     const actionType =
         await manager.findOne(
             ActionType,
             {
                 where: {
-                    code,
-                    is_active: true
+                    code:
+                        normalizedName,
+
+                    is_active:
+                        true
                 }
             }
         );
 
+
     if (!actionType) {
+
         throw new Error(
-            `Action type '${code}' not found or inactive`
+            `Action type '${normalizedName}' not found or inactive`
         );
     }
+
 
     return actionType;
 };
 
 
 // ======================================================
-// CREATE AUDIT RECORD for each table curd
+// CREATE AUDIT RECORD FOR EACH TABLE CRUD
 // ======================================================
 
 export const createAuditRecordService = async (
     manager: EntityManager,
+
     data: {
         tableName: string;
         recordId: number;
-        actionTypeCode: string;
+        actionTypeName: string;
         userId: number;
         storeId: number;
         sessionId: number;
@@ -78,14 +106,62 @@ export const createAuditRecordService = async (
     }
 ): Promise<Audit> => {
 
+
     // ==================================================
-    // GET ACTION TYPE
+    // VALIDATE DATA
+    // ==================================================
+
+    if (!data.tableName?.trim()) {
+
+        throw new Error(
+            "Table name is required"
+        );
+    }
+
+
+    validateId(
+        data.recordId,
+        "Valid record ID is required"
+    );
+
+
+    validateId(
+        data.userId,
+        "Valid user ID is required"
+    );
+
+
+    validateId(
+        data.storeId,
+        "Valid store ID is required"
+    );
+
+
+    validateId(
+        data.sessionId,
+        "Valid session ID is required"
+    );
+
+
+    if (
+        !data.actionTypeName ||
+        !data.actionTypeName.trim()
+    ) {
+
+        throw new Error(
+            "Action type name is required"
+        );
+    }
+
+
+    // ==================================================
+    // GET ACTION TYPE BY NAME
     // ==================================================
 
     const actionType =
         await getActionType(
             manager,
-            data.actionTypeCode.trim().toUpperCase()
+            data.actionTypeName
         );
 
 
@@ -97,8 +173,9 @@ export const createAuditRecordService = async (
         manager.create(
             Audit,
             {
+
                 table_name:
-                    data.tableName,
+                    data.tableName.trim(),
 
                 record_id:
                     data.recordId,
@@ -108,12 +185,6 @@ export const createAuditRecordService = async (
 
                 action_type:
                     actionType,
-
-                updated_by:
-                    data.userId,
-
-                updated_at:
-                    new Date(),
 
                 store_id:
                     data.storeId,
@@ -130,84 +201,140 @@ export const createAuditRecordService = async (
         );
 
 
+    // ==================================================
+    // SAVE AUDIT
+    // ==================================================
+
     return await manager.save(
         Audit,
         audit
     );
 };
+
+
 // ======================================================
 // CREATE AUDIT RECORD
 // ======================================================
 
 export const createAuditService = async (
-    auditData: Partial<Audit>
+    auditData: Partial<Audit> & {
+        actionTypeName?: string;
+        userId?: number;
+    }
 ) => {
 
+
+    // ==================================================
     // TABLE NAME
+    // ==================================================
+
     if (!auditData.table_name?.trim()) {
-        throw new Error("Table name is required");
+
+        throw new Error(
+            "Table name is required"
+        );
     }
 
 
+    // ==================================================
     // RECORD ID
+    // ==================================================
+
     if (
         auditData.record_id === undefined ||
         auditData.record_id === null ||
         auditData.record_id <= 0
     ) {
-        throw new Error("Valid record ID is required");
+
+        throw new Error(
+            "Valid record ID is required"
+        );
     }
 
 
-    // ACTION TYPE ID
+    // ==================================================
+    // ACTION TYPE NAME
+    // ==================================================
+
     if (
-        auditData.action_type_id === undefined ||
-        auditData.action_type_id === null ||
-        auditData.action_type_id <= 0
+        !auditData.actionTypeName ||
+        !auditData.actionTypeName.trim()
     ) {
-        throw new Error("Valid action type ID is required");
+
+        throw new Error(
+            "Action type name is required"
+        );
     }
 
 
+    // ==================================================
     // STORE ID
+    // ==================================================
+
     if (
         auditData.store_id === undefined ||
         auditData.store_id === null ||
         auditData.store_id <= 0
     ) {
-        throw new Error("Valid store ID is required");
+
+        throw new Error(
+            "Valid store ID is required"
+        );
     }
 
 
+    // ==================================================
     // SESSION ID
+    // ==================================================
+
     if (
         auditData.session_id === undefined ||
         auditData.session_id === null ||
         auditData.session_id <= 0
     ) {
-        throw new Error("Valid session ID is required");
+
+        throw new Error(
+            "Valid session ID is required"
+        );
     }
 
 
-    // CHECK ACTION TYPE EXISTS
+    // ==================================================
+    // GET ACTION TYPE BY NAME
+    // ==================================================
+
+    const normalizedName =
+        auditData.actionTypeName
+            .trim()
+            .toUpperCase();
+
+
     const actionType =
         await actionTypeRepository.findOne({
+
             where: {
-                action_type_id:
-                    auditData.action_type_id,
-                is_active: true
+
+                code:
+                    normalizedName,
+
+                is_active:
+                    true
             }
         });
 
 
     if (!actionType) {
+
         throw new Error(
-            "Action type not found or inactive"
+            `Action type '${normalizedName}' not found or inactive`
         );
     }
 
 
+    // ==================================================
     // CREATE AUDIT
+    // ==================================================
+
     const audit =
         auditRepository.create({
 
@@ -218,7 +345,10 @@ export const createAuditService = async (
                 auditData.record_id,
 
             action_type_id:
-                auditData.action_type_id,
+                actionType.action_type_id,
+
+            action_type:
+                actionType,
 
             store_id:
                 auditData.store_id,
@@ -234,7 +364,13 @@ export const createAuditService = async (
         });
 
 
-    return await auditRepository.save(audit);
+    // ==================================================
+    // SAVE AUDIT
+    // ==================================================
+
+    return await auditRepository.save(
+        audit
+    );
 };
 
 
@@ -271,11 +407,19 @@ export const getAuditByIdService = async (
     auditId: number
 ) => {
 
+    validateId(
+        auditId,
+        "Valid audit ID is required"
+    );
+
+
     return await auditRepository.findOne({
 
         where: {
             audit_id: auditId,
-            is_active: true
+
+            is_active:
+                true
         },
 
         relations: {
@@ -291,199 +435,331 @@ export const getAuditByIdService = async (
 // GET AUDITS BY TABLE NAME
 // ======================================================
 
-export const getAuditsByTableNameService = async (
-    tableName: string
-) => {
+export const getAuditsByTableNameService =
+    async (
+        tableName: string
+    ) => {
 
-    return await auditRepository.find({
+        if (
+            !tableName ||
+            !tableName.trim()
+        ) {
 
-        where: {
-            table_name: tableName.trim(),
-            is_active: true
-        },
-
-        relations: {
-            action_type: true,
-            store: true,
-            session: true
-        },
-
-        order: {
-            audit_id: "DESC"
+            throw new Error(
+                "Table name is required"
+            );
         }
-    });
-};
+
+
+        return await auditRepository.find({
+
+            where: {
+                table_name:
+                    tableName.trim(),
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                action_type: true,
+                store: true,
+                session: true
+            },
+
+            order: {
+                audit_id:
+                    "DESC"
+            }
+        });
+    };
 
 
 // ======================================================
 // GET AUDITS BY RECORD ID
 // ======================================================
 
-export const getAuditsByRecordIdService = async (
-    recordId: number
-) => {
+export const getAuditsByRecordIdService =
+    async (
+        recordId: number
+    ) => {
 
-    return await auditRepository.find({
+        validateId(
+            recordId,
+            "Valid record ID is required"
+        );
 
-        where: {
-            record_id: recordId,
-            is_active: true
-        },
 
-        relations: {
-            action_type: true,
-            store: true,
-            session: true
-        },
+        return await auditRepository.find({
 
-        order: {
-            audit_id: "DESC"
-        }
-    });
-};
+            where: {
+                record_id:
+                    recordId,
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                action_type: true,
+                store: true,
+                session: true
+            },
+
+            order: {
+                audit_id:
+                    "DESC"
+            }
+        });
+    };
 
 
 // ======================================================
 // GET AUDITS BY TABLE NAME + RECORD ID
 // ======================================================
 
-export const getAuditsByTableAndRecordIdService = async (
-    tableName: string,
-    recordId: number
-) => {
+export const getAuditsByTableAndRecordIdService =
+    async (
+        tableName: string,
+        recordId: number
+    ) => {
 
-    return await auditRepository.find({
+        if (
+            !tableName ||
+            !tableName.trim()
+        ) {
 
-        where: {
-            table_name: tableName.trim(),
-            record_id: recordId,
-            is_active: true
-        },
-
-        relations: {
-            action_type: true,
-            store: true,
-            session: true
-        },
-
-        order: {
-            audit_id: "DESC"
+            throw new Error(
+                "Table name is required"
+            );
         }
-    });
-};
+
+
+        validateId(
+            recordId,
+            "Valid record ID is required"
+        );
+
+
+        return await auditRepository.find({
+
+            where: {
+                table_name:
+                    tableName.trim(),
+
+                record_id:
+                    recordId,
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                action_type: true,
+                store: true,
+                session: true
+            },
+
+            order: {
+                audit_id:
+                    "DESC"
+            }
+        });
+    };
 
 
 // ======================================================
 // GET AUDITS BY STORE
 // ======================================================
 
-export const getAuditsByStoreService = async (
-    storeId: number
-) => {
+export const getAuditsByStoreService =
+    async (
+        storeId: number
+    ) => {
 
-    return await auditRepository.find({
+        validateId(
+            storeId,
+            "Valid store ID is required"
+        );
 
-        where: {
-            store_id: storeId,
-            is_active: true
-        },
 
-        relations: {
-            action_type: true,
-            store: true,
-            session: true
-        },
+        return await auditRepository.find({
 
-        order: {
-            audit_id: "DESC"
-        }
-    });
-};
+            where: {
+                store_id:
+                    storeId,
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                action_type: true,
+                store: true,
+                session: true
+            },
+
+            order: {
+                audit_id:
+                    "DESC"
+            }
+        });
+    };
 
 
 // ======================================================
 // GET AUDITS BY SESSION
 // ======================================================
 
-export const getAuditsBySessionService = async (
-    sessionId: number
-) => {
+export const getAuditsBySessionService =
+    async (
+        sessionId: number
+    ) => {
 
-    return await auditRepository.find({
+        validateId(
+            sessionId,
+            "Valid session ID is required"
+        );
 
-        where: {
-            session_id: sessionId,
-            is_active: true
-        },
 
-        relations: {
-            action_type: true,
-            store: true,
-            session: true
-        },
+        return await auditRepository.find({
 
-        order: {
-            audit_id: "DESC"
-        }
-    });
-};
+            where: {
+                session_id:
+                    sessionId,
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                action_type: true,
+                store: true,
+                session: true
+            },
+
+            order: {
+                audit_id:
+                    "DESC"
+            }
+        });
+    };
 
 
 // ======================================================
-// GET AUDITS BY ACTION TYPE
+// GET AUDITS BY ACTION TYPE NAME
 // ======================================================
 
-export const getAuditsByActionTypeService = async (
-    actionTypeId: number
-) => {
+export const getAuditsByActionTypeService =
+    async (
+        actionTypeName: string
+    ) => {
 
-    return await auditRepository.find({
+        if (
+            !actionTypeName ||
+            !actionTypeName.trim()
+        ) {
 
-        where: {
-            action_type_id: actionTypeId,
-            is_active: true
-        },
-
-        relations: {
-            action_type: true,
-            store: true,
-            session: true
-        },
-
-        order: {
-            audit_id: "DESC"
+            throw new Error(
+                "Action type name is required"
+            );
         }
-    });
-};
+
+
+        const normalizedName =
+            actionTypeName
+                .trim()
+                .toUpperCase();
+
+
+        const actionType =
+            await actionTypeRepository.findOne({
+
+                where: {
+
+                    code:
+                        normalizedName,
+
+                    is_active:
+                        true
+                }
+            });
+
+
+        if (!actionType) {
+
+            throw new Error(
+                `Action type '${normalizedName}' not found or inactive`
+            );
+        }
+
+
+        return await auditRepository.find({
+
+            where: {
+
+                action_type_id:
+                    actionType.action_type_id,
+
+                is_active:
+                    true
+            },
+
+            relations: {
+                action_type: true,
+                store: true,
+                session: true
+            },
+
+            order: {
+                audit_id:
+                    "DESC"
+            }
+        });
+    };
 
 
 // ======================================================
 // DEACTIVATE AUDIT RECORD
 // ======================================================
 
-export const deactivateAuditService = async (
-    auditId: number
-) => {
+export const deactivateAuditService =
+    async (
+        auditId: number
+    ) => {
 
-    const audit =
-        await auditRepository.findOne({
-
-            where: {
-                audit_id: auditId,
-                is_active: true
-            }
-        });
-
-
-    if (!audit) {
-        throw new Error(
-            "Audit record not found"
+        validateId(
+            auditId,
+            "Valid audit ID is required"
         );
-    }
 
 
-    audit.is_active = false;
+        const audit =
+            await auditRepository.findOne({
+
+                where: {
+                    audit_id:
+                        auditId,
+
+                    is_active:
+                        true
+                }
+            });
 
 
-    return await auditRepository.save(audit);
-};
+        if (!audit) {
+
+            throw new Error(
+                "Audit record not found"
+            );
+        }
+
+
+        audit.is_active =
+            false;
+
+
+        return await auditRepository.save(
+            audit
+        );
+    };

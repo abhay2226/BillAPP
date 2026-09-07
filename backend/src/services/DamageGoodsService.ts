@@ -3,7 +3,6 @@ import { AppDataSource } from "../datasource.js";
 
 import { DamagedGoods } from "../entity/TransactionsDamagedGoods.js";
 import { Inventory } from "../entity/TransactionsInventory.js";
-import { Audit } from "../entity/TransactionsAudit.js";
 
 import { createAuditRecordService } from "./AuditServices.js";
 
@@ -70,10 +69,6 @@ export const createDamagedGoodsService =
         sessionId: number
     ) => {
 
-        // ==================================================
-        // VALIDATION
-        // ==================================================
-
         validateId(
             inventoryId,
             "Valid inventory ID is required"
@@ -91,6 +86,7 @@ export const createDamagedGoodsService =
             "Valid session ID is required"
         );
 
+
         if (
             !reason ||
             reason.trim() === ""
@@ -99,6 +95,7 @@ export const createDamagedGoodsService =
                 "Damage reason is required"
             );
         }
+
 
         if (
             typeof unitCost !== "number" ||
@@ -110,16 +107,8 @@ export const createDamagedGoodsService =
         }
 
 
-        // ==================================================
-        // TRANSACTION
-        // ==================================================
-
         return await AppDataSource.manager.transaction(
             async (manager) => {
-
-                // ==========================================
-                // FIND ACTIVE INVENTORY
-                // ==========================================
 
                 const inventory =
                     await manager.findOne(
@@ -143,20 +132,12 @@ export const createDamagedGoodsService =
                 }
 
 
-                // ==========================================
-                // CHECK STOCK
-                // ==========================================
-
                 if (inventory.qty < qty) {
                     throw new Error(
                         `Insufficient stock. Available stock: ${inventory.qty}`
                     );
                 }
 
-
-                // ==========================================
-                // CALCULATE LOSS
-                // ==========================================
 
                 const lossValue =
                     qty * unitCost;
@@ -166,9 +147,9 @@ export const createDamagedGoodsService =
                     new Date();
 
 
-                // ==========================================
-                // UPDATE INVENTORY QUANTITY
-                // ==========================================
+                // ------------------------------------------
+                // UPDATE INVENTORY
+                // ------------------------------------------
 
                 inventory.qty =
                     inventory.qty - qty;
@@ -180,19 +161,15 @@ export const createDamagedGoodsService =
                     userId;
 
 
-                // ==========================================
-                // SAVE INVENTORY
-                // ==========================================
-
                 await manager.save(
                     Inventory,
                     inventory
                 );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // AUDIT INVENTORY UPDATE
-                // ==========================================
+                // ------------------------------------------
 
                 const inventoryAudit =
                     await createAuditRecordService(
@@ -204,7 +181,7 @@ export const createDamagedGoodsService =
                             recordId:
                                 inventory.inventory_id,
 
-                            actionTypeCode:
+                            actionTypeName:
                                 "UPDATE",
 
                             userId:
@@ -219,9 +196,9 @@ export const createDamagedGoodsService =
                     );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // CREATE DAMAGE RECORD
-                // ==========================================
+                // ------------------------------------------
 
                 const damage =
                     manager.create(
@@ -260,19 +237,15 @@ export const createDamagedGoodsService =
                     );
 
 
-                // ==========================================
-                // SAVE DAMAGE
-                // ==========================================
-
                 await manager.save(
                     DamagedGoods,
                     damage
                 );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // AUDIT DAMAGE INSERT
-                // ==========================================
+                // ------------------------------------------
 
                 const damageAudit =
                     await createAuditRecordService(
@@ -284,7 +257,7 @@ export const createDamagedGoodsService =
                             recordId:
                                 damage.damage_id,
 
-                            actionTypeCode:
+                            actionTypeName:
                                 "INSERT",
 
                             userId:
@@ -299,13 +272,10 @@ export const createDamagedGoodsService =
                     );
 
 
-                // ==========================================
-                // RETURN
-                // ==========================================
-
                 return {
                     inventory,
                     damage,
+
                     audits: [
                         inventoryAudit,
                         damageAudit
@@ -332,6 +302,7 @@ export const getDamagedGoodsByIdService =
 
 
         return await damageRepository.findOne({
+
             where: {
                 damage_id:
                     damageId,
@@ -355,6 +326,7 @@ export const getAllDamagedGoodsService =
     async () => {
 
         return await damageRepository.find({
+
             where: {
                 is_active:
                     true
@@ -380,6 +352,7 @@ export const getAllDamagedGoodsHistoryService =
     async () => {
 
         return await damageRepository.find({
+
             relations: {
                 inventory: true
             },
@@ -408,6 +381,7 @@ export const getDamagedGoodsByInventoryService =
 
 
         return await damageRepository.find({
+
             where: {
                 inventory_id:
                     inventoryId,
@@ -459,6 +433,7 @@ export const updateDamagedGoodsService =
             "Valid session ID is required"
         );
 
+
         if (
             !reason ||
             reason.trim() === ""
@@ -467,6 +442,7 @@ export const updateDamagedGoodsService =
                 "Damage reason is required"
             );
         }
+
 
         if (
             typeof unitCost !== "number" ||
@@ -480,10 +456,6 @@ export const updateDamagedGoodsService =
 
         return await AppDataSource.manager.transaction(
             async (manager) => {
-
-                // ==========================================
-                // FIND DAMAGE
-                // ==========================================
 
                 const damage =
                     await manager.findOne(
@@ -507,10 +479,6 @@ export const updateDamagedGoodsService =
                 }
 
 
-                // ==========================================
-                // FIND INVENTORY
-                // ==========================================
-
                 const inventory =
                     await manager.findOne(
                         Inventory,
@@ -533,22 +501,17 @@ export const updateDamagedGoodsService =
                 }
 
 
-                // ==========================================
-                // CALCULATE QUANTITY DIFFERENCE
-                // ==========================================
-
                 const quantityDifference =
                     qty - damage.qty;
 
 
-                // ==========================================
-                // CHECK STOCK IF INCREASING DAMAGE
-                // ==========================================
+                // ------------------------------------------
+                // CHECK STOCK
+                // ------------------------------------------
 
                 if (
                     quantityDifference > 0 &&
-                    inventory.qty <
-                        quantityDifference
+                    inventory.qty < quantityDifference
                 ) {
                     throw new Error(
                         `Insufficient stock. Available stock: ${inventory.qty}`
@@ -556,9 +519,9 @@ export const updateDamagedGoodsService =
                 }
 
 
-                // ==========================================
+                // ------------------------------------------
                 // UPDATE INVENTORY
-                // ==========================================
+                // ------------------------------------------
 
                 inventory.qty =
                     inventory.qty -
@@ -576,19 +539,15 @@ export const updateDamagedGoodsService =
                     userId;
 
 
-                // ==========================================
-                // SAVE INVENTORY
-                // ==========================================
-
                 await manager.save(
                     Inventory,
                     inventory
                 );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // AUDIT INVENTORY UPDATE
-                // ==========================================
+                // ------------------------------------------
 
                 const inventoryAudit =
                     await createAuditRecordService(
@@ -600,7 +559,7 @@ export const updateDamagedGoodsService =
                             recordId:
                                 inventory.inventory_id,
 
-                            actionTypeCode:
+                            actionTypeName:
                                 "UPDATE",
 
                             userId:
@@ -615,9 +574,9 @@ export const updateDamagedGoodsService =
                     );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // UPDATE DAMAGE
-                // ==========================================
+                // ------------------------------------------
 
                 damage.qty =
                     qty;
@@ -638,19 +597,15 @@ export const updateDamagedGoodsService =
                     userId;
 
 
-                // ==========================================
-                // SAVE DAMAGE
-                // ==========================================
-
                 await manager.save(
                     DamagedGoods,
                     damage
                 );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // AUDIT DAMAGE UPDATE
-                // ==========================================
+                // ------------------------------------------
 
                 const damageAudit =
                     await createAuditRecordService(
@@ -662,7 +617,7 @@ export const updateDamagedGoodsService =
                             recordId:
                                 damage.damage_id,
 
-                            actionTypeCode:
+                            actionTypeName:
                                 "UPDATE",
 
                             userId:
@@ -677,13 +632,10 @@ export const updateDamagedGoodsService =
                     );
 
 
-                // ==========================================
-                // RETURN
-                // ==========================================
-
                 return {
                     inventory,
                     damage,
+
                     audits: [
                         inventoryAudit,
                         damageAudit
@@ -724,10 +676,6 @@ export const deactivateDamagedGoodsService =
         return await AppDataSource.manager.transaction(
             async (manager) => {
 
-                // ==========================================
-                // FIND DAMAGE
-                // ==========================================
-
                 const damage =
                     await manager.findOne(
                         DamagedGoods,
@@ -749,10 +697,6 @@ export const deactivateDamagedGoodsService =
                     );
                 }
 
-
-                // ==========================================
-                // FIND INVENTORY
-                // ==========================================
 
                 const inventory =
                     await manager.findOne(
@@ -776,9 +720,9 @@ export const deactivateDamagedGoodsService =
                 }
 
 
-                // ==========================================
-                // RESTORE DAMAGED QUANTITY
-                // ==========================================
+                // ------------------------------------------
+                // RESTORE INVENTORY
+                // ------------------------------------------
 
                 inventory.qty =
                     inventory.qty +
@@ -796,19 +740,15 @@ export const deactivateDamagedGoodsService =
                     userId;
 
 
-                // ==========================================
-                // SAVE INVENTORY
-                // ==========================================
-
                 await manager.save(
                     Inventory,
                     inventory
                 );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // AUDIT INVENTORY UPDATE
-                // ==========================================
+                // ------------------------------------------
 
                 const inventoryAudit =
                     await createAuditRecordService(
@@ -820,7 +760,7 @@ export const deactivateDamagedGoodsService =
                             recordId:
                                 inventory.inventory_id,
 
-                            actionTypeCode:
+                            actionTypeName:
                                 "UPDATE",
 
                             userId:
@@ -835,9 +775,9 @@ export const deactivateDamagedGoodsService =
                     );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // DEACTIVATE DAMAGE
-                // ==========================================
+                // ------------------------------------------
 
                 damage.is_active =
                     false;
@@ -849,19 +789,15 @@ export const deactivateDamagedGoodsService =
                     userId;
 
 
-                // ==========================================
-                // SAVE DAMAGE
-                // ==========================================
-
                 await manager.save(
                     DamagedGoods,
                     damage
                 );
 
 
-                // ==========================================
+                // ------------------------------------------
                 // AUDIT DAMAGE DELETE
-                // ==========================================
+                // ------------------------------------------
 
                 const damageAudit =
                     await createAuditRecordService(
@@ -873,7 +809,7 @@ export const deactivateDamagedGoodsService =
                             recordId:
                                 damage.damage_id,
 
-                            actionTypeCode:
+                            actionTypeName:
                                 "DELETE",
 
                             userId:
@@ -888,13 +824,10 @@ export const deactivateDamagedGoodsService =
                     );
 
 
-                // ==========================================
-                // RETURN
-                // ==========================================
-
                 return {
                     inventory,
                     damage,
+
                     audits: [
                         inventoryAudit,
                         damageAudit
@@ -973,3 +906,4 @@ export const getDamagedGoodsByDateRangeService =
 
             .getMany();
     };
+
