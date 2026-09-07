@@ -6,7 +6,7 @@ import {
   getDiscountByNameForStore,
   updateDiscountService,
   setDiscountActiveService,
-} from "../Services/DiscountServices.js";
+} from "../services/DiscountServices.js";
 
 export async function createDiscountController(req: Request, res: Response) {
   try {

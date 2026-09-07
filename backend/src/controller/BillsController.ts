@@ -5,7 +5,10 @@ import {
   getBillById,
   getBillItemsForBill,
   getBillHistory,
-} from "../Services/BillServices.js";
+  BillHistoryFilters,
+} from "../services/BillServices.js";
+
+import { verifyToken } from "../utils/jwt.js";
 
 export async function createBillController(req: Request, res: Response) {
   try {
@@ -59,14 +62,64 @@ export async function getBillItemsController(req: Request, res: Response) {
 
 export async function getBillHistoryController(req: Request, res: Response) {
   try {
-    const { date, dateFrom, dateTo, invoiceNumber, customerPhone } = req.query;
-    const bills = await getBillHistory(Number(req.params.storeId), {
-      date: date ,
-      dateFrom: dateFrom ,
-      dateTo: dateTo ,
-      invoiceNumber: invoiceNumber ,
-      customerPhone: customerPhone ,
-    });
+        const authHeader = req.headers.authorization;
+    
+    if (!authHeader?.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Authorization header missing or invalid."
+        });
+    }
+    
+    const token = authHeader.slice("Bearer ".length);
+    
+    let payload;
+    
+    try {
+        payload = verifyToken(token);
+    } catch {
+        return res.status(403).json({
+            success: false,
+            message: "Invalid or expired token."
+        });
+    }
+    
+    if (!payload.sessionId) {
+        return res.status(401).json({
+            success: false,
+            message: "Session ID missing from token."
+        });
+    }
+    
+    const actingUserId = payload.userId;
+    const sessionId = payload.sessionId;
+    // const { date, dateFrom, dateTo, invoiceNumber, customerPhone } = req.query;
+    const filters: BillHistoryFilters = {};
+
+    if (typeof req.query.date === "string") {
+    filters.date = req.query.date;
+    }
+    
+    if (typeof req.query.dateFrom === "string") {
+        filters.dateFrom = req.query.dateFrom;
+    }
+    
+    if (typeof req.query.dateTo === "string") {
+        filters.dateTo = req.query.dateTo;
+    }
+    
+    if (typeof req.query.invoiceNumber === "string") {
+        filters.invoiceNumber = req.query.invoiceNumber;
+    }
+    
+    if (typeof req.query.customerPhone === "string") {
+        filters.customerPhone = req.query.customerPhone;
+    }
+    
+    const bills = await getBillHistory(
+        Number(req.params.storeId),
+        filters
+    );
     return res.status(200).json({ success: true, data: bills });
   } catch (error) {
     console.error("Get bill history error:", error);

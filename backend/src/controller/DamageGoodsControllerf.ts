@@ -115,12 +115,12 @@ export const createDamagedGoods = async (
         }
 
         const data = await createDamagedGoodsService({
-            inventory_id: inventoryId,
+            inventoryId: inventoryId,
             qty: quantity,
             reason:
-                reason === undefined || reason === ""
+                (reason === undefined || reason === ""
                     ? undefined
-                    : reason,
+                    : reason),
             unit_cost: unitCost,
             created_by: payload.userId,
             movement_type_id: movementTypeId
