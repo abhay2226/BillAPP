@@ -1,13 +1,10 @@
-
 import { AppDataSource } from "../datasource.js";
 
 import { Inventory } from "../entity/TransactionsInventory.js";
 import { StockMovement } from "../entity/TransactionsStockMovement.js";
 import { ReferenceType } from "../entity/MasterReference.js";
-import { ActionType } from "../entity/MasterActionType.js";
-import { Audit } from "../entity/TransactionsAudit.js";
 
-import { createAuditRecordService  } from "./AuditServices.js";
+import { createAuditRecordService } from "./AuditServices.js";
 
 import { EntityManager } from "typeorm";
 
@@ -75,10 +72,6 @@ const getReferenceType = async (
 };
 
 
-
-
-
-
 // ======================================================
 // VALIDATE STOCK MOVEMENT
 // ======================================================
@@ -92,30 +85,25 @@ const validateStockMovement = (
         "Valid inventory ID is required"
     );
 
-
     validateId(
         data.movementTypeId,
         "Valid movement type ID is required"
     );
-
 
     validateId(
         data.referenceId,
         "Valid reference ID is required"
     );
 
-
     validateId(
         data.userId,
         "Valid user ID is required"
     );
 
-
     validateId(
         data.sessionId,
         "Valid session ID is required"
     );
-
 
     if (
         !Number.isInteger(data.quantityChange) ||
@@ -125,7 +113,6 @@ const validateStockMovement = (
             "Quantity change must be a non-zero integer"
         );
     }
-
 
     if (
         !data.referenceTypeCode ||
@@ -148,7 +135,6 @@ export const createStockMovementService = async (
 
     validateStockMovement(data);
 
-
     return await AppDataSource.manager.transaction(
         async (manager) => {
 
@@ -170,7 +156,6 @@ export const createStockMovementService = async (
                     }
                 );
 
-
             if (!inventory) {
                 throw new Error(
                     "Active inventory record not found"
@@ -185,8 +170,7 @@ export const createStockMovementService = async (
             const referenceType =
                 await getReferenceType(
                     manager,
-                    data.referenceTypeCode
-                        .trim()
+                    data.referenceTypeCode.trim()
                 );
 
 
@@ -197,7 +181,6 @@ export const createStockMovementService = async (
             const newQuantity =
                 inventory.qty +
                 data.quantityChange;
-
 
             if (newQuantity < 0) {
                 throw new Error(
@@ -222,41 +205,10 @@ export const createStockMovementService = async (
             inventory.updated_by =
                 data.userId;
 
-
             await manager.save(
                 Inventory,
                 inventory
             );
-
-            const inAudit =
-                await createAuditRecordService(
-                    manager,
-                    {
-                        tableName:
-                            "transactions_inventory",
-
-                        recordId:
-                            inventory.inventory_id,
-
-                        actionTypeCode:
-                            "INSERT",
-
-                        userId:
-                            data.userId,
-
-                        storeId:
-                            inventory.store_id,
-
-                        sessionId:
-                            data.sessionId
-                    }
-                );
-
-            await manager.save(
-                Audit,
-                inAudit
-            );
-
 
 
             // ==============================================
@@ -310,10 +262,39 @@ export const createStockMovementService = async (
 
 
             // ==============================================
-            // AUDIT STOCK MOVEMENT
+            // AUDIT INVENTORY UPDATE
             // ==============================================
 
-            const audit =
+            const inventoryAudit =
+                await createAuditRecordService(
+                    manager,
+                    {
+                        tableName:
+                            "transactions_inventory",
+
+                        recordId:
+                            inventory.inventory_id,
+
+                        actionTypeName:
+                            "UPDATE",
+
+                        userId:
+                            data.userId,
+
+                        storeId:
+                            inventory.store_id,
+
+                        sessionId:
+                            data.sessionId
+                    }
+                );
+
+
+            // ==============================================
+            // AUDIT STOCK MOVEMENT INSERT
+            // ==============================================
+
+            const movementAudit =
                 await createAuditRecordService(
                     manager,
                     {
@@ -323,7 +304,7 @@ export const createStockMovementService = async (
                         recordId:
                             movement.movement_id,
 
-                        actionTypeCode:
+                        actionTypeName:
                             "INSERT",
 
                         userId:
@@ -336,11 +317,6 @@ export const createStockMovementService = async (
                             data.sessionId
                     }
                 );
-            
-             await manager.save(
-                Audit,
-                audit
-            );
 
 
             // ==============================================
@@ -350,7 +326,8 @@ export const createStockMovementService = async (
             return {
                 inventory,
                 movement,
-                audit
+                inventoryAudit,
+                movementAudit
             };
         }
     );
@@ -379,7 +356,6 @@ export const stockInService = async (
             "Stock-in quantity must be a positive integer"
         );
     }
-
 
     return await createStockMovementService({
 
@@ -424,7 +400,6 @@ export const stockOutService = async (
         );
     }
 
-
     return await createStockMovementService({
 
         inventoryId,
@@ -458,12 +433,10 @@ export const getStockMovementByIdService = async (
         "Invalid movement ID"
     );
 
-
     const repository =
         AppDataSource.getRepository(
             StockMovement
         );
-
 
     return await repository.findOne({
 
@@ -492,7 +465,6 @@ export const getAllStockMovementsService =
             AppDataSource.getRepository(
                 StockMovement
             );
-
 
         return await repository.find({
 
@@ -525,7 +497,6 @@ export const getAllStockMovementHistoryService =
                 StockMovement
             );
 
-
         return await repository.find({
 
             relations: [
@@ -555,12 +526,10 @@ export const getInventoryMovementHistoryService =
             "Invalid inventory ID"
         );
 
-
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
-
 
         return await repository.find({
 
@@ -578,7 +547,8 @@ export const getInventoryMovementHistoryService =
             ],
 
             order: {
-                created_at: "DESC"
+                created_at:
+                    "DESC"
             }
         });
     };
@@ -598,12 +568,10 @@ export const getMovementsByTypeService =
             "Invalid movement type ID"
         );
 
-
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
-
 
         return await repository.find({
 
@@ -622,7 +590,8 @@ export const getMovementsByTypeService =
             ],
 
             order: {
-                created_at: "DESC"
+                created_at:
+                    "DESC"
             }
         });
     };
@@ -647,18 +616,15 @@ export const getMovementsByReferenceService =
             );
         }
 
-
         validateId(
             referenceId,
             "Invalid reference ID"
         );
 
-
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
-
 
         return await repository
             .createQueryBuilder("movement")
@@ -728,7 +694,6 @@ export const getMovementsByDateRangeService =
             );
         }
 
-
         if (
             !(toDate instanceof Date) ||
             isNaN(toDate.getTime())
@@ -738,19 +703,16 @@ export const getMovementsByDateRangeService =
             );
         }
 
-
         if (fromDate > toDate) {
             throw new Error(
                 "From date cannot be greater than to date"
             );
         }
 
-
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
-
 
         return await repository
             .createQueryBuilder("movement")
@@ -810,7 +772,6 @@ export const getInventoryMovementsByDateRangeService =
             "Invalid inventory ID"
         );
 
-
         if (
             !(fromDate instanceof Date) ||
             isNaN(fromDate.getTime())
@@ -819,7 +780,6 @@ export const getInventoryMovementsByDateRangeService =
                 "Invalid from date"
             );
         }
-
 
         if (
             !(toDate instanceof Date) ||
@@ -830,19 +790,16 @@ export const getInventoryMovementsByDateRangeService =
             );
         }
 
-
         if (fromDate > toDate) {
             throw new Error(
                 "From date cannot be greater than to date"
             );
         }
 
-
         const repository =
             AppDataSource.getRepository(
                 StockMovement
             );
-
 
         return await repository
             .createQueryBuilder("movement")
@@ -904,18 +861,15 @@ export const deleteStockMovementService =
             "Invalid movement ID"
         );
 
-
         validateId(
             userId,
             "Invalid user ID"
         );
 
-
         validateId(
             sessionId,
             "Invalid session ID"
         );
-
 
         return await AppDataSource.manager.transaction(
             async (manager) => {
@@ -937,7 +891,6 @@ export const deleteStockMovementService =
                             }
                         }
                     );
-
 
                 if (!movement) {
                     throw new Error(
@@ -964,7 +917,6 @@ export const deleteStockMovementService =
                         }
                     );
 
-
                 if (!inventory) {
                     throw new Error(
                         "Active inventory record not found"
@@ -979,7 +931,6 @@ export const deleteStockMovementService =
                 const newQuantity =
                     inventory.qty -
                     movement.quantity_change;
-
 
                 if (newQuantity < 0) {
                     throw new Error(
@@ -1040,10 +991,39 @@ export const deleteStockMovementService =
 
 
                 // ==========================================
-                // CREATE DELETE AUDIT
+                // AUDIT INVENTORY UPDATE
                 // ==========================================
 
-                const audit =
+                const inventoryAudit =
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_inventory",
+
+                            recordId:
+                                inventory.inventory_id,
+
+                            actionTypeName:
+                                "UPDATE",
+
+                            userId:
+                                userId,
+
+                            storeId:
+                                inventory.store_id,
+
+                            sessionId:
+                                sessionId
+                        }
+                    );
+
+
+                // ==========================================
+                // AUDIT STOCK MOVEMENT DELETE
+                // ==========================================
+
+                const movementAudit =
                     await createAuditRecordService(
                         manager,
                         {
@@ -1053,7 +1033,7 @@ export const deleteStockMovementService =
                             recordId:
                                 movement.movement_id,
 
-                            actionTypeCode:
+                            actionTypeName:
                                 "DELETE",
 
                             userId:
@@ -1075,7 +1055,8 @@ export const deleteStockMovementService =
                 return {
                     inventory,
                     movement,
-                    audit
+                    inventoryAudit,
+                    movementAudit
                 };
             }
         );
@@ -1096,12 +1077,10 @@ export const getCurrentStockService =
             "Invalid inventory ID"
         );
 
-
         const repository =
             AppDataSource.getRepository(
                 Inventory
             );
-
 
         const inventory =
             await repository.findOne({
@@ -1114,11 +1093,9 @@ export const getCurrentStockService =
                 }
             });
 
-
         if (!inventory) {
             return null;
         }
-
 
         return {
 
@@ -1135,4 +1112,3 @@ export const getCurrentStockService =
                 inventory.qty
         };
     };
-

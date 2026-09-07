@@ -11,7 +11,9 @@
     "seed:movtype": "tsx src/database/seedMovementType.ts",
     "seed:reftype": "tsx src/database/seedRefrenceType.ts",
     "seed:distype": "tsx src/database/seedRefrenceType.ts",
-    "seed:actype": "tsx src/database/seedRefrenceType.ts"
+    "seed:actype": "tsx src/database/seedRefrenceType.ts",
+    "seed:uomtype": "tsx src/database/seedUomType.ts"
+
   },
   "keywords": [],
   "author": "",
