@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { verifyToken } from "../utils/jwt.js";
 
 import {
     createAuditService,
@@ -13,6 +14,18 @@ import {
 } from "../services/AuditServices.js";
 
 
+// Helper: verify the bearer token and return the decoded payload.
+// Throws (with .status = 401) if missing/invalid.
+function getAuthUser(req: Request) {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        const err: any = new Error("Unauthorized: missing token.");
+        err.status = 401;
+        throw err;
+    }
+    return verifyToken(token); // { userId, roleId, storeId, ... }
+}
+
 
 // CREATE AUDIT RECORD
 
@@ -22,6 +35,8 @@ export const createAuditController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const audit = await createAuditService(
             req.body
@@ -39,9 +54,13 @@ export const createAuditController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to create audit record"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to create audit record"
 
         });
 
@@ -59,6 +78,8 @@ export const getAllAuditsController = async (
 
     try {
 
+        getAuthUser(req);
+
         const audits = await getAllAuditsService();
 
         return res.status(200).json({
@@ -73,9 +94,13 @@ export const getAllAuditsController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit records"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit records"
 
         });
 
@@ -92,6 +117,8 @@ export const getAuditByIdController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const auditId = Number(
             req.params.id
@@ -141,9 +168,13 @@ export const getAuditByIdController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit record"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit record"
 
         });
 
@@ -160,6 +191,8 @@ export const getAuditsByTableNameController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const tableName =
             String(req.params.tableName);
@@ -194,9 +227,13 @@ export const getAuditsByTableNameController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit records"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit records"
 
         });
 
@@ -213,6 +250,8 @@ export const getAuditsByRecordIdController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const recordId = Number(
             req.params.recordId
@@ -251,9 +290,13 @@ export const getAuditsByRecordIdController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit records"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit records"
 
         });
 
@@ -270,6 +313,8 @@ export const getAuditsByTableAndRecordIdController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const tableName = String(
             req.params.tableName
@@ -320,9 +365,13 @@ export const getAuditsByTableAndRecordIdController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit records"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit records"
 
         });
 
@@ -339,6 +388,8 @@ export const getAuditsByStoreController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const storeId = Number(
             req.params.storeId
@@ -377,17 +428,18 @@ export const getAuditsByStoreController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit records"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit records"
 
         });
 
     }
 };
-
-
-
 
 
 
@@ -399,6 +451,8 @@ export const getAuditsBySessionController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const sessionId = Number(
             req.params.sessionId
@@ -437,9 +491,13 @@ export const getAuditsBySessionController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit records"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit records"
 
         });
 
@@ -456,6 +514,8 @@ export const getAuditsByActionTypeController = async (
 ) => {
 
     try {
+
+        getAuthUser(req);
 
         const actionTypeId = Number(
             req.params.actionTypeId
@@ -494,9 +554,13 @@ export const getAuditsByActionTypeController = async (
 
         console.error(error);
 
-        return res.status(500).json({
+        const status = (error as any)?.status ?? 500;
 
-            message: "Failed to fetch audit records"
+        return res.status(status).json({
+
+            message: (error as any)?.status === 401
+                ? "Unauthorized"
+                : "Failed to fetch audit records"
 
         });
 
