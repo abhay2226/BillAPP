@@ -116,7 +116,7 @@ export const createCustomer = async (
 
         const customer = await createCustomerService(
             phone_no.trim(),
-            Number(req.params.userId)
+            req.auth.userId
         );
 
         return res.status(201).json({
@@ -359,7 +359,7 @@ export const updateCustomer = async (
             await updateCustomerService(
                 customer_id,
                 phone_no.trim(),
-                Number(req.params.userId)
+                req.auth.userId
             );
 
         return res.status(200).json({
@@ -403,7 +403,7 @@ export const deactivateCustomer = async (
         const customer =
             await deactivateCustomerService(
                 customer_id,
-                Number(req.params.userId)
+                req.auth.userId
             );
 
         return res.status(200).json({
@@ -447,7 +447,7 @@ export const activateCustomer = async (
         const customer =
             await activateCustomerService(
                 customer_id,
-                Number(req.params.userId)
+                req.auth.userId
             );
 
         return res.status(200).json({

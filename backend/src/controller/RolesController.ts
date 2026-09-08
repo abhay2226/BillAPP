@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 
-import { verifyToken } from "../utils/jwt.js";
 
 import {
     getRoles,
@@ -10,65 +9,6 @@ import {
     deleteRole
 } from "../services/Role.js";
 
-
-// ======================================================
-// JWT PAYLOAD
-// ======================================================
-
-interface AuthPayload {
-    userId: number;
-    storeId: number;
-    sessionId: number;
-    roleId?: number;
-    roleName?: string;
-    role?: string;
-}
-
-
-// ======================================================
-// AUTH USER
-// ======================================================
-
-function getAuthUser(req: Request): AuthPayload {
-
-    const token = req.headers.authorization?.split(" ")[1];
-
-    if (!token) {
-
-        const err: any = new Error(
-            "Unauthorized: missing token."
-        );
-
-        err.status = 401;
-
-        throw err;
-    }
-
-    return verifyToken(token) as AuthPayload;
-}
-
-
-// ======================================================
-// REQUIRE OWNER
-// ======================================================
-
-function requireOwner(payload: AuthPayload) {
-
-    const isOwner =
-        payload.roleName === "OWNER" ||
-        payload.role === "OWNER";
-
-    if (!isOwner) {
-
-        const err: any = new Error(
-            "Forbidden: only Owner can manage roles."
-        );
-
-        err.status = 403;
-
-        throw err;
-    }
-}
 
 
 // ======================================================
@@ -81,9 +21,6 @@ export async function getRolesController(
 ) {
 
     try {
-
-        getAuthUser(req);
-
         const roles = await getRoles();
 
         return res.status(200).json({
@@ -119,8 +56,6 @@ export async function getRoleByIdController(
 ) {
 
     try {
-
-        getAuthUser(req);
 
         const roleId = Number(req.params.id);
 
@@ -160,16 +95,14 @@ export async function createRoleController(
 
     try {
 
-        const payload = getAuthUser(req);
-
-        requireOwner(payload);
+        const { userId, storeId, sessionId } = req.auth;
 
         const role = await createRole(
             req.body,
             {
-                userId: payload.userId,
-                storeId: payload.storeId,
-                sessionId: payload.sessionId
+                userId,
+                storeId,
+                sessionId
             }
         );
 
@@ -208,19 +141,16 @@ export async function updateRoleController(
 
     try {
 
-        const payload = getAuthUser(req);
-
-        requireOwner(payload);
-
         const roleId = Number(req.params.id);
+        const { userId, storeId, sessionId } = req.auth;
 
         const role = await updateRole(
             roleId,
             req.body,
             {
-                userId: payload.userId,
-                storeId: payload.storeId,
-                sessionId: payload.sessionId
+                userId,
+                storeId,
+                sessionId
             }
         );
 
@@ -253,24 +183,20 @@ export async function updateRoleController(
 // ======================================================
 
 export async function deleteRoleController(
-    req: Request,
+    req:Request,
     res: Response
 ) {
 
     try {
-
-        const payload = getAuthUser(req);
-
-        requireOwner(payload);
-
         const roleId = Number(req.params.id);
+        const { userId, storeId, sessionId } = req.auth;
 
         const role = await deleteRole(
             roleId,
             {
-                userId: payload.userId,
-                storeId: payload.storeId,
-                sessionId: payload.sessionId
+                userId,
+                storeId,
+                sessionId
             }
         );
 

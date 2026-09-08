@@ -49,7 +49,7 @@ export const createDamagedGoods = async (
 ) => {
     try {
 
-        if (!req.params.sessionId) {
+        if (!req.auth.sessionId) {
             return res.status(401).json({
                 success: false,
                 message: "Session ID missing from token"
@@ -124,8 +124,8 @@ export const createDamagedGoods = async (
             quantity,
             reason.trim(),
             unitCost,
-            Number(req.params.userId),
-            Number(req.params.sessionId)
+            req.auth.userId,
+            req.auth.sessionId
         );
 
         return res.status(201).json({
@@ -221,7 +221,7 @@ export const getDamagedGoodsById = async (
 ) => {
     try {
 
-        const damageId = Number(req.params.id);
+        const damageId =  Number(req.params.id);
 
         if (
             !Number.isInteger(damageId) ||
@@ -335,7 +335,7 @@ export const updateDamagedGoods = async (
 ) => {
     try {
 
-        if (!req.params.sessionId) {
+        if (!req.auth.sessionId) {
             return res.status(401).json({
                 success: false,
                 message: "Session ID missing from token"
@@ -409,8 +409,8 @@ export const updateDamagedGoods = async (
             quantity,
             reason.trim(),
             unitCost,
-            Number(req.params.userId),
-            Number(req.params.sessionId)
+            req.auth.userId,
+            req.auth.sessionId
         );
 
         if (!data) {
@@ -466,7 +466,7 @@ export const deactivateDamagedGoods = async (
 ) => {
     try {
 
-        if (!req.params.sessionId) {
+        if (!req.auth.sessionId) {
             return res.status(401).json({
                 success: false,
                 message: "Session ID missing from token"
@@ -488,8 +488,8 @@ export const deactivateDamagedGoods = async (
         const data =
             await deactivateDamagedGoodsService(
                 damageId,
-                Number(req.params.userId),
-                Number(req.params.sessionId)
+                req.auth.userId,
+                req.auth.sessionId
             );
 
         if (!data) {

@@ -8,31 +8,13 @@ import {
   BillHistoryFilters,
 } from "../services/BillServices.js";
 
-import { verifyToken } from "../utils/jwt.js";
 
-// Helper: verify the bearer token and return the decoded payload.
-function getAuthUser(req: Request) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    const err: any = new Error("Authorization header missing or invalid.");
-    err.status = 401;
-    throw err;
-  }
-  const token = authHeader.slice("Bearer ".length);
-  try {
-    return verifyToken(token); // { userId, sessionId, storeId, roleId, ... }
-  } catch {
-    const err: any = new Error("Invalid or expired token.");
-    err.status = 403;
-    throw err;
-  }
-}
 
 export async function createBillController(req: Request, res: Response) {
   try {
     
-    const actingUserId = Number(req.params.userId);
-    const sessionId = Number(req.params.sessionId);
+    const actingUserId = req.auth.userId;
+    const sessionId = req.auth.sessionId
     if (!actingUserId || !sessionId) {
       return res.status(400).json({ success: false, message: "actingUserId and sessionId are required." });
     }
@@ -48,8 +30,8 @@ export async function createBillController(req: Request, res: Response) {
 export async function deleteBillController(req: Request, res: Response) {
   try {
     
-    const actingUserId = Number(req.params.userId);
-    const sessionId = Number(req.params.sessionId);
+    const actingUserId = req.auth.userId;
+    const sessionId = req.auth.sessionId;
     if (!actingUserId || !sessionId) {
       return res.status(400).json({ success: false, message: "actingUserId and sessionId are required." });
     }
@@ -64,8 +46,8 @@ export async function deleteBillController(req: Request, res: Response) {
 
 export async function getBillByIdController(req: Request, res: Response) {
   try {
-    const actingUserId = Number(req.params.userId);
-    const sessionId = Number(req.params.sessionId);
+    const actingUserId = req.auth.userId;
+    const sessionId = req.auth.sessionId;
     const bill = await getBillById(Number(req.params.storeId), Number(req.params.id));
     return res.status(200).json({ success: true, data: bill });
   } catch (error) {
@@ -77,8 +59,8 @@ export async function getBillByIdController(req: Request, res: Response) {
 
 export async function getBillItemsController(req: Request, res: Response) {
   try {
-    const actingUserId = Number(req.params.userId);
-    const sessionId = Number(req.params.sessionId);
+    const actingUserId = req.auth.userId;
+    const sessionId = req.auth.sessionId;
     const items = await getBillItemsForBill(Number(req.params.id));
     return res.status(200).json({ success: true, data: items });
   } catch (error) {
@@ -91,8 +73,8 @@ export async function getBillItemsController(req: Request, res: Response) {
 export async function getBillHistoryController(req: Request, res: Response) {
   try {
     
-    const actingUserId = Number(req.params.userId);
-    const sessionId = Number(req.params.sessionId);
+    const actingUserId = req.auth.userId;
+    const sessionId = req.auth.sessionId;
     // const { date, dateFrom, dateTo, invoiceNumber, customerPhone } = req.query;
     const filters: BillHistoryFilters = {};
 
@@ -117,7 +99,7 @@ export async function getBillHistoryController(req: Request, res: Response) {
     }
     
     const bills = await getBillHistory(
-        Number(req.params.storeId),
+        req.auth.storeId,
         filters
     );
     return res.status(200).json({ success: true, data: bills });

@@ -43,9 +43,6 @@ AuditRouter.get(
 
 
 // GET AUDITS BY TABLE NAME + RECORD ID
-//
-// Example:
-// GET /audit/table/transactions_product/record/10
 
 AuditRouter.get(
     "/table/:tableName/record/:recordId",authorize("OWNER" ),
@@ -55,9 +52,6 @@ AuditRouter.get(
 
 
 // GET AUDITS BY TABLE NAME
-//
-// Example:
-// GET /audit/table/transactions_product
 
 AuditRouter.get(
     "/table/:tableName",authorize("OWNER" ),
@@ -67,9 +61,6 @@ AuditRouter.get(
 
 
 // GET AUDITS BY RECORD ID
-//
-// Example:
-// GET /audit/record/10
 
 AuditRouter.get(
     "/record/:recordId",authorize("OWNER" ),
@@ -79,9 +70,6 @@ AuditRouter.get(
 
 
 // GET AUDITS BY STORE
-//
-// Example:
-// GET /audit/store/1
 
 AuditRouter.get(
     "/store/:storeId",authorize("OWNER" ),
@@ -107,8 +95,7 @@ AuditRouter.get(
 
 // GET AUDITS BY ACTION TYPE
 //
-// Example:
-// GET /audit/action/UPDATE
+
 
 AuditRouter.get(
     "/action/:actionType",authorize("OWNER" ),
@@ -119,7 +106,7 @@ AuditRouter.get(
 
 // GET AUDIT BY ID
 //
-// This must remain at the bottom.
+
 
 AuditRouter.get(
     "/:id",authorize("OWNER" ),

@@ -203,7 +203,7 @@ export const createInventory = async (
                 qty: quantity,
                 cost_price: costPrice,
                 selling_price: sellingPrice,
-                created_by: Number(req.params.userId)
+                created_by: req.auth.userId
             });
 
         res.status(201).json({
@@ -440,7 +440,7 @@ export const updateInventoryPricing = async (
                 inventoryId,
                 costPrice,
                 sellingPrice,
-                Number(req.params.userId)
+                req.auth.userId
             );
 
         if (!data) {
@@ -604,7 +604,7 @@ export const updateInventoryQuantity = async (
                 movementTypeId,
                 referenceTypeCode,
                 referenceId,
-                Number(req.params.userId)
+                req.auth.userId
             );
 
         if (!data) {
@@ -654,7 +654,7 @@ export const deactivateInventory = async (
         const data =
             await deactivateInventoryService(
                 inventoryId,
-                Number(req.params.userId)
+                req.auth.userId
             );
 
         if (!data) {
