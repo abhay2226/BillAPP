@@ -31,9 +31,9 @@ export async function getStoresByIdController(req: Request, res: Response) {
 
 export async function updateStoreController(req: Request, res: Response) {
     try {
-    const storeId = Number(req.params.id);
-    const sessionId=Number(req.params.sessionId);
-    const actingUserId = Number(req.body.actingUserId);
+    const storeId =req.auth.storeId;
+    const sessionId=req.auth.sessionId;
+    const actingUserId = req.auth.userId;
     if (!actingUserId) {
       return res.status(400).json({ success: false, message: "actingUserId is required." });
     }
@@ -47,9 +47,9 @@ export async function updateStoreController(req: Request, res: Response) {
 
 export async function deleteStoreController(req: Request, res: Response) {
     try {
-    const storeId = Number(req.params.id);
-    const sessionId=Number(req.params.sessionId);
-    const actingUserId = Number(req.body.actingUserId);
+    const storeId =req.auth.storeId;
+    const sessionId=req.auth.sessionId;
+    const actingUserId = req.auth.userId;
     if (!actingUserId) {
       return res.status(400).json({ success: false, message: "actingUserId is required." });
     }

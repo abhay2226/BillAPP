@@ -1,6 +1,4 @@
-
 import type { Request, Response } from "express";
-
 
 import {
     createAuditService,
@@ -14,7 +12,6 @@ import {
     getAuditsByActionTypeService
 } from "../services/AuditServices.js";
 
-import { verifyToken } from "../utils/jwt.js";
 
 
 

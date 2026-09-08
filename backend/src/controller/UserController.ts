@@ -60,7 +60,7 @@ export async function updateUserController(req:Request,res:Response){
             });
         }
 
-        const actingUserId = Number(req.params.userId);
+        const actingUserId = req.auth.userId;
         const result =await updateUser(userId, actingUserId,req.body);
         return res.status(200).json({
             success: true, 
@@ -86,7 +86,7 @@ export async function deleteUserController(req:Request,res:Response) {
             });
         }
 
-        const actingUserId = Number(req.params.userId);
+        const actingUserId = req.auth.userId;
         const result=await deactivateUserWithOwnershipRules(userId, actingUserId);
         return res.status(200).json({
             success: true, 

@@ -23,8 +23,7 @@ function getAuthUser(req: Request) {
 
 export async function createDiscountController(req: Request, res: Response) {
   try {
-    const payload = getAuthUser(req);
-    const actingUserId = payload.userId;
+    const actingUserId = req.auth.userId;
 
     const discount = await createDiscountService(req.body, actingUserId);
     return res.status(201).json({ success: true, message: "Discount created.", data: discount });
@@ -75,8 +74,8 @@ export async function getDiscountByNameController(req: Request, res: Response) {
 
 export async function updateDiscountController(req: Request, res: Response) {
   try {
-    const payload = getAuthUser(req);
-    const actingUserId = payload.userId;
+
+    const actingUserId = req.auth.userId;
 
     const discount = await updateDiscountService(Number(req.params.id), req.body, actingUserId);
     return res.status(200).json({ success: true, message: "Discount updated.", data: discount });
@@ -89,8 +88,8 @@ export async function updateDiscountController(req: Request, res: Response) {
 
 export async function setDiscountActiveController(req: Request, res: Response) {
   try {
-    const payload = getAuthUser(req);
-    const actingUserId = payload.userId;
+
+    const actingUserId = req.auth.userId;
 
     const discount = await setDiscountActiveService(Number(req.params.id), Boolean(req.body.is_active), actingUserId);
     return res.status(200).json({ success: true, message: req.body.is_active ? "Discount activated." : "Discount deactivated.", data: discount });

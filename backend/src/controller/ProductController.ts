@@ -27,8 +27,8 @@ export async function createProductController(
         const product =
             await createProductService(
                 req.body,
-                Number(req.params.userId),
-                Number(req.params.sessionId),
+                req.auth.userId,
+                req.auth.sessionId,
                 clientIp
             );
 
@@ -199,8 +199,8 @@ export const updateProductController = async (
             await updateProductService(
                 productId,
                 req.body,
-                Number(req.params.userId),
-                Number(req.params.sessionId),
+                req.auth.userId,
+                req.auth.sessionId,
                 clientIp
             );
 
@@ -263,8 +263,8 @@ export const deleteProductController = async (
         const product =
             await deleteProductService(
                 productId,
-                Number(req.params.userId),
-                Number(req.params.sessionId),
+                req.auth.userId,
+                req.auth.sessionId,
                 clientIp
             );
 
