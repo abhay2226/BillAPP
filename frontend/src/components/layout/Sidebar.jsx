@@ -31,6 +31,12 @@ function Sidebar({ isOpen , onProfileClick}) {
       label: "Profile",
       icon: userIcon,
     },
+    {
+        id: 5,
+        path: "/billhistpry",
+        label: "Bill History",
+        icon: boxIcon,
+      },
   ];
 
   return (

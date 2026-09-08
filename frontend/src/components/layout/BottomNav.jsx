@@ -31,6 +31,12 @@ function BottomNav({onProfileClick}) {
         label: "Profile",
         icon: userIcon,
       },
+      // {
+      //   id: 5,
+      //   path: "/billhistpry",
+      //   label: "Bill History",
+      //   icon: boxIcon,
+      // },
     ];
   // const navigate = useNavigate();
 
@@ -127,6 +133,8 @@ function BottomNav({onProfileClick}) {
 
         </div>
       ))}
+
+      
 
       {/* <div className="nav-item">
         <button type="button" className="nav-link" onClick={onProfileClick}>

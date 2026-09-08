@@ -32,6 +32,7 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Inventory from "./pages/Inventory/Inventory";
 import Voicebilling from "./pages/Voicebilling/Voicebilling";
 import Profile from "./pages/Profile/Profile";
+import BillHistory from "./pages/BillHistory/BillHistory";
 // import Login,{SESSION_KEY} from "./pages/Login/login";
 import Login from "./pages/Login/login";
 
@@ -66,6 +67,11 @@ function AppRoutes() {
                     path="/profile"
                     element={isAuthenticated ? <Profile /> : <Navigate to="/login" replace />}
                 />
+                <Route
+                    path="/billhistory"
+                    element={isAuthenticated ? <BillHistory /> : <Navigate to="/login" replace />}
+                />
+                
             </Route>
         </Routes>
     );
