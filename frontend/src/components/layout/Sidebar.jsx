@@ -33,7 +33,7 @@ function Sidebar({ isOpen , onProfileClick}) {
     },
     {
         id: 5,
-        path: "/billhistpry",
+        path: "/billhistory",
         label: "Bill History",
         icon: boxIcon,
       },

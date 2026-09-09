@@ -1,221 +1,416 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// import Header from "../../components/layout/Header";
-// import Sidebar from "../../components/layout/Sidebar";
-// import BottomNav from "../../components/layout/BottomNav";
+import "./BillHistory.css";
 
-import "./Dashboard.css";
+import searchIcon from "../../assets/icons/search.png";
+import receiptIcon from "../../assets/icons/box.png";
 
-import boxIcon from "../../assets/icons/box.png";
-import micIcon from "../../assets/icons/mic.png";
-import chevronIcon from "../../assets/icons/chevron.png";
+const PAYMENT_BADGE_CLASS = {
+  Cash: "bill-badge-success",
+  Card: "bill-badge-accent",
+  UPI: "bill-badge-warning",
+};
+
+const formatCurrency = (value) => {
+  return `₹${Number(value || 0).toFixed(2)}`;
+};
+
+const formatBillDateOnly = (isoString) => {
+  const date = new Date(isoString);
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const formatBillTimeOnly = (isoString) => {
+  const date = new Date(isoString);
+
+  return date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 export default function BillHistory() {
   const navigate = useNavigate();
 
-  const [currentDate, setCurrentDate] = useState("");
-  const [sales, setSales] = useState("₹0.00");
-  const [lowStockCount, setLowStockCount] = useState(0);
+  const [bills, setBills] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("date-desc");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   useEffect(() => {
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    const loadBills = () => {
+      try {
+        const storedBills = JSON.parse(
+          localStorage.getItem("generatedBills") || "[]"
+        );
+
+        setBills(Array.isArray(storedBills) ? storedBills : []);
+      } catch (error) {
+        console.error("Failed to load bill history:", error);
+        setBills([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const today = new Date().toLocaleDateString(
-      "en-US",
-      options
+    loadBills();
+
+    const handleStorageChange = () => {
+      loadBills();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("focus", loadBills);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", loadBills);
+    };
+  }, []);
+
+  const visibleBills = useMemo(() => {
+    let result = [...bills];
+
+    const search = searchTerm.trim().toLowerCase();
+
+    if (search) {
+      result = result.filter((bill) => {
+        return (
+          String(bill.billNumber || bill.id || "")
+            .toLowerCase()
+            .includes(search) ||
+          String(bill.customerName || "")
+            .toLowerCase()
+            .includes(search)
+        );
+      });
+    }
+
+    if (dateFrom) {
+      const fromTime = new Date(dateFrom).setHours(0, 0, 0, 0);
+
+      result = result.filter((bill) => {
+        return new Date(bill.date).getTime() >= fromTime;
+      });
+    }
+
+    if (dateTo) {
+      const toTime = new Date(dateTo).setHours(23, 59, 59, 999);
+
+      result = result.filter((bill) => {
+        return new Date(bill.date).getTime() <= toTime;
+      });
+    }
+
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case "date-asc":
+          return new Date(a.date) - new Date(b.date);
+
+        case "date-desc":
+          return new Date(b.date) - new Date(a.date);
+
+        case "amount-asc":
+          return Number(a.amount || a.grandTotal || 0) -
+            Number(b.amount || b.grandTotal || 0);
+
+        case "amount-desc":
+          return Number(b.amount || b.grandTotal || 0) -
+            Number(a.amount || a.grandTotal || 0);
+
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [
+    bills,
+    searchTerm,
+    sortOption,
+    dateFrom,
+    dateTo,
+  ]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setDateFrom("");
+    setDateTo("");
+    setSortOption("date-desc");
+  };
+
+  const hasActiveFilters =
+    searchTerm.trim() !== "" ||
+    dateFrom !== "" ||
+    dateTo !== "";
+
+  const viewBill = (billId) => {
+    navigate(`/billing/history/${billId}`);
+  };
+
+  const printBill = (event, billId) => {
+    event.stopPropagation();
+
+    const bill = bills.find(
+      (item) => String(item.id) === String(billId)
     );
 
-    setCurrentDate(today);
+    if (!bill) {
+      return;
+    }
 
-    // Temporary dashboard values
-    setSales("₹12,450.00");
-    setLowStockCount(5);
-  }, []);
+    window.print();
+  };
 
   return (
     <>
-
-      {/* ================= MAIN LAYOUT ================= */}
       <div className="main-content">
+        <div className="bill-history-view">
 
-        {/* ================= SIDEBAR ================= */}
-        {/* {sidebarOpen && <Sidebar />} */}
+          <div className="bill-history-header">
+            <h1 className="bill-history-title">
+              BILL HISTORY
+            </h1>
 
-        {/* ================= DASHBOARD CONTENT ================= */}
-        {/* <main
-          className={
-            sidebarOpen
-              ? "main-content sidebar-open"
-              : "main-content"
-          }
-        > */}
-
-          {/* Welcome Banner */}
-          <div className="card-welcome">
-            <div className="card-content">
-
-              <p className="card-date">
-                {currentDate}
-              </p>
-
-              <h1 className="welcome-title">
-                Welcome Back,
-                <br />
-                ProShop
-              </h1>
-
-            </div>
+            <span className="bill-history-count">
+              {visibleBills.length} bill
+              {visibleBills.length === 1 ? "" : "s"}
+            </span>
           </div>
 
-          {/* ================= STAT CARDS ================= */}
-          <div className="stats-row">
+          <div className="bill-history-search-wrapper">
+            <img
+              className="bill-history-search-icon"
+              src={searchIcon}
+              alt="Search"
+            />
 
-            <div className="stat-card">
+            <input
+              type="text"
+              className="bill-history-search-input"
+              placeholder="Search by bill number or customer"
+              value={searchTerm}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
+            />
+          </div>
 
-              <p className="stat-label">
-                Today's Sales
-              </p>
+          <div className="bill-history-controls">
 
-              <p className="stat-value">
-                {sales}
-              </p>
+            <input
+              type="date"
+              className="bill-history-control-input"
+              value={dateFrom}
+              onChange={(event) =>
+                setDateFrom(event.target.value)
+              }
+            />
 
-            </div>
+            <input
+              type="date"
+              className="bill-history-control-input"
+              value={dateTo}
+              onChange={(event) =>
+                setDateTo(event.target.value)
+              }
+            />
 
-            <div className="stat-card">
+            <select
+              className="bill-history-control-input"
+              value={sortOption}
+              onChange={(event) =>
+                setSortOption(event.target.value)
+              }
+            >
+              <option value="date-desc">
+                Newest first
+              </option>
 
-              <p className="stat-label">
-                Low Stock
-              </p>
+              <option value="date-asc">
+                Oldest first
+              </option>
 
-              <div className="stat-value-container">
+              <option value="amount-desc">
+                Amount: high to low
+              </option>
 
-                <p className="stat-value low-stock-number">
-                  {lowStockCount}
-                </p>
+              <option value="amount-asc">
+                Amount: low to high
+              </option>
+            </select>
 
-                <p className="stat-items-label">
-                  items
-                </p>
-
-              </div>
-
-            </div>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                className="bill-history-clear-button"
+                onClick={clearFilters}
+              >
+                Clear filters
+              </button>
+            )}
 
           </div>
 
-          {/* ================= QUICK ACTIONS ================= */}
-          <div className="section-heading">
-            <h2>Quick Actions</h2>
+          <div className="bill-history-grid">
+
+            {isLoading ? (
+              <div className="bill-history-empty">
+                Loading bills...
+              </div>
+            ) : visibleBills.length === 0 ? (
+              <div className="bill-history-empty">
+                {bills.length === 0
+                  ? "No bills yet."
+                  : "No bills match your search or filters."}
+              </div>
+            ) : (
+              visibleBills.map((bill) => {
+
+                const billId =
+                  bill.billNumber || bill.id;
+
+                const amount =
+                  Number(
+                    bill.amount ??
+                    bill.grandTotal ??
+                    0
+                  );
+
+                const itemCount =
+                  Number(
+                    bill.itemCount ??
+                    (bill.items || []).reduce(
+                      (total, item) =>
+                        total + Number(item.quantity || 0),
+                      0
+                    )
+                  );
+
+                const customerName =
+                  bill.customerName ||
+                  "Walk-in Customer";
+
+                const paymentMode =
+                  bill.paymentMode ||
+                  "Cash";
+
+                const storeName =
+                  bill.storeName ||
+                  "Store 1";
+
+                return (
+                  <div
+                    className="bill-history-card"
+                    key={bill.id || bill.billNumber}
+                  >
+
+                    <div className="bill-history-card-top">
+
+                      <div className="bill-history-card-id-group">
+
+                        <img
+                          className="bill-history-card-icon"
+                          src={receiptIcon}
+                          alt=""
+                        />
+
+                        <span className="bill-history-card-id">
+                          #{billId}
+                        </span>
+
+                      </div>
+
+                      <span
+                        className={`bill-history-badge ${
+                          PAYMENT_BADGE_CLASS[paymentMode] ||
+                          "bill-badge-accent"
+                        }`}
+                      >
+                        {paymentMode}
+                      </span>
+
+                    </div>
+
+                    <p className="bill-history-card-amount">
+                      {formatCurrency(amount)}
+                    </p>
+
+                    <p className="bill-history-card-customer">
+                      {customerName}
+                    </p>
+
+                    <div className="bill-history-card-details">
+
+                      <div className="bill-history-card-detail-row">
+                        <span>Items</span>
+                        <span>{itemCount}</span>
+                      </div>
+
+                      <div className="bill-history-card-detail-row">
+                        <span>Date</span>
+                        <span>
+                          {formatBillDateOnly(bill.date)}
+                        </span>
+                      </div>
+
+                      <div className="bill-history-card-detail-row">
+                        <span>Time</span>
+                        <span>
+                          {formatBillTimeOnly(bill.date)}
+                        </span>
+                      </div>
+
+                      <div className="bill-history-card-detail-row">
+                        <span>Store</span>
+                        <span>{storeName}</span>
+                      </div>
+
+                    </div>
+
+                    <div className="bill-history-card-actions">
+
+                      <button
+                        type="button"
+                        className="bill-history-card-button"
+                        onClick={() =>
+                          viewBill(billId)
+                        }
+                      >
+                        View
+                      </button>
+
+                      <button
+                        type="button"
+                        className="bill-history-card-button"
+                        onClick={(event) =>
+                          printBill(event, billId)
+                        }
+                      >
+                        Print
+                      </button>
+
+                    </div>
+
+                  </div>
+                );
+              })
+            )}
+
           </div>
 
-          {/* ================= INVENTORY ================= */}
-          <button
-            type="button"
-            className="card-action"
-            onClick={() => navigate("/inventory")}
-          >
-
-            <div className="card-link">
-
-              <div className="action-left">
-
-                <div className="card-icon inventory-icon-background">
-                  <img
-                    src={boxIcon}
-                    alt="Inventory"
-                  />
-                </div>
-
-                <div className="card-text">
-
-                  <h2 className="card-title">
-                    Inventory
-                  </h2>
-
-                  <span className="card-subtitle">
-                    Manage your stock
-                  </span>
-
-                </div>
-
-              </div>
-
-              <div className="card-arrow">
-
-                <img
-                  src={chevronIcon}
-                  alt="Go to Inventory"
-                />
-
-              </div>
-
-            </div>
-
-          </button>
-
-          {/* ================= BILLING ================= */}
-          <button
-            type="button"
-            className="card-action"
-            onClick={() => navigate("/billing")}
-          >
-
-            <div className="card-link">
-
-              <div className="action-left">
-
-                <div className="card-icon billing-icon-background">
-
-                  <img
-                    src={micIcon}
-                    alt="Billing"
-                  />
-
-                </div>
-
-                <div className="card-text">
-
-                  <h2 className="card-title">
-                    Billing
-                  </h2>
-
-                  <span className="card-subtitle">
-                    Create a bill by speaking
-                  </span>
-
-                </div>
-
-              </div>
-
-              <div className="card-arrow">
-
-                <img
-                  src={chevronIcon}
-                  alt="Go to Billing"
-                />
-
-              </div>
-
-            </div>
-
-          </button>
-
-          
-          
+        </div>
       </div>
-
-      {/* ================= MOBILE BOTTOM NAV ================= */}
-      {/* <BottomNav /> */}
-  </>
-
+    </>
   );
 }

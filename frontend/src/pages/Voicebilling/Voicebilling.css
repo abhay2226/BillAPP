@@ -1,8 +1,6 @@
-
 /* ============================================================
-   billing.css
-   Page-specific rules for voiceBilling.html.
-   Load AFTER common.css.
+   BILLING.CSS
+   Voice Billing page-specific styles
    ============================================================ */
 
 
@@ -54,21 +52,21 @@
 
 .main-container {
   display: flex;
+
   width: 100%;
   min-height: calc(100vh - 4rem);
+
   padding: 0.5em;
 }
 
 .main-content {
   flex: 1 1 auto;
+
   width: 100%;
   min-width: 0;
+
   padding-bottom: 0;
 }
-
-/* .sidebar-desktop {
-  flex-shrink: 0;
-} */
 
 
 /* ============================================================
@@ -77,8 +75,8 @@
 
 .voice-section {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   flex-direction: column;
 
   gap: 1rem;
@@ -103,6 +101,7 @@
   padding: 0;
 
   background-color: #0b8a6a;
+
   border: none;
   border-radius: 50%;
 
@@ -116,13 +115,14 @@
 .voice-button img {
   width: 3rem;
   height: 3rem;
+
   object-fit: contain;
 }
 
 .voice-button-static {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 
   gap: 0.65rem;
 
@@ -150,9 +150,8 @@
 .listening-timer-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  
+  justify-content: center;
 
   font-size: 1.25rem;
 }
@@ -195,13 +194,13 @@
 }
 
 #stopVoiceButton:hover {
-  background-color: #0b8a6a;
   color: #ffffff;
+  background-color: #0b8a6a;
 }
 
 #stopVoiceButton:active {
-  background-color: #064f3c;
   color: #ffffff;
+  background-color: #064f3c;
 }
 
 
@@ -211,8 +210,8 @@
 
 .voice-output-section {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 
   margin-top: 0.4rem;
   padding: 1rem;
@@ -293,6 +292,287 @@
 
 
 /* ============================================================
+   SEARCH BAR
+   ============================================================ */
+
+.bill-search-section {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  width: 100%;
+
+  margin-top: 0.4rem;
+  padding: 0 1rem;
+
+  box-sizing: border-box;
+}
+
+.bill-search-input {
+  width: 100%;
+  height: 2.75rem;
+
+  padding: 0 1rem;
+
+  box-sizing: border-box;
+
+  color: #22272b;
+
+  font-size: 0.9rem;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #dfe5e2;
+  border-radius: 0.65rem;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.bill-search-input::placeholder {
+  color: #7a8580;
+}
+
+.bill-search-input:focus {
+  border-color: #0b8a6a;
+
+  box-shadow:
+    0 0 0 0.12rem
+    rgba(11, 138, 106, 0.08);
+}
+
+
+/* ============================================================
+   INVENTORY SEARCH RESULTS
+   ============================================================ */
+
+.bill-product-search-results {
+  width: 100%;
+
+  max-height: 18rem;
+
+  margin-top: 0.45rem;
+
+  overflow-y: auto;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #e1e5e3;
+  border-radius: 0.65rem;
+
+  box-shadow:
+    0 0.25rem 0.8rem
+    rgba(0, 0, 0, 0.08);
+
+  box-sizing: border-box;
+
+  z-index: 100;
+}
+
+
+/* ============================================================
+   SEARCH RESULT CARD
+   ============================================================ */
+
+.bill-product-search-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  width: 100%;
+
+  padding: 0.8rem 0.9rem;
+
+  box-sizing: border-box;
+
+  background-color: #ffffff;
+
+  border-bottom: 0.0625rem solid #eeeeee;
+
+  transition:
+    background-color 0.2s ease;
+}
+
+.bill-product-search-card:last-child {
+  border-bottom: none;
+}
+
+.bill-product-search-card:hover {
+  background-color: #f8faf9;
+}
+
+
+/* ============================================================
+   SEARCH RESULT INFORMATION
+   ============================================================ */
+
+.bill-product-search-info {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  flex: 1;
+}
+
+.bill-product-search-info h4 {
+  margin: 0;
+
+  color: #22272b;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bill-product-search-info p {
+  margin: 0.25rem 0 0;
+
+  color: #707873;
+
+  font-size: 0.78rem;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ============================================================
+   SEARCH RESULT DETAILS
+   ============================================================ */
+
+.bill-product-search-details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 0.65rem;
+
+  margin-top: 0.45rem;
+}
+
+.bill-product-search-details strong {
+  color: #007b5a;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.bill-product-search-details span {
+  color: #636b67;
+
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+
+/* ============================================================
+   STOCK STATUS
+   ============================================================ */
+
+.bill-product-search-details .stock-available {
+  padding: 0.2rem 0.5rem;
+
+  color: #087f5b;
+
+  background-color: #e7f7f1;
+
+  border-radius: 999rem;
+
+  font-weight: 600;
+}
+
+.bill-product-search-details .stock-out {
+  padding: 0.2rem 0.5rem;
+
+  color: #b3261e;
+
+  background-color: #fde5e5;
+
+  border-radius: 999rem;
+
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   ADD BUTTON
+   ============================================================ */
+
+.bill-product-add-button {
+  flex-shrink: 0;
+
+  min-width: 4rem;
+
+  padding: 0.5rem 0.9rem;
+
+  color: #ffffff;
+
+  font-size: 0.8rem;
+  font-weight: 600;
+
+  background-color: #0b8a6a;
+
+  border: none;
+  border-radius: 0.45rem;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.bill-product-add-button:hover {
+  background-color: #007a5b;
+}
+
+.bill-product-add-button:active {
+  transform: scale(0.97);
+}
+
+.bill-product-add-button:disabled {
+  color: #888888;
+
+  background-color: #e5e7e6;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* ============================================================
+   EMPTY SEARCH RESULT
+   ============================================================ */
+
+.bill-product-search-empty {
+  width: 100%;
+
+  padding: 1rem;
+
+  box-sizing: border-box;
+
+  color: #707873;
+
+  font-size: 0.85rem;
+
+  text-align: center;
+}
+
+
+/* ============================================================
    BILL CONTAINER
    ============================================================ */
 
@@ -310,8 +590,8 @@
 
 .bill-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 
   gap: 0.8rem;
 }
@@ -327,60 +607,15 @@
 
 
 /* ============================================================
-   ADD ITEM BUTTON
-   ============================================================ */
-
-.add-item-button-container {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-
-  gap: 0.5rem;
-
-  position: relative;
-  z-index: 10;
-}
-
-.add-item-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0.5rem 0;
-
-  color: #0b8a6a;
-
-  font-size: 0.88rem;
-  font-weight: 600;
-
-  background-color: transparent;
-
-  border: none;
-
-  cursor: pointer;
-
-  position: relative;
-  z-index: 11;
-}
-
-.add-item-button-container img {
-  width: 1rem;
-  height: 0.75rem;
-
-  object-fit: contain;
-
-  pointer-events: none;
-}
-
-
-/* ============================================================
    POPUP
    ============================================================ */
 
 #billItemForm.overlay {
-  border: none;
   padding: 0;
+
   background: transparent;
+
+  border: none;
 }
 
 #billItemForm.overlay::backdrop {
@@ -408,19 +643,19 @@
 
   z-index: 3001;
 
-  width: 22rem;
-  max-width: 100%;
-
-  background: #ffffff;
-
-  border-radius: 0.8rem;
-
-  padding: 1.5rem;
-
   display: flex;
   flex-direction: column;
 
   gap: 0.8rem;
+
+  width: 22rem;
+  max-width: 100%;
+
+  padding: 1.5rem;
+
+  background: #ffffff;
+
+  border-radius: 0.8rem;
 
   box-shadow:
     0 0.5rem 1.5rem
@@ -428,21 +663,21 @@
 }
 
 .pop-up h2 {
-  text-align: center;
-
   margin: 0 0 0.5rem;
+
+  color: #0b8a6a;
 
   font-size: 2rem;
   font-weight: 600;
 
   font-family: inherit;
 
-  color: #0b8a6a;
+  text-align: center;
 }
 
 
 /* ============================================================
-   ADD ITEM FORM
+   EDIT ITEM FORM
    ============================================================ */
 
 #addItemForm {
@@ -453,10 +688,10 @@
 }
 
 #addItemForm label {
+  color: #444444;
+
   font-size: 0.9rem;
   font-weight: 600;
-
-  color: #444444;
 }
 
 #addItemForm input {
@@ -464,12 +699,16 @@
 
   padding: 0.7rem;
 
-  border: 0.0625rem solid #cccccc;
-  border-radius: 0.4rem;
+  color: #222222;
 
   font-size: 0.95rem;
 
+  border: 0.0625rem solid #cccccc;
+  border-radius: 0.4rem;
+
   outline: none;
+
+  box-sizing: border-box;
 }
 
 #addItemForm input:focus {
@@ -485,9 +724,9 @@
   display: flex;
   justify-content: space-between;
 
-  margin-top: 1rem;
-
   gap: 0.5rem;
+
+  margin-top: 1rem;
 }
 
 .popup-actions button {
@@ -495,26 +734,30 @@
 
   padding: 0.8rem;
 
+  font-size: 1rem;
+
   border: none;
   border-radius: 0.4rem;
-
-  font-size: 1rem;
 
   cursor: pointer;
 }
 
 .secondary-button {
-  background: #f1f3f2;;
   color: #53605a;
+
+  background: #f1f3f2;
 }
 
 .secondary-button:hover {
+  color: #ffffff;
+
   background: #c82333;
 }
 
 .primary-button {
-  background: #0b8a6a;
   color: #ffffff;
+
+  background: #0b8a6a;
 }
 
 .primary-button:hover {
@@ -527,9 +770,9 @@
    ============================================================ */
 
 .bill-table-container {
-  max-height: 16.25rem;
-
   width: 100%;
+
+  max-height: 16.25rem;
 
   margin-top: 0.7rem;
 
@@ -540,123 +783,6 @@
 
   border: 0.0625rem solid #eeeeee;
   border-radius: 0.65rem;
-}
-
-/* ============================================================
-   BILL CARDS (mobile view)
-   ============================================================ */
-
-
-.voice-bill-cards-container {
-  display: none; /* hidden by default; table shows on desktop */
-}
-
-.voice-bill-card {
-  display: flex;
-  flex-direction: column;
-
-  gap: 0.5rem;
-
-  padding: 0.9rem;
-
-  background-color: #ffffff;
-
-  border: 0.0625rem solid #eeeeee;
-  border-radius: 0.65rem;
-}
-
-.voice-bill-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding-bottom: 0.4rem;
-
-  border-bottom: 0.0625rem solid #f0f0f0;
-
-  font-size: 0.95rem;
-}
-
-.voice-bill-card-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  font-size: 0.85rem;
-}
-
-.voice-bill-card-label {
-  color: #6b7470;
-}
-
-.voice-bill-card-value {
-  color: #222222;
-  font-weight: 600;
-}
-
-.voice-bill-card-total {
-  padding-top: 0.4rem;
-
-  border-top: 0.0625rem solid #f0f0f0;
-
-  font-size: 0.95rem;
-}
-
-.voice-bill-card-total .voice-bill-card-value {
-  color: #007b5a;
-}
-
-.voice-empty-bill-cell {
-  padding: 1rem;
-
-  color: #6b7470;
-
-  font-size: 0.9rem;
-
-  text-align: center;
-}
-
-.voice-row-actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 1rem;
-}
-
-.voice-edit-item-button,
-.voice-delete-item-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 2rem;
-  height: 2rem;
-
-  padding: 0;
-
-  background-color: transparent;
-
-  border: none;
-  border-radius: 50%;
-
-  cursor: pointer;
-}
-
-.voice-edit-item-button:hover {
-  background-color: #e7f5f0;
-}
-
-.voice-delete-item-button:hover {
-  background-color: #fde5e5;
-}
-
-.voice-edit-item-button img,
-.voice-delete-item-button img {
-  width: 1.1rem;
-  height: 1.1rem;
-
-  object-fit: contain;
 }
 
 .bill-table {
@@ -686,13 +812,13 @@
 
 .bill-table td {
   padding: 0.75rem 0.35rem;
-  justify-content: center;
-  text-align: center;
 
   color: #222222;
 
   font-size: 0.88rem;
   line-height: 1.35;
+
+  text-align: center;
 
   border-top: 0.0625rem solid #eeeeee;
 }
@@ -731,10 +857,86 @@
 
 
 /* ============================================================
+   BILL CARDS - MOBILE
+   ============================================================ */
+
+.voice-bill-cards-container {
+  display: none;
+}
+
+.voice-bill-card {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.5rem;
+
+  padding: 0.9rem;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #eeeeee;
+  border-radius: 0.65rem;
+}
+
+.voice-bill-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-bottom: 0.4rem;
+
+  border-bottom: 0.0625rem solid #f0f0f0;
+
+  font-size: 0.95rem;
+}
+
+.voice-bill-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  font-size: 0.85rem;
+}
+
+.voice-bill-card-label {
+  color: #6b7470;
+}
+
+.voice-bill-card-value {
+  color: #222222;
+
+  font-weight: 600;
+}
+
+.voice-bill-card-total {
+  padding-top: 0.4rem;
+
+  border-top: 0.0625rem solid #f0f0f0;
+
+  font-size: 0.95rem;
+}
+
+.voice-bill-card-total .voice-bill-card-value {
+  color: #007b5a;
+}
+
+.voice-empty-bill-cell {
+  padding: 1rem;
+
+  color: #6b7470;
+
+  font-size: 0.9rem;
+
+  text-align: center;
+}
+
+
+/* ============================================================
    ROW ACTIONS
    ============================================================ */
 
-.row-actions {
+.row-actions,
+.voice-row-actions {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -743,7 +945,9 @@
 }
 
 .edit-item-button,
-.delete-item-button {
+.delete-item-button,
+.voice-edit-item-button,
+.voice-delete-item-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -761,16 +965,20 @@
   cursor: pointer;
 }
 
-.edit-item-button:hover {
+.edit-item-button:hover,
+.voice-edit-item-button:hover {
   background-color: #e7f5f0;
 }
 
-.delete-item-button:hover {
+.delete-item-button:hover,
+.voice-delete-item-button:hover {
   background-color: #fde5e5;
 }
 
 .edit-item-button img,
-.delete-item-button img {
+.delete-item-button img,
+.voice-edit-item-button img,
+.voice-delete-item-button img {
   width: 1.1rem;
   height: 1.1rem;
 
@@ -788,6 +996,8 @@
   margin-top: 1rem;
   padding: 1rem;
 
+  box-sizing: border-box;
+
   color: #262b2f;
 
   background-color: #f5f6f8;
@@ -796,10 +1006,163 @@
   border-radius: 0.75rem;
 }
 
+
+/* ============================================================
+   BILL SUMMARY ROWS
+   Matches Voicebilling.jsx
+   ============================================================ */
+
+.bill-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 0.75rem;
+
+  width: 100%;
+
+  margin-bottom: 0.75rem;
+
+  font-size: 0.94rem;
+}
+
+.bill-summary-row span {
+  color: #555d59;
+
+  font-size: 0.94rem;
+  font-weight: 500;
+}
+
+.bill-summary-row strong {
+  color: #262b2f;
+
+  font-size: 0.94rem;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* ============================================================
+   DISCOUNT SECTION
+   Matches Voicebilling.jsx
+   ============================================================ */
+
+.bill-discount-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 0.75rem;
+
+  width: 100%;
+
+  margin-top: 0.25rem;
+  margin-bottom: 1rem;
+
+  padding: 0.75rem 0;
+
+  border-top: 0.0625rem solid #dfe3e1;
+  border-bottom: 0.0625rem solid #dfe3e1;
+
+  box-sizing: border-box;
+}
+
+.bill-discount-section label {
+  flex: 0 0 auto;
+
+  color: #775a20;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.bill-discount-section select,
+#bill-discount {
+  flex: 1 1 auto;
+
+  min-width: 0;
+  max-width: 18rem;
+
+  height: 2.35rem;
+
+  padding: 0 2rem 0 0.7rem;
+
+  box-sizing: border-box;
+
+  color: #775a20;
+
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #e0c48f;
+  border-radius: 0.45rem;
+
+  outline: none;
+
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image:
+    url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23775a20' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+
+  background-repeat: no-repeat;
+
+  background-position: right 0.6rem center;
+
+  background-size: 0.9rem;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.bill-discount-section select:hover,
+#bill-discount:hover {
+  background-color: #fffdf8;
+
+  border-color: #c9a867;
+}
+
+.bill-discount-section select:focus,
+#bill-discount:focus {
+  border-color: #775a20;
+
+  box-shadow:
+    0 0 0 0.12rem
+    rgba(119, 90, 32, 0.15);
+}
+
+.bill-discount-section select option,
+#bill-discount option {
+  color: #262b2f;
+
+  background-color: #ffffff;
+
+  font-size: 0.82rem;
+}
+
+
+/* ============================================================
+   OLD DISCOUNT STYLES
+   Kept for existing compatibility
+   ============================================================ */
+
 .summary-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+
+  gap: 0.75rem;
 
   margin-bottom: 0.75rem;
 
@@ -816,7 +1179,12 @@
   display: inline-flex;
   align-items: center;
 
-  gap: 0.3rem;
+  gap: 0.5rem;
+
+  min-width: 0;
+
+  flex: 1 1 auto;
+
   padding: 0;
 
   color: #775a20;
@@ -826,30 +1194,59 @@
   background-color: transparent;
 
   border: none;
+
+  cursor: pointer;
+}
+
+.discount-button > span:first-child {
+  flex-shrink: 0;
+
+  white-space: nowrap;
 }
 
 .discount-input {
-  width: 2.3rem;
+  flex: 1 1 auto;
 
-  padding: 0.1rem;
+  min-width: 0;
+  max-width: 14rem;
+
+  padding: 0.35rem 1.6rem 0.35rem 0.5rem;
+
+  box-sizing: border-box;
 
   color: #775a20;
 
-  background-color: transparent;
+  font-size: 0.82rem;
 
-  border: none;
-  border-bottom: 0.0625rem solid #775a20;
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #e0c48f;
+  border-radius: 0.4rem;
 
   outline: none;
 
-  text-align: center;
+  cursor: pointer;
 
-  font-size: 0.9rem;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image:
+    url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23775a20' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+
+  background-repeat: no-repeat;
+
+  background-position: right 0.5rem center;
+
+  background-size: 0.9rem;
 }
 
-.discount-button img {
-  width: 0.9rem;
-  height: 0.9rem;
+.discount-input:focus {
+  border-color: #775a20;
+
+  box-shadow:
+    0 0 0 0.12rem
+    rgba(119, 90, 32, 0.15);
 }
 
 .summary-line {
@@ -860,10 +1257,54 @@
   background-color: #cdd1d4;
 }
 
+
+/* ============================================================
+   GRAND TOTAL
+   Matches Voicebilling.jsx
+   ============================================================ */
+
+.bill-summary-grand-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 0.75rem;
+
+  width: 100%;
+
+  padding-top: 0.9rem;
+
+  border-top: 0.0625rem solid #cdd1d4;
+}
+
+.bill-summary-grand-total span {
+  color: #22272b;
+
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.bill-summary-grand-total strong {
+  color: #007b5a;
+
+  font-size: 1.55rem;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* ============================================================
+   OLD GRAND TOTAL STYLES
+   Kept for existing compatibility
+   ============================================================ */
+
 .grand-total-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+
+  gap: 0.75rem;
 }
 
 .grand-total-label {
@@ -900,11 +1341,10 @@
 
 .bill-action-button {
   display: inline-flex;
-
-  flex: 1;
-
   align-items: center;
   justify-content: center;
+
+  flex: 1;
 
   gap: 0.55rem;
 
@@ -934,7 +1374,77 @@
 
 
 /* ============================================================
-   NEW BILL / GENERATE BILL
+   GENERATE BILL
+   Matches Voicebilling.jsx
+   ============================================================ */
+
+.bill-action-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+
+  margin-top: 1rem;
+
+  padding: 0 1rem 1.5rem;
+
+  box-sizing: border-box;
+}
+
+.generate-bill-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 3rem;
+
+  padding: 0.75rem 1rem;
+
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  background-color: #008f6b;
+
+  border: none;
+  border-radius: 2rem;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease,
+    box-shadow 0.2s ease;
+}
+
+.generate-bill-button:hover {
+  background-color: #007a5b;
+
+  box-shadow:
+    0 0.2rem 0.5rem
+    rgba(0, 122, 91, 0.18);
+}
+
+.generate-bill-button:active {
+  transform: scale(0.99);
+}
+
+.generate-bill-button:focus-visible {
+  outline: none;
+
+  box-shadow:
+    0 0 0 0.15rem
+    rgba(0, 143, 107, 0.2);
+}
+
+
+/* ============================================================
+   OLD GENERATE BILL
+   Kept for existing compatibility
    ============================================================ */
 
 .new-bill-container {
@@ -955,16 +1465,16 @@
 
   gap: 0.4rem;
 
-  border: none;
-  border-radius: 2rem;
+  color: #ffffff;
+
+  font-family: inherit;
 
   background-color: #008f6b;
 
-  color: #ffffff;
+  border: none;
+  border-radius: 2rem;
 
   cursor: pointer;
-
-  font-family: inherit;
 
   transition:
     background-color 0.2s ease,
@@ -1016,16 +1526,17 @@
 
 .footer-section {
   width: 100%;
+
   margin-top: auto;
 }
 
 .footer-section footer {
-  width: 100%;
-  min-height: 4rem;
-
   display: flex;
   align-items: center;
   justify-content: center;
+
+  width: 100%;
+  min-height: 4rem;
 
   background-color: #008f6b;
 }
@@ -1033,6 +1544,7 @@
 .footer-section footer small,
 .footer-section footer span {
   color: #ffffff;
+
   font-size: 0.75rem;
 }
 
@@ -1062,9 +1574,6 @@
 
 /* ============================================================
    DESKTOP
-   IMPORTANT:
-   NO padding-left: var(--sidebar-width)
-   because Sidebar is already a flex item.
    ============================================================ */
 
 @media screen and (min-width: 1024px) {
@@ -1085,10 +1594,20 @@
 
     width: 100%;
     min-width: 0;
-
-    /* padding-left: 0; */
   }
 
+  .bill-product-search-results {
+    max-height: 20rem;
+  }
+
+  .bill-discount-section {
+    gap: 1rem;
+  }
+
+  .bill-discount-section select,
+  #bill-discount {
+    max-width: 20rem;
+  }
 }
 
 
@@ -1105,6 +1624,7 @@
   .voice-bill-cards-container {
     display: flex;
     flex-direction: column;
+
     gap: 0.75rem;
 
     margin-top: 0.7rem;
@@ -1124,6 +1644,165 @@
     max-height: 18rem;
   }
 
+  .bill-search-section {
+    padding: 0 0.75rem;
+  }
+
+  .bill-search-input {
+    height: 2.65rem;
+
+    padding: 0 0.85rem;
+
+    font-size: 0.85rem;
+  }
+
+  .bill-product-search-results {
+    max-height: 16rem;
+  }
+
+  .bill-product-search-card {
+    gap: 0.7rem;
+
+    padding: 0.75rem;
+  }
+
+  .bill-product-search-info h4 {
+    font-size: 0.88rem;
+  }
+
+  .bill-product-search-info p {
+    font-size: 0.72rem;
+  }
+
+  .bill-product-search-details {
+    gap: 0.45rem;
+  }
+
+  .bill-product-search-details strong {
+    font-size: 0.82rem;
+  }
+
+  .bill-product-search-details span {
+    font-size: 0.7rem;
+  }
+
+  .bill-product-add-button {
+    min-width: 3.5rem;
+
+    padding: 0.45rem 0.7rem;
+
+    font-size: 0.75rem;
+  }
+
+
+  /* ========================================================
+     DISCOUNT - TABLET
+     ======================================================== */
+
+  .bill-summary {
+    padding: 0.9rem;
+  }
+
+  .bill-summary-row {
+    margin-bottom: 0.65rem;
+
+    font-size: 0.9rem;
+  }
+
+  .bill-summary-row span,
+  .bill-summary-row strong {
+    font-size: 0.9rem;
+  }
+
+  .bill-discount-section {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap: 0.5rem;
+
+    padding: 0.75rem 0;
+  }
+
+  .bill-discount-section label {
+    font-size: 0.85rem;
+  }
+
+  .bill-discount-section select,
+  #bill-discount {
+    width: 100%;
+    max-width: none;
+
+    height: 2.4rem;
+
+    font-size: 0.8rem;
+  }
+
+  .bill-summary-grand-total span {
+    font-size: 1rem;
+  }
+
+  .bill-summary-grand-total strong {
+    font-size: 1.4rem;
+  }
+
+  .bill-action-section {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+
+  .discount-row {
+    flex-wrap: wrap;
+
+    row-gap: 0.5rem;
+  }
+
+  .discount-button {
+    width: 100%;
+  }
+
+  .discount-input {
+    max-width: none;
+  }
+
+  .profile-container {
+    padding: 1rem;
+  }
+
+  .profile-card {
+    width: 100%;
+    max-width: 28rem;
+
+    padding: 1.25rem;
+  }
+
+  .profile-card h2 {
+    margin-bottom: 1rem;
+
+    font-size: 1.5rem;
+  }
+
+  .profile-form {
+    gap: 0.65rem;
+  }
+
+  .profile-form input {
+    height: 2.65rem;
+
+    font-size: 0.8rem;
+  }
+
+  .profile-buttons {
+    gap: 0.65rem;
+
+    margin-top: 0.4rem;
+  }
+
+  .profile-buttons button {
+    height: 2.4rem;
+
+    font-size: 0.85rem;
+  }
 }
 
 
@@ -1141,16 +1820,75 @@
     padding: 0.75rem;
   }
 
+  .bill-search-section {
+    padding: 0 0.75rem;
+
+    margin-top: 0.3rem;
+  }
+
+  .bill-search-input {
+    height: 2.5rem;
+
+    padding: 0 0.75rem;
+
+    font-size: 0.8rem;
+  }
+
+  .bill-product-search-results {
+    max-height: 14rem;
+  }
+
+  .bill-product-search-card {
+    align-items: flex-start;
+
+    gap: 0.5rem;
+
+    padding: 0.7rem;
+  }
+
+  .bill-product-search-info h4 {
+    font-size: 0.82rem;
+  }
+
+  .bill-product-search-info p {
+    max-width: 12rem;
+
+    font-size: 0.68rem;
+  }
+
+  .bill-product-search-details {
+    gap: 0.35rem;
+
+    margin-top: 0.35rem;
+  }
+
+  .bill-product-search-details strong {
+    font-size: 0.78rem;
+  }
+
+  .bill-product-search-details span {
+    font-size: 0.65rem;
+  }
+
+  .bill-product-search-details .stock-available,
+  .bill-product-search-details .stock-out {
+    padding: 0.15rem 0.4rem;
+  }
+
+  .bill-product-add-button {
+    min-width: 3rem;
+
+    padding: 0.4rem 0.6rem;
+
+    font-size: 0.7rem;
+  }
+
   .bill-container {
     padding: 0 0.75rem;
   }
 
   .bill-header h2 {
     font-size: 1rem;
-  }
-
-  .add-item-button {
-    font-size: 0.78rem;
   }
 
   .bill-table {
@@ -1185,66 +1923,139 @@
     font-size: 1.5rem;
   }
 
+
+  /* ========================================================
+     DISCOUNT - SMALL MOBILE
+     ======================================================== */
+
+  .bill-summary {
+    margin-top: 0.75rem;
+
+    padding: 0.8rem;
+  }
+
+  .bill-summary-row {
+    gap: 0.5rem;
+
+    margin-bottom: 0.6rem;
+  }
+
+  .bill-summary-row span,
+  .bill-summary-row strong {
+    font-size: 0.82rem;
+  }
+
+  .bill-discount-section {
+    gap: 0.45rem;
+
+    margin-top: 0.2rem;
+    margin-bottom: 0.8rem;
+
+    padding: 0.7rem 0;
+  }
+
+  .bill-discount-section label {
+    font-size: 0.8rem;
+  }
+
+  .bill-discount-section select,
+  #bill-discount {
+    width: 100%;
+
+    height: 2.3rem;
+
+    padding-left: 0.6rem;
+    padding-right: 1.8rem;
+
+    font-size: 0.76rem;
+
+    background-position: right 0.5rem center;
+    background-size: 0.8rem;
+  }
+
+  .bill-summary-grand-total {
+    padding-top: 0.75rem;
+  }
+
+  .bill-summary-grand-total span {
+    font-size: 0.9rem;
+  }
+
+  .bill-summary-grand-total strong {
+    font-size: 1.25rem;
+  }
+
+  .bill-action-section {
+    margin-top: 0.8rem;
+
+    padding: 0 0.75rem 1.25rem;
+  }
+
+  .generate-bill-button {
+    min-height: 2.8rem;
+
+    padding: 0.7rem 0.8rem;
+
+    font-size: 0.82rem;
+  }
+
+  .discount-input {
+    padding: 0.3rem 1.4rem 0.3rem 0.4rem;
+
+    font-size: 0.78rem;
+  }
 }
 
-/* Profile */
 
-/* =========================================================
-   PROFILE CARD
-========================================================= */
+/* ============================================================
+   PROFILE
+   ============================================================ */
 
 .profile-container {
-  width: 100%;
-  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  width: 100%;
+  min-height: 100%;
+
   padding: 1rem;
 }
 
 .profile-card {
   width: 100%;
   max-width: 28rem;
+
   padding: 1.5rem;
+
   background-color: #ffffff;
+
   border-radius: 0.75rem;
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+
+  box-shadow:
+    0 0.25rem 0.75rem
+    rgba(0, 0, 0, 0.08);
 }
-
-
-/* =========================================================
-   PROFILE TITLE
-========================================================= */
 
 .profile-card h2 {
   margin-bottom: 1.25rem;
-
-  text-align: center;
 
   color: #008f6b;
 
   font-size: 1.7rem;
   font-weight: 600;
+
+  text-align: center;
 }
 
-
-/* =========================================================
-   PROFILE FORM
-========================================================= */
-
 .profile-form {
-  width: 100%;
-
   display: flex;
   flex-direction: column;
 
   gap: 0.75rem;
+
+  width: 100%;
 }
-
-
-/* =========================================================
-   PROFILE INPUT BOXES
-========================================================= */
 
 .profile-form input {
   width: 100%;
@@ -1252,16 +2063,18 @@
 
   padding: 0 0.75rem;
 
+  box-sizing: border-box;
+
+  color: #22272b;
+
+  font-size: 0.85rem;
+
   background-color: #ffffff;
 
   border: 0.0625rem solid #dfe5e2;
   border-radius: 0.4rem;
 
   outline: none;
-
-  color: #22272b;
-
-  font-size: 0.85rem;
 }
 
 .profile-form input::placeholder {
@@ -1272,18 +2085,13 @@
   border-color: #008f6b;
 }
 
-
-/* =========================================================
-   PROFILE BUTTONS
-========================================================= */
-
 .profile-buttons {
-  width: 100%;
-
   display: flex;
   align-items: center;
 
   gap: 0.75rem;
+
+  width: 100%;
 
   margin-top: 0.5rem;
 }
@@ -1295,91 +2103,35 @@
 
   padding: 0 1rem;
 
-  border: none;
-  border-radius: 0.4rem;
-
   font-size: 0.9rem;
   font-weight: 600;
+
+  border: none;
+  border-radius: 0.4rem;
 
   cursor: pointer;
 }
 
-
-/* CANCEL */
-
 .profile-buttons button:first-child {
-  background-color: #f1f3f2;
-
   color: #53605a;
+
+  background-color: #f1f3f2;
 }
-
-
-/* EDIT DETAILS */
 
 .profile-buttons button:last-child {
-  background-color: #008f6b;
-
   color: #ffffff;
+
+  background-color: #008f6b;
 }
-
-
-/* HOVER */
 
 .profile-buttons button:hover {
   opacity: 0.85;
 }
 
 
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media screen and (max-width: 768px) {
-
-  .profile-container {
-    padding: 1rem;
-  }
-
-  .profile-card {
-    width: 100%;
-    max-width: 28rem;
-
-    padding: 1.25rem;
-  }
-
-  .profile-card h2 {
-    font-size: 1.5rem;
-
-    margin-bottom: 1rem;
-  }
-
-  .profile-form {
-    gap: 0.65rem;
-  }
-
-  .profile-form input {
-    height: 2.65rem;
-
-    font-size: 0.8rem;
-  }
-
-  .profile-buttons {
-    gap: 0.65rem;
-
-    margin-top: 0.4rem;
-  }
-
-  .profile-buttons button {
-    height: 2.4rem;
-
-    font-size: 0.85rem;
-  }
-}
-
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
+/* ============================================================
+   PROFILE - SMALL MOBILE
+   ============================================================ */
 
 @media screen and (max-width: 390px) {
 
@@ -1392,9 +2144,9 @@
   }
 
   .profile-card h2 {
-    font-size: 1.35rem;
-
     margin-bottom: 0.9rem;
+
+    font-size: 1.35rem;
   }
 
   .profile-form {
@@ -1417,5 +2169,48 @@
     height: 2.3rem;
 
     font-size: 0.8rem;
+  }
+
+
+  /* ========================================================
+     DISCOUNT - EXTRA SMALL MOBILE
+     ======================================================== */
+
+  .bill-summary {
+    padding: 0.7rem;
+  }
+
+  .bill-summary-row span,
+  .bill-summary-row strong {
+    font-size: 0.78rem;
+  }
+
+  .bill-discount-section {
+    padding: 0.65rem 0;
+  }
+
+  .bill-discount-section label {
+    font-size: 0.76rem;
+  }
+
+  .bill-discount-section select,
+  #bill-discount {
+    height: 2.2rem;
+
+    font-size: 0.72rem;
+  }
+
+  .bill-summary-grand-total span {
+    font-size: 0.85rem;
+  }
+
+  .bill-summary-grand-total strong {
+    font-size: 1.15rem;
+  }
+
+  .generate-bill-button {
+    min-height: 2.65rem;
+
+    font-size: 0.78rem;
   }
 }

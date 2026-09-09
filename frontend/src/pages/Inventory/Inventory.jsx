@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 
-// import { useOutletContext } from "react-router-dom";
-
 import searchIcon from "../../assets/icons/search.png";
 import leftIcon from "../../assets/icons/left.png";
 import chevronIcon from "../../assets/icons/chevron.png";
@@ -24,10 +22,6 @@ function Inventory() {
 
   const [showPopup, setShowPopup] = useState(false);
 
-  // // SIDEBAR TOGGLE
-  // const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // EDIT
   const [editingProductId, setEditingProductId] = useState(null);
   const [editingInventoryId, setEditingInventoryId] = useState(null);
   const [editingDamageId, setEditingDamageId] = useState(null);
@@ -37,6 +31,33 @@ function Inventory() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const rowsPerPage = 6;
+
+  /*
+  ============================================================
+  DROPDOWN MASTER VALUES
+  ============================================================
+  */
+
+  const [productNames, setProductNames] = useState([]);
+  const [productTypes, setProductTypes] = useState([]);
+  const [productBrands, setProductBrands] = useState([]);
+  const [units, setUnits] = useState([]);
+
+  /*
+  ============================================================
+  ADD NEW DROPDOWN STATES
+  ============================================================
+  */
+
+  const [addingNewType, setAddingNewType] = useState(false);
+  const [addingNewBrand, setAddingNewBrand] = useState(false);
+  const [addingNewUnit, setAddingNewUnit] = useState(false);
+
+  /*
+  ============================================================
+  FORM DATA
+  ============================================================
+  */
 
   const [formData, setFormData] = useState({
     product: "",
@@ -54,96 +75,13 @@ function Inventory() {
     status: "Available",
   });
 
-  const goBack = () => {
-    window.history.back();
-  };
+  /*
+  ============================================================
+  RESET FORM
+  ============================================================
+  */
 
-  // SIDEBAR TOGGLE FUNCTION
-  // const handleMenuToggle = () => {
-  //   setSidebarOpen((previous) => !previous);
-  // };
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
-  };
-
-  const openPopup = () => {
-    setProductActionMenuId(null);
-
-    setEditingProductId(null);
-    setEditingInventoryId(null);
-    setEditingDamageId(null);
-
-    if (activeTab === "product") {
-      setFormData({
-        product: "",
-        type: "",
-        brand: "",
-        unit: "",
-        cost: "",
-        sellingPrice: "",
-        weight: "",
-        quantity: "",
-        reason: "",
-        unitCost: "",
-        lossValue: "",
-        stockStatus: "Available",
-        status: "Available",
-      });
-    }
-
-    if (activeTab === "inventory") {
-      setFormData({
-        product: "",
-        type: "",
-        brand: "",
-        unit: "",
-        cost: "",
-        sellingPrice: "",
-        weight: "",
-        quantity: "",
-        reason: "",
-        unitCost: "",
-        lossValue: "",
-        stockStatus: "Available",
-        status: "Available",
-      });
-    }
-
-    if (activeTab === "damage") {
-      setFormData({
-        product: "",
-        type: "",
-        brand: "",
-        unit: "",
-        cost: "",
-        sellingPrice: "",
-        weight: "",
-        quantity: "",
-        reason: "",
-        unitCost: "",
-        lossValue: "",
-        stockStatus: "Available",
-        status: "Available",
-      });
-    }
-
-    setShowPopup(true);
-  };
-
-  const closePopup = () => {
-    setShowPopup(false);
-
-    setEditingProductId(null);
-    setEditingInventoryId(null);
-    setEditingDamageId(null);
-    setProductActionMenuId(null);
-
+  const resetForm = () => {
     setFormData({
       product: "",
       type: "",
@@ -159,21 +97,268 @@ function Inventory() {
       stockStatus: "Available",
       status: "Available",
     });
+
+    setAddingNewType(false);
+    setAddingNewBrand(false);
+    setAddingNewUnit(false);
   };
 
+  /*
+  ============================================================
+  BACK
+  ============================================================
+  */
+
+  const goBack = () => {
+    window.history.back();
+  };
+
+  /*
+  ============================================================
+  INPUT CHANGE
+  ============================================================
+  */
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  /*
+  ============================================================
+  DROPDOWN CHANGE
+  ============================================================
+  */
+
+  const handleProductChange = (event) => {
+    const value = event.target.value;
+
+    setFormData((previous) => ({
+      ...previous,
+      product: value,
+    }));
+  };
+
+  const handleTypeChange = (event) => {
+    const value = event.target.value;
+
+    if (value === "__ADD_NEW__") {
+      setAddingNewType(true);
+
+      setFormData((previous) => ({
+        ...previous,
+        type: "",
+      }));
+
+      return;
+    }
+
+    setAddingNewType(false);
+
+    setFormData((previous) => ({
+      ...previous,
+      type: value,
+    }));
+  };
+
+  const handleBrandChange = (event) => {
+    const value = event.target.value;
+
+    if (value === "__ADD_NEW__") {
+      setAddingNewBrand(true);
+
+      setFormData((previous) => ({
+        ...previous,
+        brand: "",
+      }));
+
+      return;
+    }
+
+    setAddingNewBrand(false);
+
+    setFormData((previous) => ({
+      ...previous,
+      brand: value,
+    }));
+  };
+
+  const handleUnitChange = (event) => {
+    const value = event.target.value;
+
+    if (value === "__ADD_NEW__") {
+      setAddingNewUnit(true);
+
+      setFormData((previous) => ({
+        ...previous,
+        unit: "",
+      }));
+
+      return;
+    }
+
+    setAddingNewUnit(false);
+
+    setFormData((previous) => ({
+      ...previous,
+      unit: value,
+    }));
+  };
+
+  /*
+  ============================================================
+  ADD NEW VALUE TO DROPDOWN
+  ============================================================
+  */
+
+  const saveNewType = () => {
+    const value = formData.type.trim();
+
+    if (value === "") {
+      alert("Please enter type.");
+      return false;
+    }
+
+    const exists = productTypes.some(
+      (item) => item.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (!exists) {
+      setProductTypes((previous) => [...previous, value]);
+    }
+
+    return value;
+  };
+
+  const saveNewBrand = () => {
+    const value = formData.brand.trim();
+
+    if (value === "") {
+      alert("Please enter brand.");
+      return false;
+    }
+
+    const exists = productBrands.some(
+      (item) => item.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (!exists) {
+      setProductBrands((previous) => [...previous, value]);
+    }
+
+    return value;
+  };
+
+  const saveNewUnit = () => {
+    const value = formData.unit.trim();
+
+    if (value === "") {
+      alert("Please enter unit.");
+      return false;
+    }
+
+    const exists = units.some(
+      (item) => item.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (!exists) {
+      setUnits((previous) => [...previous, value]);
+    }
+
+    return value;
+  };
+
+  /*
+  ============================================================
+  OPEN POPUP
+  ============================================================
+  */
+
+  const openPopup = () => {
+    setProductActionMenuId(null);
+
+    setEditingProductId(null);
+    setEditingInventoryId(null);
+    setEditingDamageId(null);
+
+    resetForm();
+
+    setShowPopup(true);
+  };
+
+  /*
+  ============================================================
+  CLOSE POPUP
+  ============================================================
+  */
+
+  const closePopup = () => {
+    setShowPopup(false);
+
+    setEditingProductId(null);
+    setEditingInventoryId(null);
+    setEditingDamageId(null);
+
+    setProductActionMenuId(null);
+
+    resetForm();
+  };
+
+  /*
+  ============================================================
+  ADD PRODUCT
+  ============================================================
+  */
+
   const addProduct = () => {
-    const product = formData.product.trim();
-    const productCost = Number(formData.cost);
+    let product = formData.product.trim();
+    let productType = formData.type.trim();
+    let productBrand = formData.brand.trim();
+    let productUnit = formData.unit.trim();
+
     const productWeight = formData.weight.trim();
     const productQuantity = Number(formData.quantity);
-    const productType = formData.type.trim();
-    const productBrand = formData.brand.trim();
-    const productUnit = formData.unit.trim();
-    const productStatus = formData.status;
+
+    /*
+    SAVE NEW DROPDOWN VALUES
+    */
+
+    if (addingNewType) {
+      const result = saveNewType();
+
+      if (result === false) {
+        return;
+      }
+
+      productType = result;
+    }
+
+    if (addingNewBrand) {
+      const result = saveNewBrand();
+
+      if (result === false) {
+        return;
+      }
+
+      productBrand = result;
+    }
+
+    if (addingNewUnit) {
+      const result = saveNewUnit();
+
+      if (result === false) {
+        return;
+      }
+
+      productUnit = result;
+    }
 
     if (
       product === "" ||
-      formData.cost === "" ||
       productWeight === "" ||
       formData.quantity === "" ||
       productType === "" ||
@@ -184,15 +369,16 @@ function Inventory() {
       return;
     }
 
-    if (productCost < 0) {
-      alert("Cost cannot be negative.");
-      return;
-    }
-
     if (productQuantity < 0) {
       alert("Quantity cannot be negative.");
       return;
     }
+
+    /*
+    ============================================================
+    EDIT PRODUCT
+    ============================================================
+    */
 
     if (editingProductId !== null) {
       setProducts((previousProducts) =>
@@ -201,10 +387,8 @@ function Inventory() {
             return {
               ...item,
               product,
-              cost: productCost,
               weight: productWeight,
               quantity: productQuantity,
-              status: productStatus,
               type: productType,
               brand: productBrand,
               unit: productUnit,
@@ -214,14 +398,21 @@ function Inventory() {
           return item;
         }),
       );
-    } else {
+    }
+
+    /*
+    ============================================================
+    ADD PRODUCT
+    ============================================================
+    */
+
+    else {
       const newProduct = {
         id: Date.now(),
         product,
-        cost: productCost,
         weight: productWeight,
         quantity: productQuantity,
-        status: productStatus,
+        status: "Available",
         type: productType,
         brand: productBrand,
         unit: productUnit,
@@ -233,8 +424,56 @@ function Inventory() {
       ]);
     }
 
+    /*
+    ENSURE VALUES ARE IN DROPDOWNS
+    */
+
+    if (
+      !productNames.some(
+        (item) => item.toLowerCase() === product.toLowerCase(),
+      )
+    ) {
+      setProductNames((previous) => [...previous, product]);
+    }
+
+    if (
+      !productTypes.some(
+        (item) => item.toLowerCase() === productType.toLowerCase(),
+      )
+    ) {
+      setProductTypes((previous) => [
+        ...previous,
+        productType,
+      ]);
+    }
+
+    if (
+      !productBrands.some(
+        (item) => item.toLowerCase() === productBrand.toLowerCase(),
+      )
+    ) {
+      setProductBrands((previous) => [
+        ...previous,
+        productBrand,
+      ]);
+    }
+
+    if (
+      !units.some(
+        (item) => item.toLowerCase() === productUnit.toLowerCase(),
+      )
+    ) {
+      setUnits((previous) => [...previous, productUnit]);
+    }
+
     closePopup();
   };
+
+  /*
+  ============================================================
+  ADD INVENTORY
+  ============================================================
+  */
 
   const addInventory = () => {
     const product = formData.product.trim();
@@ -242,7 +481,6 @@ function Inventory() {
     const sellingPrice = Number(formData.sellingPrice);
     const weight = formData.weight.trim();
     const quantity = Number(formData.quantity);
-    const stockStatus = formData.stockStatus;
 
     if (
       product === "" ||
@@ -255,10 +493,20 @@ function Inventory() {
       return;
     }
 
-    if (cost < 0 || sellingPrice < 0 || quantity < 0) {
+    if (
+      cost < 0 ||
+      sellingPrice < 0 ||
+      quantity < 0
+    ) {
       alert("Values cannot be negative.");
       return;
     }
+
+    /*
+    ============================================================
+    EDIT INVENTORY
+    ============================================================
+    */
 
     if (editingInventoryId !== null) {
       setInventory((previousInventory) =>
@@ -271,15 +519,21 @@ function Inventory() {
               sellingPrice,
               weight,
               quantity,
-              stockStatus,
-              unit: weight,
             };
           }
 
           return item;
         }),
       );
-    } else {
+    }
+
+    /*
+    ============================================================
+    ADD INVENTORY
+    ============================================================
+    */
+
+    else {
       const newInventory = {
         id: Date.now(),
         product,
@@ -287,8 +541,7 @@ function Inventory() {
         sellingPrice,
         weight,
         quantity,
-        stockStatus,
-        unit: weight,
+        stockStatus: "Available",
       };
 
       setInventory((previousInventory) => [
@@ -299,6 +552,12 @@ function Inventory() {
 
     closePopup();
   };
+
+  /*
+  ============================================================
+  ADD DAMAGE GOOD
+  ============================================================
+  */
 
   const addDamageGood = () => {
     const product = formData.product.trim();
@@ -359,11 +618,25 @@ function Inventory() {
     closePopup();
   };
 
+  /*
+  ============================================================
+  DELETE PRODUCT
+  ============================================================
+  */
+
   const deleteRow = (id) => {
     setProducts((previousProducts) =>
-      previousProducts.filter((product) => product.id !== id),
+      previousProducts.filter(
+        (product) => product.id !== id,
+      ),
     );
   };
+
+  /*
+  ============================================================
+  EDIT PRODUCT
+  ============================================================
+  */
 
   const editRow = (product) => {
     setFormData({
@@ -371,7 +644,7 @@ function Inventory() {
       type: product.type,
       brand: product.brand,
       unit: product.unit,
-      cost: product.cost,
+      cost: "",
       sellingPrice: "",
       weight: product.weight,
       quantity: product.quantity,
@@ -379,8 +652,12 @@ function Inventory() {
       unitCost: "",
       lossValue: "",
       stockStatus: "Available",
-      status: product.status,
+      status: product.status || "Available",
     });
+
+    setAddingNewType(false);
+    setAddingNewBrand(false);
+    setAddingNewUnit(false);
 
     setEditingProductId(product.id);
     setEditingInventoryId(null);
@@ -388,6 +665,12 @@ function Inventory() {
 
     setShowPopup(true);
   };
+
+  /*
+  ============================================================
+  ADD PRODUCT TO INVENTORY
+  ============================================================
+  */
 
   const addProductToInventory = (product) => {
     setProductActionMenuId(null);
@@ -398,8 +681,8 @@ function Inventory() {
       product: product.product,
       type: "",
       brand: "",
-      unit: product.unit,
-      cost: product.cost,
+      unit: "",
+      cost: "",
       sellingPrice: "",
       weight: product.weight,
       quantity: "",
@@ -410,12 +693,22 @@ function Inventory() {
       status: "Available",
     });
 
+    setAddingNewType(false);
+    setAddingNewBrand(false);
+    setAddingNewUnit(false);
+
     setEditingProductId(null);
     setEditingInventoryId(null);
     setEditingDamageId(null);
 
     setShowPopup(true);
   };
+
+  /*
+  ============================================================
+  ADD PRODUCT TO DAMAGE
+  ============================================================
+  */
 
   const addProductToDamage = (product) => {
     setProductActionMenuId(null);
@@ -432,11 +725,15 @@ function Inventory() {
       weight: "",
       quantity: "",
       reason: "",
-      unitCost: product.cost,
+      unitCost: "",
       lossValue: "",
       stockStatus: "Available",
       status: "Available",
     });
+
+    setAddingNewType(false);
+    setAddingNewBrand(false);
+    setAddingNewUnit(false);
 
     setEditingProductId(null);
     setEditingInventoryId(null);
@@ -445,12 +742,18 @@ function Inventory() {
     setShowPopup(true);
   };
 
+  /*
+  ============================================================
+  EDIT INVENTORY
+  ============================================================
+  */
+
   const editInventoryRow = (item) => {
     setFormData({
       product: item.product,
       type: "",
       brand: "",
-      unit: item.unit,
+      unit: "",
       cost: item.cost,
       sellingPrice: item.sellingPrice,
       weight: item.weight,
@@ -458,9 +761,13 @@ function Inventory() {
       reason: "",
       unitCost: "",
       lossValue: "",
-      stockStatus: item.stockStatus,
+      stockStatus: item.stockStatus || "Available",
       status: "Available",
     });
+
+    setAddingNewType(false);
+    setAddingNewBrand(false);
+    setAddingNewUnit(false);
 
     setEditingInventoryId(item.id);
     setEditingProductId(null);
@@ -468,6 +775,12 @@ function Inventory() {
 
     setShowPopup(true);
   };
+
+  /*
+  ============================================================
+  EDIT DAMAGE
+  ============================================================
+  */
 
   const editDamageRow = (item) => {
     setFormData({
@@ -486,6 +799,10 @@ function Inventory() {
       status: "Available",
     });
 
+    setAddingNewType(false);
+    setAddingNewBrand(false);
+    setAddingNewUnit(false);
+
     setEditingDamageId(item.id);
     setEditingProductId(null);
     setEditingInventoryId(null);
@@ -493,17 +810,39 @@ function Inventory() {
     setShowPopup(true);
   };
 
+  /*
+  ============================================================
+  DELETE INVENTORY
+  ============================================================
+  */
+
   const deleteInventoryRow = (id) => {
     setInventory((previousInventory) =>
-      previousInventory.filter((item) => item.id !== id),
+      previousInventory.filter(
+        (item) => item.id !== id,
+      ),
     );
   };
 
+  /*
+  ============================================================
+  DELETE DAMAGE
+  ============================================================
+  */
+
   const deleteDamageRow = (id) => {
     setDamageGoods((previousDamageGoods) =>
-      previousDamageGoods.filter((item) => item.id !== id),
+      previousDamageGoods.filter(
+        (item) => item.id !== id,
+      ),
     );
   };
+
+  /*
+  ============================================================
+  FILTER PRODUCTS
+  ============================================================
+  */
 
   const filteredProducts = useMemo(() => {
     const search = searchValue.toLowerCase().trim();
@@ -514,12 +853,26 @@ function Inventory() {
 
     return products.filter(
       (product) =>
-        product.product.toLowerCase().includes(search) ||
-        product.type.toLowerCase().includes(search) ||
-        product.brand.toLowerCase().includes(search) ||
-        product.unit.toLowerCase().includes(search),
+        product.product
+          .toLowerCase()
+          .includes(search) ||
+        product.type
+          .toLowerCase()
+          .includes(search) ||
+        product.brand
+          .toLowerCase()
+          .includes(search) ||
+        product.unit
+          .toLowerCase()
+          .includes(search),
     );
   }, [products, searchValue]);
+
+  /*
+  ============================================================
+  FILTER INVENTORY
+  ============================================================
+  */
 
   const filteredInventory = useMemo(() => {
     const search = searchValue.toLowerCase().trim();
@@ -530,11 +883,20 @@ function Inventory() {
 
     return inventory.filter(
       (item) =>
-        item.product.toLowerCase().includes(search) ||
-        item.unit.toLowerCase().includes(search) ||
-        item.stockStatus.toLowerCase().includes(search),
+        item.product
+          .toLowerCase()
+          .includes(search) ||
+        item.stockStatus
+          .toLowerCase()
+          .includes(search),
     );
   }, [inventory, searchValue]);
+
+  /*
+  ============================================================
+  FILTER DAMAGE
+  ============================================================
+  */
 
   const filteredDamageGoods = useMemo(() => {
     const search = searchValue.toLowerCase().trim();
@@ -545,10 +907,20 @@ function Inventory() {
 
     return damageGoods.filter(
       (item) =>
-        item.product.toLowerCase().includes(search) ||
-        item.reason.toLowerCase().includes(search),
+        item.product
+          .toLowerCase()
+          .includes(search) ||
+        item.reason
+          .toLowerCase()
+          .includes(search),
     );
   }, [damageGoods, searchValue]);
+
+  /*
+  ============================================================
+  ACTIVE DATA
+  ============================================================
+  */
 
   const activeData =
     activeTab === "product"
@@ -557,13 +929,21 @@ function Inventory() {
         ? filteredInventory
         : filteredDamageGoods;
 
+  /*
+  ============================================================
+  PAGINATION
+  ============================================================
+  */
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchValue, activeTab]);
 
   const totalProducts = activeData.length;
 
-  const totalPages = Math.ceil(totalProducts / rowsPerPage);
+  const totalPages = Math.ceil(
+    totalProducts / rowsPerPage,
+  );
 
   useEffect(() => {
     if (totalPages === 0) {
@@ -573,40 +953,63 @@ function Inventory() {
     }
   }, [currentPage, totalPages]);
 
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
+  const startIndex =
+    (currentPage - 1) * rowsPerPage;
 
-  const currentProducts = activeData.slice(startIndex, endIndex);
+  const endIndex =
+    startIndex + rowsPerPage;
+
+  const currentProducts = activeData.slice(
+    startIndex,
+    endIndex,
+  );
 
   const previousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage((previous) => previous - 1);
+      setCurrentPage(
+        (previous) => previous - 1,
+      );
     }
   };
 
   const nextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage((previous) => previous + 1);
+      setCurrentPage(
+        (previous) => previous + 1,
+      );
     }
   };
 
+  /*
+  ============================================================
+  CARDS
+  ============================================================
+  */
+
   const itemsIn = products.filter(
-    (product) => product.status === "Available",
+    (product) =>
+      product.status === "Available",
   ).length;
 
   const lowStock = products.filter(
-    (product) => product.status === "Low Stock",
+    (product) =>
+      product.status === "Low Stock",
   ).length;
 
   const outOfStock = products.filter(
-    (product) => product.status === "Out of Stock",
+    (product) =>
+      product.status === "Out of Stock",
   ).length;
 
   let paginationText = "Showing 0 of 0";
 
   if (totalProducts > 0) {
     const firstProduct = startIndex + 1;
-    const lastProduct = Math.min(endIndex, totalProducts);
+
+    const lastProduct = Math.min(
+      endIndex,
+      totalProducts,
+    );
 
     const label =
       activeTab === "product"
@@ -615,23 +1018,24 @@ function Inventory() {
           ? "inventory items"
           : "damage goods";
 
-    paginationText = `Showing ${firstProduct}-${lastProduct} of ${totalProducts} ${label}`;
+    paginationText =
+      `Showing ${firstProduct}-${lastProduct} of ${totalProducts} ${label}`;
   }
+
+  /*
+  ============================================================
+  RENDER
+  ============================================================
+  */
 
   return (
     <>
-      {/* HEADER
-      <Header
-        onBack={goBack}
-        onAddProduct={openPopup}
-        onMenuToggle={handleMenuToggle}
-      /> */}
-
-      {/* MAIN */}
       <section className="main-container">
-        {/* MAIN CONTENT */}
         <div>
-          {/* TABS */}
+          {/* ==================================================
+              TABS
+          ================================================== */}
+
           <div className="inventory-tabs">
             <button
               type="button"
@@ -682,8 +1086,11 @@ function Inventory() {
             </button>
           </div>
 
+          {/* ==================================================
+              SEARCH + CARDS
+          ================================================== */}
+
           <div className="search-inventory-cards">
-            {/* SEARCH */}
             <div className="search-container">
               <div className="search-input-wrapper">
                 <img
@@ -704,38 +1111,59 @@ function Inventory() {
                   }
                   value={searchValue}
                   onChange={(event) =>
-                    setSearchValue(event.target.value)
+                    setSearchValue(
+                      event.target.value,
+                    )
                   }
                 />
               </div>
             </div>
 
-            {/* CARDS */}
             <div className="card_section">
               <div className="card_box">
-                <div className="card_box_header">Items IN</div>
+                <div className="card_box_header">
+                  Items IN
+                </div>
+
                 <div className="card_box_count">
-                  {String(itemsIn).padStart(2, "0")}
+                  {String(itemsIn).padStart(
+                    2,
+                    "0",
+                  )}
                 </div>
               </div>
 
               <div className="card_box">
-                <div className="card_box_header">Low Stock</div>
+                <div className="card_box_header">
+                  Low Stock
+                </div>
+
                 <div className="card_box_count">
-                  {String(lowStock).padStart(2, "0")}
+                  {String(lowStock).padStart(
+                    2,
+                    "0",
+                  )}
                 </div>
               </div>
 
               <div className="card_box">
-                <div className="card_box_header">Out of Stock</div>
+                <div className="card_box_header">
+                  Out of Stock
+                </div>
+
                 <div className="card_box_count">
-                  {String(outOfStock).padStart(2, "0")}
+                  {String(
+                    outOfStock,
+                  ).padStart(2, "0")}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ADD BUTTON */}
+          {/* ==================================================
+              ADD BUTTON
+          ================================================== */}
+
           <div className="add-product-container">
             {activeTab === "product" && (
               <button
@@ -768,10 +1196,14 @@ function Inventory() {
             )}
           </div>
 
-          {/* TABLE */}
+          {/* ==================================================
+              TABLE
+          ================================================== */}
+
           <div className="table-container">
             <table>
               {/* PRODUCT TABLE */}
+
               {activeTab === "product" && (
                 <>
                   <thead>
@@ -797,134 +1229,155 @@ function Inventory() {
                         </td>
                       </tr>
                     ) : (
-                      currentProducts.map((product) => (
-                        <tr key={product.id}>
-                          <td>
-                            <div className="item">
-                              <strong>{product.product}</strong>
-                            </div>
-                          </td>
-
-                          <td className="meta-text">
-                            {product.type}
-                          </td>
-
-                          <td className="meta-text">
-                            {product.brand}
-                          </td>
-
-                          <td className="meta-text">
-                            {product.unit}
-                          </td>
-
-                          <td className="meta-text">
-                            {product.weight}
-                          </td>
-
-                          <td
-                            className="status-cell"
-                            id={
-                              product.status === "Available"
-                                ? "available"
-                                : product.status === "Low Stock"
-                                  ? "lowStock"
-                                  : "outOfStock"
+                      currentProducts.map(
+                        (product) => (
+                          <tr
+                            key={
+                              product.id
                             }
                           >
-                            <button
-                              className="status-btn"
-                              type="button"
-                            >
-                              <img
-                                src={
-                                  product.status ===
-                                  "Out of Stock"
-                                    ? removeIcon
-                                    : tickIcon
-                                }
-                                alt={product.status}
-                              />
-                            </button>
-                          </td>
+                            <td>
+                              <div className="item">
+                                <strong>
+                                  {
+                                    product.product
+                                  }
+                                </strong>
+                              </div>
+                            </td>
 
-                          <td className="action-buttons">
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() =>
-                                setProductActionMenuId(
-                                  productActionMenuId ===
-                                    product.id
-                                    ? null
-                                    : product.id,
-                                )
+                            <td className="meta-text">
+                              {product.type}
+                            </td>
+
+                            <td className="meta-text">
+                              {product.brand}
+                            </td>
+
+                            <td className="meta-text">
+                              {product.unit}
+                            </td>
+
+                            <td className="meta-text">
+                              {product.weight}
+                            </td>
+
+                            <td
+                              className="status-cell"
+                              id={
+                                product.status ===
+                                "Available"
+                                  ? "available"
+                                  : product.status ===
+                                      "Low Stock"
+                                    ? "lowStock"
+                                    : "outOfStock"
                               }
                             >
-                              <img
-                                src={moreIcon}
-                                alt="More"
-                              />
-                            </button>
-
-                            {productActionMenuId ===
-                              product.id && (
-                              <div className="product-action-menu">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setProductActionMenuId(
-                                      null,
-                                    );
-                                    editRow(product);
-                                  }}
-                                >
-                                  Edit
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setProductActionMenuId(
-                                      null,
-                                    );
-                                    deleteRow(product.id);
-                                  }}
-                                >
-                                  Delete
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    addProductToInventory(
-                                      product,
-                                    )
+                              <button
+                                className="status-btn"
+                                type="button"
+                              >
+                                <img
+                                  src={
+                                    product.status ===
+                                    "Out of Stock"
+                                      ? removeIcon
+                                      : tickIcon
                                   }
-                                >
-                                  Add to Inventory
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    addProductToDamage(
-                                      product,
-                                    )
+                                  alt={
+                                    product.status
                                   }
-                                >
-                                  Damage Product
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))
+                                />
+                              </button>
+                            </td>
+
+                            <td className="action-buttons">
+                              <button
+                                className="icon-btn"
+                                type="button"
+                                onClick={() =>
+                                  setProductActionMenuId(
+                                    productActionMenuId ===
+                                      product.id
+                                      ? null
+                                      : product.id,
+                                  )
+                                }
+                              >
+                                <img
+                                  src={
+                                    moreIcon
+                                  }
+                                  alt="More"
+                                />
+                              </button>
+
+                              {productActionMenuId ===
+                                product.id && (
+                                <div className="product-action-menu">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setProductActionMenuId(
+                                        null,
+                                      );
+                                      editRow(
+                                        product,
+                                      );
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setProductActionMenuId(
+                                        null,
+                                      );
+                                      deleteRow(
+                                        product.id,
+                                      );
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      addProductToInventory(
+                                        product,
+                                      )
+                                    }
+                                  >
+                                    Add to Inventory
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      addProductToDamage(
+                                        product,
+                                      )
+                                    }
+                                  >
+                                    Damage Product
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ),
+                      )
                     )}
                   </tbody>
                 </>
               )}
 
               {/* INVENTORY TABLE */}
+
               {activeTab === "inventory" && (
                 <>
                   <thead>
@@ -950,92 +1403,115 @@ function Inventory() {
                         </td>
                       </tr>
                     ) : (
-                      currentProducts.map((item) => (
-                        <tr key={item.id}>
-                          <td>
-                            <div className="item">
-                              <strong>{item.product}</strong>
-                            </div>
-                          </td>
-
-                          <td className="meta-text">
-                            ₹{item.cost}
-                          </td>
-
-                          <td className="meta-text">
-                            ₹{item.sellingPrice}
-                          </td>
-
-                          <td className="meta-text">
-                            {item.weight}
-                          </td>
-
-                          <td className="meta-text">
-                            {item.quantity}
-                          </td>
-
-                          <td
-                            className="status-cell"
-                            id={
-                              item.stockStatus === "Available"
-                                ? "available"
-                                : item.stockStatus ===
-                                    "Low Stock"
-                                  ? "lowStock"
-                                  : "outOfStock"
-                            }
+                      currentProducts.map(
+                        (item) => (
+                          <tr
+                            key={item.id}
                           >
-                            <button
-                              className="status-btn"
-                              type="button"
+                            <td>
+                              <div className="item">
+                                <strong>
+                                  {
+                                    item.product
+                                  }
+                                </strong>
+                              </div>
+                            </td>
+
+                            <td className="meta-text">
+                              ₹{item.cost}
+                            </td>
+
+                            <td className="meta-text">
+                              ₹
+                              {
+                                item.sellingPrice
+                              }
+                            </td>
+
+                            <td className="meta-text">
+                              {item.weight}
+                            </td>
+
+                            <td className="meta-text">
+                              {item.quantity}
+                            </td>
+
+                            <td
+                              className="status-cell"
+                              id={
+                                item.stockStatus ===
+                                "Available"
+                                  ? "available"
+                                  : item.stockStatus ===
+                                      "Low Stock"
+                                    ? "lowStock"
+                                    : "outOfStock"
+                              }
                             >
-                              <img
-                                src={
-                                  item.stockStatus ===
-                                  "Out of Stock"
-                                    ? removeIcon
-                                    : tickIcon
+                              <button
+                                className="status-btn"
+                                type="button"
+                              >
+                                <img
+                                  src={
+                                    item.stockStatus ===
+                                    "Out of Stock"
+                                      ? removeIcon
+                                      : tickIcon
+                                  }
+                                  alt={
+                                    item.stockStatus
+                                  }
+                                />
+                              </button>
+                            </td>
+
+                            <td className="action-buttons">
+                              <button
+                                className="icon-btn"
+                                type="button"
+                                onClick={() =>
+                                  editInventoryRow(
+                                    item,
+                                  )
                                 }
-                                alt={item.stockStatus}
-                              />
-                            </button>
-                          </td>
+                              >
+                                <img
+                                  src={
+                                    pencilIcon
+                                  }
+                                  alt="Edit"
+                                />
+                              </button>
 
-                          <td className="action-buttons">
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() =>
-                                editInventoryRow(item)
-                              }
-                            >
-                              <img
-                                src={pencilIcon}
-                                alt="Edit"
-                              />
-                            </button>
-
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() =>
-                                deleteInventoryRow(item.id)
-                              }
-                            >
-                              <img
-                                src={deleteIcon}
-                                alt="Delete"
-                              />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                              <button
+                                className="icon-btn"
+                                type="button"
+                                onClick={() =>
+                                  deleteInventoryRow(
+                                    item.id,
+                                  )
+                                }
+                              >
+                                <img
+                                  src={
+                                    deleteIcon
+                                  }
+                                  alt="Delete"
+                                />
+                              </button>
+                            </td>
+                          </tr>
+                        ),
+                      )
                     )}
                   </tbody>
                 </>
               )}
 
-              {/* DAMAGE GOOD TABLE */}
+              {/* DAMAGE TABLE */}
+
               {activeTab === "damage" && (
                 <>
                   <thead>
@@ -1060,59 +1536,75 @@ function Inventory() {
                         </td>
                       </tr>
                     ) : (
-                      currentProducts.map((item) => (
-                        <tr key={item.id}>
-                          <td>
-                            <div className="item">
-                              <strong>{item.product}</strong>
-                            </div>
-                          </td>
+                      currentProducts.map(
+                        (item) => (
+                          <tr
+                            key={item.id}
+                          >
+                            <td>
+                              <div className="item">
+                                <strong>
+                                  {
+                                    item.product
+                                  }
+                                </strong>
+                              </div>
+                            </td>
 
-                          <td className="meta-text">
-                            {item.quantity}
-                          </td>
+                            <td className="meta-text">
+                              {item.quantity}
+                            </td>
 
-                          <td className="meta-text">
-                            {item.reason}
-                          </td>
+                            <td className="meta-text">
+                              {item.reason}
+                            </td>
 
-                          <td className="price">
-                            ₹{item.unitCost}
-                          </td>
+                            <td className="price">
+                              ₹{item.unitCost}
+                            </td>
 
-                          <td className="price">
-                            ₹{item.lossValue}
-                          </td>
+                            <td className="price">
+                              ₹{item.lossValue}
+                            </td>
 
-                          <td className="action-buttons">
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() =>
-                                editDamageRow(item)
-                              }
-                            >
-                              <img
-                                src={pencilIcon}
-                                alt="Edit"
-                              />
-                            </button>
+                            <td className="action-buttons">
+                              <button
+                                className="icon-btn"
+                                type="button"
+                                onClick={() =>
+                                  editDamageRow(
+                                    item,
+                                  )
+                                }
+                              >
+                                <img
+                                  src={
+                                    pencilIcon
+                                  }
+                                  alt="Edit"
+                                />
+                              </button>
 
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() =>
-                                deleteDamageRow(item.id)
-                              }
-                            >
-                              <img
-                                src={deleteIcon}
-                                alt="Delete"
-                              />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
+                              <button
+                                className="icon-btn"
+                                type="button"
+                                onClick={() =>
+                                  deleteDamageRow(
+                                    item.id,
+                                  )
+                                }
+                              >
+                                <img
+                                  src={
+                                    deleteIcon
+                                  }
+                                  alt="Delete"
+                                />
+                              </button>
+                            </td>
+                          </tr>
+                        ),
+                      )
                     )}
                   </tbody>
                 </>
@@ -1120,7 +1612,10 @@ function Inventory() {
             </table>
           </div>
 
-          {/* BILL CARDS (mobile) */}
+          {/* ==================================================
+              MOBILE CARDS
+          ================================================== */}
+
           <div className="bill-cards-container">
             {currentProducts.length === 0 ? (
               <div className="empty-bill-cell">
@@ -1132,17 +1627,23 @@ function Inventory() {
               </div>
             ) : (
               currentProducts.map((item) => (
-                <div className="bill-card" key={item.id}>
+                <div
+                  className="bill-card"
+                  key={item.id}
+                >
                   <div className="bill-card-header">
-                    <strong>{item.product}</strong>
+                    <strong>
+                      {item.product}
+                    </strong>
 
                     <div className="row-actions">
                       {activeTab === "product" && (
                         <button
                           className="edit-item-button"
                           type="button"
-                          onClick={() => editRow(item)}
-                          aria-label={`Edit ${item.product}`}
+                          onClick={() =>
+                            editRow(item)
+                          }
                         >
                           <img
                             src={pencilIcon}
@@ -1156,9 +1657,10 @@ function Inventory() {
                           className="edit-item-button"
                           type="button"
                           onClick={() =>
-                            editInventoryRow(item)
+                            editInventoryRow(
+                              item,
+                            )
                           }
-                          aria-label={`Edit ${item.product}`}
                         >
                           <img
                             src={pencilIcon}
@@ -1174,7 +1676,6 @@ function Inventory() {
                           onClick={() =>
                             editDamageRow(item)
                           }
-                          aria-label={`Edit ${item.product}`}
                         >
                           <img
                             src={pencilIcon}
@@ -1187,17 +1688,24 @@ function Inventory() {
                         className="delete-item-button"
                         type="button"
                         onClick={() => {
-                          if (activeTab === "product") {
+                          if (
+                            activeTab ===
+                            "product"
+                          ) {
                             deleteRow(item.id);
                           } else if (
-                            activeTab === "inventory"
+                            activeTab ===
+                            "inventory"
                           ) {
-                            deleteInventoryRow(item.id);
+                            deleteInventoryRow(
+                              item.id,
+                            );
                           } else {
-                            deleteDamageRow(item.id);
+                            deleteDamageRow(
+                              item.id,
+                            );
                           }
                         }}
-                        aria-label={`Remove ${item.product}`}
                       >
                         <img
                           src={deleteIcon}
@@ -1212,12 +1720,12 @@ function Inventory() {
                             type="button"
                             onClick={() =>
                               setProductActionMenuId(
-                                productActionMenuId === item.id
+                                productActionMenuId ===
+                                  item.id
                                   ? null
                                   : item.id,
                               )
                             }
-                            aria-label={`More actions for ${item.product}`}
                           >
                             <img
                               src={moreIcon}
@@ -1225,12 +1733,15 @@ function Inventory() {
                             />
                           </button>
 
-                          {productActionMenuId === item.id && (
+                          {productActionMenuId ===
+                            item.id && (
                             <div className="mobile-product-action-menu">
                               <button
                                 type="button"
                                 onClick={() =>
-                                  addProductToInventory(item)
+                                  addProductToInventory(
+                                    item,
+                                  )
                                 }
                               >
                                 Add to Inventory
@@ -1239,7 +1750,9 @@ function Inventory() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  addProductToDamage(item)
+                                  addProductToDamage(
+                                    item,
+                                  )
                                 }
                               >
                                 Damage Product
@@ -1251,7 +1764,6 @@ function Inventory() {
                     </div>
                   </div>
 
-                  {/* PRODUCT MOBILE CARD */}
                   {activeTab === "product" && (
                     <>
                       <div className="bill-card-row">
@@ -1289,27 +1801,21 @@ function Inventory() {
                           Status
                         </span>
 
-                        <span
-                          className="bill-card-value"
-                          id={
-                            item.status === "Available"
-                              ? "available"
-                              : item.status === "Low Stock"
-                                ? "lowStock"
-                                : "outOfStock"
-                          }
-                        >
+                        <span className="bill-card-value">
                           <button
                             className="status-btn"
                             type="button"
                           >
                             <img
                               src={
-                                item.status === "Out of Stock"
+                                item.status ===
+                                "Out of Stock"
                                   ? removeIcon
                                   : tickIcon
                               }
-                              alt={item.status}
+                              alt={
+                                item.status
+                              }
                             />
                           </button>
                         </span>
@@ -1317,7 +1823,6 @@ function Inventory() {
                     </>
                   )}
 
-                  {/* INVENTORY MOBILE CARD */}
                   {activeTab === "inventory" && (
                     <>
                       <div className="bill-card-row">
@@ -1336,7 +1841,10 @@ function Inventory() {
                         </span>
 
                         <span className="bill-card-value">
-                          ₹{item.sellingPrice}
+                          ₹
+                          {
+                            item.sellingPrice
+                          }
                         </span>
                       </div>
 
@@ -1377,7 +1885,9 @@ function Inventory() {
                                   ? removeIcon
                                   : tickIcon
                               }
-                              alt={item.stockStatus}
+                              alt={
+                                item.stockStatus
+                              }
                             />
                           </button>
                         </span>
@@ -1385,7 +1895,6 @@ function Inventory() {
                     </>
                   )}
 
-                  {/* DAMAGE GOOD MOBILE CARD */}
                   {activeTab === "damage" && (
                     <>
                       <div className="bill-card-row">
@@ -1424,7 +1933,10 @@ function Inventory() {
                         </span>
 
                         <span className="bill-card-value">
-                          ₹{item.lossValue}
+                          ₹
+                          {
+                            item.lossValue
+                          }
                         </span>
                       </div>
                     </>
@@ -1434,7 +1946,10 @@ function Inventory() {
             )}
           </div>
 
-          {/* PAGINATION */}
+          {/* ==================================================
+              PAGINATION
+          ================================================== */}
+
           <div className="pagination-container">
             <div className="pagination-text">
               {paginationText}
@@ -1446,10 +1961,14 @@ function Inventory() {
                 type="button"
                 onClick={previousPage}
                 disabled={
-                  currentPage === 1 || totalProducts === 0
+                  currentPage === 1 ||
+                  totalProducts === 0
                 }
               >
-                <img src={leftIcon} alt="Previous" />
+                <img
+                  src={leftIcon}
+                  alt="Previous"
+                />
               </button>
 
               <button
@@ -1461,32 +1980,38 @@ function Inventory() {
                   totalProducts === 0
                 }
               >
-                <img src={chevronIcon} alt="Next" />
+                <img
+                  src={chevronIcon}
+                  alt="Next"
+                />
               </button>
             </div>
           </div>
         </div>
-
-        {/* SIDEBAR */}
-        {/* {sidebarOpen && <Sidebar />} */}
       </section>
 
-      {/* BOTTOM NAV */}
-      {/* <BottomNav /> */}
+      {/* ======================================================
+          POPUP
+      ====================================================== */}
 
-      {/* POPUP */}
       {showPopup && (
         <div
           className="popup"
           onClick={(event) => {
-            if (event.target === event.currentTarget) {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
               closePopup();
             }
           }}
         >
           <div className="popup-content">
 
-            {/* PRODUCT POPUP */}
+            {/* ==================================================
+                PRODUCT POPUP
+            ================================================== */}
+
             {activeTab === "product" && (
               <>
                 <h2>
@@ -1495,82 +2020,201 @@ function Inventory() {
                     : "Add Product"}
                 </h2>
 
+                {/* PRODUCT NAME - TEXT BOX */}
+
                 <input
                   type="text"
                   name="product"
                   placeholder="Product Name"
                   value={formData.product}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
-                <input
-                  type="text"
-                  name="type"
-                  placeholder="Type"
-                  required
-                  value={formData.type}
-                  onChange={handleInputChange}
-                />
+                {/* TYPE */}
 
-                <input
-                  type="text"
-                  name="brand"
-                  placeholder="Brand"
-                  required
-                  value={formData.brand}
-                  onChange={handleInputChange}
-                />
+                {!addingNewType ? (
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={
+                      handleTypeChange
+                    }
+                  >
+                    <option value="">
+                      Select Type
+                    </option>
 
-                <input
-                  type="text"
-                  name="unit"
-                  placeholder="Unit"
-                  required
-                  value={formData.unit}
-                  onChange={handleInputChange}
-                />
+                    {productTypes.map(
+                      (type) => (
+                        <option
+                          key={type}
+                          value={type}
+                        >
+                          {type}
+                        </option>
+                      ),
+                    )}
 
-                <input
-                  type="number"
-                  name="cost"
-                  placeholder="Cost"
-                  value={formData.cost}
-                  onChange={handleInputChange}
-                />
+                    <option value="__ADD_NEW__">
+                      + Add New Type
+                    </option>
+                  </select>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      name="type"
+                      placeholder="Enter New Type"
+                      value={formData.type}
+                      onChange={
+                        handleInputChange
+                      }
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAddingNewType(
+                          false,
+                        )
+                      }
+                    >
+                      Use Existing Type
+                    </button>
+                  </div>
+                )}
+
+                {/* BRAND */}
+
+                {!addingNewBrand ? (
+                  <select
+                    name="brand"
+                    value={formData.brand}
+                    onChange={
+                      handleBrandChange
+                    }
+                  >
+                    <option value="">
+                      Select Brand
+                    </option>
+
+                    {productBrands.map(
+                      (brand) => (
+                        <option
+                          key={brand}
+                          value={brand}
+                        >
+                          {brand}
+                        </option>
+                      ),
+                    )}
+
+                    <option value="__ADD_NEW__">
+                      + Add New Brand
+                    </option>
+                  </select>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      name="brand"
+                      placeholder="Enter New Brand"
+                      value={
+                        formData.brand
+                      }
+                      onChange={
+                        handleInputChange
+                      }
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAddingNewBrand(
+                          false,
+                        )
+                      }
+                    >
+                      Use Existing Brand
+                    </button>
+                  </div>
+                )}
+
+                {/* UNIT */}
+
+                {!addingNewUnit ? (
+                  <select
+                    name="unit"
+                    value={formData.unit}
+                    onChange={
+                      handleUnitChange
+                    }
+                  >
+                    <option value="">
+                      Select Unit
+                    </option>
+
+                    {units.map((unit) => (
+                      <option
+                        key={unit}
+                        value={unit}
+                      >
+                        {unit}
+                      </option>
+                    ))}
+
+                    <option value="__ADD_NEW__">
+                      + Add New Unit
+                    </option>
+                  </select>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      name="unit"
+                      placeholder="Enter New Unit"
+                      value={formData.unit}
+                      onChange={
+                        handleInputChange
+                      }
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAddingNewUnit(
+                          false,
+                        )
+                      }
+                    >
+                      Use Existing Unit
+                    </button>
+                  </div>
+                )}
 
                 <input
                   type="text"
                   name="weight"
                   placeholder="Weight"
                   value={formData.weight}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
                 <input
                   type="number"
                   name="quantity"
                   placeholder="Quantity"
-                  value={formData.quantity}
-                  onChange={handleInputChange}
+                  value={
+                    formData.quantity
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                 />
-
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                >
-                  <option value="Available">
-                    Available
-                  </option>
-
-                  <option value="Low Stock">
-                    Low Stock
-                  </option>
-
-                  <option value="Out of Stock">
-                    Out of Stock
-                  </option>
-                </select>
 
                 <div className="popup-buttons">
                   <button
@@ -1590,37 +2234,64 @@ function Inventory() {
               </>
             )}
 
-            {/* INVENTORY POPUP */}
+            {/* ==================================================
+                INVENTORY POPUP
+            ================================================== */}
+
             {activeTab === "inventory" && (
               <>
                 <h2>
-                  {editingInventoryId !== null
+                  {editingInventoryId !==
+                  null
                     ? "Edit Inventory"
                     : "Add Inventory"}
                 </h2>
 
-                <input
-                  type="text"
+                {/* PRODUCT DROPDOWN */}
+
+                <select
                   name="product"
-                  placeholder="Product"
                   value={formData.product}
-                  onChange={handleInputChange}
-                />
+                  onChange={
+                    handleProductChange
+                  }
+                >
+                  <option value="">
+                    Select Product
+                  </option>
+
+                  {productNames.map(
+                    (product) => (
+                      <option
+                        key={product}
+                        value={product}
+                      >
+                        {product}
+                      </option>
+                    ),
+                  )}
+                </select>
 
                 <input
                   type="number"
                   name="cost"
                   placeholder="Cost Price"
                   value={formData.cost}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
                 <input
                   type="number"
                   name="sellingPrice"
                   placeholder="Selling Price"
-                  value={formData.sellingPrice}
-                  onChange={handleInputChange}
+                  value={
+                    formData.sellingPrice
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
                 <input
@@ -1628,34 +2299,22 @@ function Inventory() {
                   name="weight"
                   placeholder="Weight"
                   value={formData.weight}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
                 <input
                   type="number"
                   name="quantity"
                   placeholder="Quantity"
-                  value={formData.quantity}
-                  onChange={handleInputChange}
+                  value={
+                    formData.quantity
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                 />
-
-                <select
-                  name="stockStatus"
-                  value={formData.stockStatus}
-                  onChange={handleInputChange}
-                >
-                  <option value="Available">
-                    Available
-                  </option>
-
-                  <option value="Low Stock">
-                    Low Stock
-                  </option>
-
-                  <option value="Out of Stock">
-                    Out of Stock
-                  </option>
-                </select>
 
                 <div className="popup-buttons">
                   <button
@@ -1667,7 +2326,9 @@ function Inventory() {
 
                   <button
                     type="button"
-                    onClick={addInventory}
+                    onClick={
+                      addInventory
+                    }
                   >
                     Submit
                   </button>
@@ -1675,7 +2336,10 @@ function Inventory() {
               </>
             )}
 
-            {/* DAMAGE GOOD POPUP */}
+            {/* ==================================================
+                DAMAGE GOOD POPUP
+            ================================================== */}
+
             {activeTab === "damage" && (
               <>
                 <h2>
@@ -1684,20 +2348,39 @@ function Inventory() {
                     : "Add Damage Good"}
                 </h2>
 
-                <input
-                  type="text"
+                <select
                   name="product"
-                  placeholder="Product"
                   value={formData.product}
-                  onChange={handleInputChange}
-                />
+                  onChange={
+                    handleProductChange
+                  }
+                >
+                  <option value="">
+                    Select Product
+                  </option>
+
+                  {productNames.map(
+                    (product) => (
+                      <option
+                        key={product}
+                        value={product}
+                      >
+                        {product}
+                      </option>
+                    ),
+                  )}
+                </select>
 
                 <input
                   type="number"
                   name="quantity"
                   placeholder="Quantity"
-                  value={formData.quantity}
-                  onChange={handleInputChange}
+                  value={
+                    formData.quantity
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
                 <input
@@ -1705,15 +2388,21 @@ function Inventory() {
                   name="reason"
                   placeholder="Reason"
                   value={formData.reason}
-                  onChange={handleInputChange}
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
                 <input
                   type="number"
                   name="unitCost"
                   placeholder="Unit Cost"
-                  value={formData.unitCost}
-                  onChange={handleInputChange}
+                  value={
+                    formData.unitCost
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                 />
 
                 <input
@@ -1721,10 +2410,16 @@ function Inventory() {
                   name="lossValue"
                   placeholder="Loss Value"
                   value={
-                    formData.quantity !== "" &&
-                    formData.unitCost !== ""
-                      ? Number(formData.quantity) *
-                        Number(formData.unitCost)
+                    formData.quantity !==
+                      "" &&
+                    formData.unitCost !==
+                      ""
+                      ? Number(
+                          formData.quantity,
+                        ) *
+                        Number(
+                          formData.unitCost,
+                        )
                       : ""
                   }
                   readOnly
@@ -1740,14 +2435,15 @@ function Inventory() {
 
                   <button
                     type="button"
-                    onClick={addDamageGood}
+                    onClick={
+                      addDamageGood
+                    }
                   >
                     Submit
                   </button>
                 </div>
               </>
             )}
-
           </div>
         </div>
       )}
