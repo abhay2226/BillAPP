@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: "{{base_url}}/users/6/restore"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+settings:
+  strictSSL: false
+  followRedirects: true
+  disableCookies: false
+  maxResponseSize: 52428800
+order: 4165767091253730

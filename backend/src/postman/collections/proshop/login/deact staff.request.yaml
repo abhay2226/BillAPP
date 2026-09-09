@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: "{{base_url}}/users/6/deactivate"
+method: PATCH
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+settings:
+  strictSSL: false
+  followRedirects: true
+  disableCookies: false
+  maxResponseSize: 52428800
+order: 4379361927665358

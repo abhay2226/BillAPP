@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{base_url}}/products/1"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \  \"product_name\": \"Parle-G Premium\",\r
+
+    \  \"type_id\": 1,\r
+
+    \  \"brand_id\": 1,\r
+
+    \  \"unit_id\": 1,\r
+
+    \  \"unit_quantity\": 200\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 4478197753799353

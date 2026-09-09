@@ -19,9 +19,9 @@ router.use(authenticate);
 
 
 
-router.get("/store/:storeId",authorize("OWNER", "ADMIN", "STAFF"),requireStoreAccess("params", "storeId"), getInventoryByStore);
+router.get("/store/:storeId",authorize("OWNER", "STAFF"),requireStoreAccess("params", "storeId"), getInventoryByStore);
 
-router.get("/:id",authorize("OWNER", "ADMIN","STAFF"), getInventoryById);
+router.get("/:id",authorize("OWNER","STAFF"), getInventoryById);
 
 
 
