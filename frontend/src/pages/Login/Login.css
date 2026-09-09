@@ -217,10 +217,6 @@
     color: #9aa5a0;
 }
 
-.auth-eye-toggle:hover {
-    color: #0b8a6a;
-}
-
 .auth-eye-toggle svg {
     width: 1.1rem;
     height: 1.1rem;
@@ -662,10 +658,6 @@
     background: #097a5d;
 }
 
-.auth-submit:active {
-    transform: translateY(1px);
-}
-
 .auth-submit:disabled {
     opacity: 0.7;
 
@@ -678,10 +670,19 @@
     font-size: 1rem;
 }
 
+.auth-feedback {
+    margin: 0.4rem 0 0;
+    font-size: 0.8rem;
+    text-align: center;
+}
 
-/* =========================================================
-   SWITCH LOGIN / SIGNUP
-========================================================= */
+.auth-feedback.success {
+    color: #0b8a6a;
+}
+
+.auth-feedback.error {
+    color: #d64545;
+}
 
 .auth-switch-text {
     margin-top: 1.5rem;
@@ -709,29 +710,61 @@
     font-weight: 700;
 }
 
-.auth-switch:hover {
-    text-decoration: underline;
-}
 
+/* ======================================================
+   DESKTOP VIEW ONLY
+   Mobile and tablet remain unchanged
+   ====================================================== */
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
+@media screen and (min-width: 1024px) {
 
-@media (max-width: 520px) {
     .login-signup-page {
-        padding: 2rem 0.75rem;
+        padding: 4rem 2rem;
     }
 
-    .auth-card {
-        padding: 1.4rem;
+    .auth-header-block {
+        margin-bottom: 2.5rem;
     }
 
-    .signup-type-options {
-        grid-template-columns: 1fr;
+    .auth-icon-badge {
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .auth-icon-badge img {
+        width: 1.8rem;
+        height: 1.8rem;
     }
 
     .auth-header-block h1 {
-        font-size: 1.35rem;
+        font-size: 1.8rem;
+    }
+
+    .auth-header-block p {
+        font-size: 1rem;
+    }
+
+    .auth-card {
+        max-width: 30rem;
+        padding: 2.5rem;
+    }
+
+    .auth-card label {
+        font-size: 0.9rem;
+    }
+
+    .auth-input-wrap {
+        height: 3.2rem;
+        padding: 0 1rem;
+    }
+
+    .auth-input-wrap input {
+        font-size: 0.95rem;
+    }
+
+    .auth-submit {
+        padding: 0.85rem;
+        font-size: 1rem;
     }
 }

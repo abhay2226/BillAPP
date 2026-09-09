@@ -1,514 +1,378 @@
-/* =========================================================
-DASHBOARD CONTENT
-========================================================= */
+/* ============================================================
+   BillHistory.css
+   Discount-card visual style applied to bill history
+   ============================================================ */
 
-/* .main-content {
-  flex: 1;
-  min-width: 0;
+.bill-history-view {
+  display: flex;
+  flex-direction: column;
+
   width: 100%;
-  height: 100%;
+
+  padding: 1rem;
 
   box-sizing: border-box;
-
-  padding: 1.5rem 2rem;
-
-  background-color: #f7f9f8;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  transition:
-    margin-left 0.3s ease,
-    width 0.3s ease;
-} */
-
-/* =========================================================
-SIDEBAR OPEN - MAIN CONTENT
-========================================================= */
-
-/* @media screen and (min-width: 769px) {
-
-  .main-content.sidebar-open {
-    margin-left: 6rem;
-    width: calc(100% - 6rem);
-  }
-
-} */
-
-.main-content {
-    width: 100%;
-
-    padding: 0.5rem;
-    /* padding-bottom: 1rem; */
-  }
+}
 
 
-/* =========================================================
-WELCOME CARD
-========================================================= */
+/* ============================================================
+   HEADER
+   ============================================================ */
 
-.card-welcome {
-  width: 100%;
-  min-height: 10rem;
+.bill-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 1rem;
+}
+
+.bill-history-title {
+  margin: 0;
+
+  color: #22272b;
+
+  font-size: 1.15rem;
+  font-weight: 700;
+
+  letter-spacing: 0.02em;
+}
+
+.bill-history-count {
+  color: #6b7470;
+
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+.bill-history-search-wrapper {
+  position: relative;
 
   display: flex;
   align-items: center;
 
-  padding: 2rem;
-
-  background-color: #0b8a6a;
-  border-radius: 1rem;
-
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
-
-  margin-bottom: 1.5rem;
-  margin-top: 1.5rem;
-}
-
-.card-content {
   width: 100%;
+
+  margin-bottom: 0.75rem;
 }
 
-.card-date {
-  margin: 0 0 0.75rem;
+.bill-history-search-icon {
+  position: absolute;
 
-  color: #d9f5ed;
+  left: 0.85rem;
 
+  width: 1rem;
+  height: 1rem;
+
+  object-fit: contain;
+
+  opacity: 0.55;
+}
+
+.bill-history-search-input {
+  width: 100%;
+  height: 2.75rem;
+
+  padding: 0 1rem 0 2.4rem;
+
+  box-sizing: border-box;
+
+  color: #22272b;
   font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.welcome-title {
-  margin: 0;
-
-  color: #ffffff;
-
-  font-size: 2rem;
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-
-/* =========================================================
-STAT CARDS
-========================================================= */
-
-.stats-row {
-  width: 100%;
-
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-
-  gap: 1.25rem;
-
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  width: 100%;
-  min-height: 7.5rem;
-
-  padding: 1.5rem;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 
   background-color: #ffffff;
 
-  border: 0.0625rem solid #e5e7eb;
-  border-radius: 1rem;
+  border: 0.0625rem solid #dfe5e2;
+  border-radius: 0.65rem;
 
-  box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.05);
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.stat-label {
-  margin: 0 0 0.6rem;
+.bill-history-search-input::placeholder {
+  color: #7a8580;
+}
 
-  color: #64748b;
+.bill-history-search-input:focus {
+  border-color: #0b8a6a;
+
+  box-shadow:
+    0 0 0 0.12rem
+    rgba(11, 138, 106, 0.08);
+}
+
+
+/* ============================================================
+   FILTER + SORT CONTROLS
+   ============================================================ */
+
+.bill-history-controls {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.6rem;
+
+  margin-bottom: 1.2rem;
+}
+
+.bill-history-control-input {
+  width: 100%;
+  height: 2.6rem;
+
+  padding: 0 0.85rem;
+
+  box-sizing: border-box;
+
+  color: #22272b;
+  font-size: 0.85rem;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #dfe5e2;
+  border-radius: 0.6rem;
+
+  outline: none;
+
+  cursor: pointer;
+}
+
+.bill-history-control-input:focus {
+  border-color: #0b8a6a;
+}
+
+.bill-history-clear-button {
+  height: 2.6rem;
+
+  padding: 0 0.9rem;
+
+  color: #b3261e;
+
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #f0b8b4;
+  border-radius: 0.6rem;
+
+  cursor: pointer;
+}
+
+.bill-history-clear-button:hover {
+  background-color: #fde5e5;
+}
+
+
+/* ============================================================
+   BILL CARDS GRID
+   ============================================================ */
+
+.bill-history-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 0.85rem;
+}
+
+.bill-history-empty {
+  grid-column: 1 / -1;
+
+  padding: 2rem 1rem;
+
+  color: #6b7470;
 
   font-size: 0.9rem;
-  font-weight: 600;
+  text-align: center;
+
+  background-color: #f7f8fa;
+
+  border: 0.0625rem solid #e2e5e9;
+  border-radius: 0.65rem;
 }
 
-.stat-value {
-  margin: 0;
 
-  color: #0b8a6a;
+/* ============================================================
+   BILL CARD (matches Discount card layout)
+   ============================================================ */
 
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.stat-value-container {
+.bill-history-card {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+
+  padding: 1rem;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #eeeeee;
+  border-radius: 0.85rem;
+}
+
+.bill-history-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 0.75rem;
+}
+
+.bill-history-card-id-group {
+  display: flex;
+  align-items: center;
 
   gap: 0.4rem;
 }
 
-.low-stock-number {
-  color: #e58a00;
-}
-
-.stat-items-label {
-  margin: 0;
-
-  color: #64748b;
-
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-
-/* 
-QUICK ACTION HEADING
-*/
-
-.section-heading {
-  width: 100%;
-
-  margin-bottom: 1rem;
-}
-
-.section-heading h2 {
-  margin: 0;
-
-  color: #22272b;
-
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-
-/* 
-ACTION CARDS
- */
-
-.card-action {
-  width: 100%;
-
-  margin-bottom: 1rem;
-  padding: 0;
-
-  display: block;
-
-  background-color: #ffffff;
-
-  border: 0.0625rem solid #e5e7eb;
-  border-radius: 1rem;
-
-  box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.05);
-
-  cursor: pointer;
-
-  text-align: left;
-
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.card-action:hover {
-  transform: translateY(-0.1rem);
-
-  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.08);
-}
-
-.card-link {
-  width: 100%;
-
-  min-height: 6rem;
-
-  padding: 1.25rem 1.5rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.action-left {
-  display: flex;
-  align-items: center;
-
-  gap: 1rem;
-
-  min-width: 0;
-}
-
-
-/* 
-ACTION ICON
- */
-
-.card-icon {
-  width: 3.25rem;
-  height: 3.25rem;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 0.8rem;
-}
-
-.card-icon img {
-  width: 1.6rem;
-  height: 1.6rem;
+.bill-history-card-icon {
+  width: 1rem;
+  height: 1rem;
 
   object-fit: contain;
+
+  opacity: 0.8;
 }
 
-.inventory-icon-background {
+.bill-history-card-id {
+  color: #22272b;
+
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.bill-history-badge {
+  padding: 0.15rem 0.55rem;
+
+  font-size: 0.68rem;
+  font-weight: 600;
+
+  border-radius: 999rem;
+
+  white-space: nowrap;
+}
+
+.bill-badge-success {
+  color: #0b8a6a;
   background-color: #e7f5f0;
 }
 
-.billing-icon-background {
-  background-color: #fff3dc;
+.bill-badge-accent {
+  color: #1a5fb4;
+  background-color: #e8f0fb;
 }
 
-
-/* 
-ACTION TEXT
- */
-
-.card-text {
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 0.3rem;
+.bill-badge-warning {
+  color: #b8790b;
+  background-color: #fdf1dd;
 }
 
-.card-title {
+.bill-history-card-amount {
   margin: 0;
 
-  color: #22272b;
+  color: #1d2329;
 
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   font-weight: 700;
 }
 
-.card-subtitle {
+.bill-history-card-customer {
+  margin: 0 0 0.85rem;
+
   color: #6b7470;
 
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+}
+
+.bill-history-card-details {
+  margin-bottom: 0.7rem;
+}
+
+.bill-history-card-detail-row {
+  display: flex;
+  justify-content: space-between;
+
+  padding: 0.18rem 0;
+
+  color: #6b7470;
+
+  font-size: 0.76rem;
+}
+
+.bill-history-card-detail-row span:last-child {
+  color: #22272b;
   font-weight: 500;
 }
 
-
-/* 
-ARROW
-*/
-
-.card-arrow {
-  width: 2rem;
-  height: 2rem;
-
-  flex-shrink: 0;
-
+.bill-history-card-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
+
+  gap: 0.5rem;
 }
 
-.card-arrow img {
-  width: 1.1rem;
-  height: 1.1rem;
+.bill-history-card-button {
+  flex: 1;
 
-  object-fit: contain;
+  padding: 0.4rem 0;
+
+  color: #22272b;
+
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  background-color: #ffffff;
+
+  border: 0.0625rem solid #dfe5e2;
+  border-radius: 0.5rem;
+
+  cursor: pointer;
 }
 
-
-/* 
-FOOTER
- */
-
-.footer-section {
-  width: 100%;
-
-  margin-top: auto;
-}
-
-.footer-section footer {
-  width: 100%;
-  min-height: 4rem;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background-color: #008f6b;
-}
-
-.footer-section footer small,
-.footer-section footer span {
-  color: #ffffff;
-
-  font-size: 0.75rem;
+.bill-history-card-button:hover {
+  background-color: #f5f6f8;
+  border-color: #0b8a6a;
 }
 
 
-/* =========================================================
-TABLET
-========================================================= */
+/* ============================================================
+   TABLET
+   ============================================================ */
 
 @media screen and (max-width: 768px) {
 
-  .main-content {
-    width: 100%;
-    /* margin-left: 0; */
-
-    padding: 0.5rem;
-    padding-bottom: 1rem;
-  }
-
-  .main-content.sidebar-open {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .card-welcome {
-    min-height: 9rem;
-    padding: 1.5rem;
-
-    border-radius: 0.9rem;
-  }
-
-  .welcome-title {
-    font-size: 1.6rem;
-  }
-
-  .stats-row {
-    gap: 0.8rem;
-  }
-
-  .stat-card {
-    min-height: 6.5rem;
-    padding: 1rem;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-  }
-
-  .stat-value {
-    font-size: 1.4rem;
-  }
-
-  .card-link {
-    min-height: 5.25rem;
-    padding: 1rem;
-  }
-
-  .card-icon {
-    width: 2.75rem;
-    height: 2.75rem;
-  }
-
-  .card-icon img {
-    width: 1.35rem;
-    height: 1.35rem;
-  }
-
-  .card-title {
-    font-size: 0.95rem;
-  }
-
-  .card-subtitle {
-    font-size: 0.75rem;
-  }
-
-}
-
-
-/* =========================================================
-SMALL MOBILE
-========================================================= */
-
-@media screen and (max-width: 390px) {
-
-  .main-content {
-    width: 100%;
-    margin-left: 0;
-
+  .bill-history-view {
     padding: 0.75rem;
   }
 
-  .card-welcome {
-    min-height: 8rem;
-    padding: 1.25rem;
-  }
-
-  .card-date {
-    font-size: 0.7rem;
-  }
-
-  .welcome-title {
-    font-size: 1.35rem;
-  }
-
-  .stats-row {
-    gap: 0.6rem;
-  }
-
-  .stat-card {
-    min-height: 5.75rem;
-    padding: 0.85rem;
-  }
-
-  .stat-label {
-    font-size: 0.7rem;
-  }
-
-  .stat-value {
-    font-size: 1.15rem;
-  }
-
-  .stat-items-label {
-    font-size: 0.7rem;
-  }
-
-  .section-heading h2 {
-    font-size: 1rem;
-  }
-
-  .card-link {
-    padding: 0.85rem;
-  }
-
-  .action-left {
-    gap: 0.75rem;
-  }
-
-  .card-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-  }
-
-  .card-icon img {
-    width: 1.2rem;
-    height: 1.2rem;
-  }
-
-  .card-title {
-    font-size: 0.85rem;
-  }
-
-  .card-subtitle {
-    font-size: 0.7rem;
+  .bill-history-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
   }
 
 }
 
-@media screen and (min-width: 1024px) {
-    .main-content {
-        flex: 1 1 auto;
-        width: 100%;
-        min-width: 0;
-        padding: 1rem;
-    }
+
+/* ============================================================
+   SMALL MOBILE (single column, matches your screenshot)
+   ============================================================ */
+
+@media screen and (max-width: 480px) {
+
+  .bill-history-title {
+    font-size: 1rem;
+  }
+
+  .bill-history-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bill-history-card-amount {
+    font-size: 1.15rem;
+  }
+
 }

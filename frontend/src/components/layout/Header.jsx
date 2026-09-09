@@ -10,29 +10,35 @@ const routeTitles = {
   "/billing": "Voice Billing",
   "/inventory": "Inventory",
   "/dashboard": "Dashboard",
-  "/profile" : "Profile",
-  "/billhistory":"Bills History"
+  "/profile": "Profile",
+  "/billhistory": "Bill History",
 };
 
-function Header({ onMenuToggle, onAddProduct , isAuthPage }) {
+function Header({ onMenuToggle, onAddProduct, isAuthPage }) {
   const location = useLocation();
   const title = routeTitles[location.pathname] || "ProShop";
 
   if (isAuthPage) {
     return (
-        <header className="inventory_section auth-header">
-            <div className="auth-brand">
-                <img src={storeIcon} alt="ProShop" className="auth-brand-icon" />
-                <span className="auth-brand-text"><strong>PRO</strong><b>SHOP</b></span>
-            </div>
-        </header>
+      <header className="inventory_section auth-header">
+        <div className="auth-brand">
+          <img
+            src={storeIcon}
+            alt="ProShop"
+            className="auth-brand-icon"
+          />
+          <span className="auth-brand-text">
+            <strong>PRO</strong>
+            <b>SHOP</b>
+          </span>
+        </div>
+      </header>
     );
   }
+
   return (
     <header className="inventory_section">
-
       <div className="left_inventory_section">
-
         {/* MENU TOGGLE */}
         <button
           type="button"
@@ -43,11 +49,9 @@ function Header({ onMenuToggle, onAddProduct , isAuthPage }) {
         </button>
 
         <h4>{title}</h4>
-
       </div>
 
       <div className="right_inventory_section">
-
         {/* <button
           type="button"
           className="header-icon-button"
@@ -55,7 +59,7 @@ function Header({ onMenuToggle, onAddProduct , isAuthPage }) {
         >
           <img src={addIcon} alt="Add Product" />
         </button> */}
-{/* 
+        {/*
         {onAddProduct && (
           <button
             type="button"
@@ -68,9 +72,7 @@ function Header({ onMenuToggle, onAddProduct , isAuthPage }) {
             />
           </button>
         )} */}
-
       </div>
-
     </header>
   );
 }
