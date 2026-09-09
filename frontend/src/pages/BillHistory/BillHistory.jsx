@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 // import Sidebar from "../../components/layout/Sidebar";
 // import BottomNav from "../../components/layout/BottomNav";
 
-import "./Dashboard.css";
+import "./BillHistory.css";
 
 import boxIcon from "../../assets/icons/box.png";
 import micIcon from "../../assets/icons/mic.png";

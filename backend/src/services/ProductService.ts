@@ -1,7 +1,7 @@
-
 import { AppDataSource } from "../datasource.js";
-
 import { Product } from "../entity/TransactionsProduct.js";
+import { Type } from "../entity/MasterProductType.js";
+import { Brand } from "../entity/MasterProductBrand.js";
 
 import { createAuditRecordService } from "./AuditServices.js";
 
@@ -20,6 +20,8 @@ const productRepository =
 
 export const createProductService = async (
     productData: Partial<Product> & {
+        typeName?: string;
+        brandName?: string;
         userId?: number;
         sessionId?: number;
         ipAddress?: string | null;
@@ -39,9 +41,14 @@ export const createProductService = async (
 
     const typeId =
         productData.type_id;
+    
+    const typeName =
+        productData.typeName;
 
     const brandId =
         productData.brand_id;
+    
+    const brandName=productData.brandName;
 
     const unitId =
         productData.unit_id;
@@ -85,33 +92,35 @@ export const createProductService = async (
     // VALIDATE PRODUCT TYPE
     // ==================================================
 
-    if (
-        typeId === undefined ||
-        !Number.isInteger(typeId) ||
-        typeId <= 0
+        if (
+        typeId === undefined &&
+        (
+            typeName === undefined ||
+            typeName.trim() === ""
+        )
     ) {
-
+    
         throw new Error(
-            "Valid product type ID is required"
+            "Product type ID or type name is required"
         );
     }
-
 
     // ==================================================
     // VALIDATE BRAND
     // ==================================================
 
     if (
-        brandId === undefined ||
-        !Number.isInteger(brandId) ||
-        brandId <= 0
+        brandId === undefined &&
+        (
+            brandName === undefined ||
+            brandName.trim() === ""
+        )
     ) {
-
+    
         throw new Error(
-            "Valid brand ID is required"
+            "Brand ID or brand name is required"
         );
     }
-
 
     // ==================================================
     // VALIDATE UNIT
@@ -190,6 +199,206 @@ export const createProductService = async (
     return await AppDataSource.manager.transaction(
         async (manager) => {
 
+            // ==============================================
+            // GET OR CREATE PRODUCT TYPE
+            // ==============================================
+            
+            let finalTypeId: number;
+            
+            if (typeId !== undefined) {
+            
+                if (
+                    !Number.isInteger(typeId) ||
+                    typeId <= 0
+                ) {
+                    throw new Error(
+                        "Invalid product type ID"
+                    );
+                }
+            
+                const existingType =
+                    await manager.findOne(
+                        Type,
+                        {
+                            where: {
+                                product_type_id: typeId,
+                                is_active: true
+                            }
+                        }
+                    );
+            
+                if (!existingType) {
+                    throw new Error(
+                        "Product type not found"
+                    );
+                }
+            
+                finalTypeId =
+                    existingType.product_type_id;
+            
+            } else {
+            
+                const trimmedTypeName =
+                    typeName!.trim();
+            
+                const existingType =
+                    await manager.findOne(
+                        Type,
+                        {
+                            where: {
+                                type_name: trimmedTypeName
+                            }
+                        }
+                    );
+            
+                if (existingType) {
+            
+                    if (!existingType.is_active) {
+                        throw new Error(
+                            "Product type exists but is inactive"
+                        );
+                    }
+            
+                    finalTypeId =
+                        existingType.product_type_id;
+            
+                } else {
+            
+                    const newType =
+                        manager.create(
+                            Type,
+                            {
+                                type_name:
+                                    trimmedTypeName,
+            
+                                is_active:
+                                    true,
+            
+                                created_at:
+                                    new Date(),
+            
+                                created_by:
+                                    actingUserId,
+            
+                                updated_at:
+                                    null,
+            
+                                updated_by:
+                                    null
+                            }
+                        );
+            
+                    const savedType =
+                        await manager.save(
+                            Type,
+                            newType
+                        );
+            
+                    finalTypeId =
+                        savedType.product_type_id;
+                }
+            }
+
+            // ==============================================
+            // GET OR CREATE BRAND
+            // ==============================================
+            
+            let finalBrandId: number;
+            
+            if (brandId !== undefined) {
+            
+                if (
+                    !Number.isInteger(brandId) ||
+                    brandId <= 0
+                ) {
+                    throw new Error(
+                        "Invalid brand ID"
+                    );
+                }
+            
+                const existingBrand =
+                    await manager.findOne(
+                        Brand,
+                        {
+                            where: {
+                                product_brand_id: brandId,
+                                is_active: true
+                            }
+                        }
+                    );
+            
+                if (!existingBrand) {
+                    throw new Error(
+                        "Brand not found"
+                    );
+                }
+            
+                finalBrandId =
+                    existingBrand.product_brand_id;
+            
+            } else {
+            
+                const trimmedBrandName =
+                    brandName!.trim();
+            
+                const existingBrand =
+                    await manager.findOne(
+                        Brand,
+                        {
+                            where: {
+                                brand_name:
+                                    trimmedBrandName
+                            }
+                        }
+                    );
+            
+                if (existingBrand) {
+            
+                    if (!existingBrand.is_active) {
+                        throw new Error(
+                            "Brand exists but is inactive"
+                        );
+                    }
+            
+                    finalBrandId =
+                        existingBrand.product_brand_id;
+            
+                } else {
+            
+                    const newBrand =
+                        manager.create(
+                            Brand,
+                            {
+                                brand_name:
+                                    trimmedBrandName,
+            
+                                is_active:
+                                    true,
+            
+                                created_at:
+                                    new Date(),
+            
+                                created_by:
+                                    actingUserId,
+            
+                                updated_at:
+                                    null,
+            
+                                updated_by:
+                                    null
+                            }
+                        );
+            
+                    const savedBrand =
+                        await manager.save(
+                            Brand,
+                            newBrand
+                        );
+            
+                    finalBrandId =
+                        savedBrand.product_brand_id;
+                }
+            }
 
             // ==============================================
             // CHECK DUPLICATE PRODUCT
@@ -233,10 +442,10 @@ export const createProductService = async (
                             trimmedProductName,
 
                         type_id:
-                            typeId,
-
+                        finalTypeId,
+                        
                         brand_id:
-                            brandId,
+                        finalBrandId,
 
                         unit_id:
                             unitId,
@@ -308,6 +517,7 @@ export const createProductService = async (
         }
     );
 };
+
 
 
 // ======================================================

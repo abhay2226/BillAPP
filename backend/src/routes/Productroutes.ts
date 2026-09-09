@@ -16,15 +16,15 @@ ProductRouter.use(authenticate);
 // PRODUCT ROUTES
 
 
-ProductRouter.get("/",authorize("OWNER", "ADMIN", "STAFF"), getAllProductsController);
+ProductRouter.get("/",authorize("OWNER", "STAFF"), getAllProductsController);
 
-ProductRouter.get("/:id",authorize("OWNER", "ADMIN", "STAFF"), getProductByIdController);
+ProductRouter.get("/:id",authorize("OWNER", "STAFF"), getProductByIdController);
 
-ProductRouter.post("/",authorize("OWNER", "ADMIN"), createProductController);
+ProductRouter.post("/",authorize("OWNER"), createProductController);
 
-ProductRouter.put("/:id",authorize("OWNER", "ADMIN"), updateProductController);
+ProductRouter.put("/:id",authorize("OWNER"), updateProductController);
 
-ProductRouter.delete("/:id",authorize("OWNER", "ADMIN"), deleteProductController);
+ProductRouter.delete("/:id",authorize("OWNER"), deleteProductController);
 
 
 export default ProductRouter;

@@ -1,57 +1,194 @@
-// Mock implementation for local development without a backend.
-// Every function returns a Promise and resolves/rejects with the SAME
-// shape your real API will use, so nothing calling this file has to
-// change once the backend + JWT auth exist.
-//
-// TO SWITCH TO A REAL BACKEND, replace the body of each function, e.g.:
-//   export async function login({ email, password }) {
-//     const res = await fetch("http://localhost:8000/auth/login", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({ email, password }),
-//     });
-//     if (!res.ok) {
-//       const err = await res.json();
-//       throw new Error(err.detail || "Login failed");
-//     }
-//     return res.json(); // { user, token }
-//   }
-// Keep the function name, params, and { user, token } shape the same
-// and AuthContext.jsx / Login.jsx need zero changes.
+const API_URL = "http://localhost:5000";
 
-const MOCK_DELAY_MS = 400;
-
-// In-memory only — resets on refresh. That's intentional: it stands in
-// for your database until the real backend exists.
-let mockUsers = [];
-
-function wait() {
-    return new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-}
-
-export async function signup({ email, password }) {
-    await wait();
-    if (mockUsers.some((account) => account.email === email)) {
-        throw new Error("An account with this email already exists.");
-    }
-
-    const user = { id: crypto.randomUUID(), email };
-    mockUsers.push({ ...user, password }); // a real backend hashes this server-side, never client-side
-    return { user, token: `mock-token-${user.id}` };
-}
-
+/**
+ * LOGIN
+ *
+ * POST /auth/login
+ */
 export async function login({ email, password }) {
-    await wait();
-    const account = mockUsers.find((entry) => entry.email === email && entry.password === password);
-    if (!account) {
-        throw new Error("Email or password is incorrect.");
-    }
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
 
-    const { password: _password, ...user } = account;
-    return { user, token: `mock-token-${user.id}` };
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Login failed.");
+  }
+
+  return result.data;
 }
 
+
+/**
+ * SIGNUP
+ *
+ * CREATE NEW STORE:
+ *
+ * {
+ *   firstname,
+ *   lastname,
+ *   email,
+ *   password,
+ *   store_name,
+ *   gst_no,
+ *   location
+ * }
+ *
+ * JOIN EXISTING STORE:
+ *
+ * {
+ *   firstname,
+ *   lastname,
+ *   email,
+ *   password,
+ *   store_id
+ * }
+ */
+export async function signup({
+  firstname,
+  lastname,
+  email,
+  password,
+  store_name,
+  gst_no,
+  location,
+  store_id,
+}) {
+  const body = {
+    firstname,
+    lastname,
+    email,
+    password,
+  };
+
+  if (store_id !== undefined && store_id !== null) {
+    body.store_id = Number(store_id);
+  } else {
+    body.store_name = store_name;
+    body.gst_no = gst_no;
+    body.location = location;
+  }
+
+  const response = await fetch(`${API_URL}/auth/signup`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Signup failed.");
+  }
+
+  return result.data;
+}
+
+
+/**
+ * GET SIGNUP ROLES
+ *
+ * GET /auth/signup-roles
+ *
+ * No authentication required.
+ */
+export async function getSignupRoles() {
+  const response = await fetch(`${API_URL}/auth/signup-roles`);
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message || "Unable to load signup roles."
+    );
+  }
+
+  return result.data;
+}
+
+
+/**
+ * GET SIGNUP STORES
+ *
+ * GET /auth/signup-stores
+ * GET /auth/signup-stores?search=...
+ *
+ * No authentication required.
+ *
+ * Returns:
+ *
+ * [
+ *   {
+ *     storeId,
+ *     storeName,
+ *     location,
+ *     ownerUserId,
+ *     ownerName
+ *   }
+ * ]
+ */
+export async function getSignupStores(search = "") {
+  const trimmedSearch = search.trim();
+
+  const url = trimmedSearch
+    ? `${API_URL}/auth/signup-stores?search=${encodeURIComponent(
+        trimmedSearch
+      )}`
+    : `${API_URL}/auth/signup-stores`;
+
+  const response = await fetch(url);
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message || "Unable to load stores."
+    );
+  }
+
+  return result.data;
+}
+
+
+/**
+ * LOGOUT
+ *
+ * POST /auth/logout
+ *
+ * Backend requires:
+ * Authorization: Bearer <token>
+ */
 export async function logout() {
-    await wait();
-    return true;
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_URL}/auth/logout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token
+        ? {
+            Authorization: `Bearer ${token}`,
+          }
+        : {}),
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(result.message || "Logout failed.");
+  }
+
+  return true;
 }
+

@@ -58,6 +58,25 @@ export async function getRoleById(roleId: number) {
     return existingRole;
 }
 
+//=======================================================
+//GET ROLEID FROM NAME
+//=======================================================
+// export async function getRoleByName(roleName: string) {
+
+//     const existingRole = await roleRepo.findOne({
+//         where: {
+//             role_name: roleName,
+//             is_active:true
+//         }
+//     });
+
+//     if (!existingRole) {
+//         throw new Error("Role not found.");
+//     }
+
+//     return existingRole;
+// }
+
 
 // ======================================================
 // UPDATE ROLE

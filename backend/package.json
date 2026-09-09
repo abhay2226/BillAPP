@@ -7,13 +7,13 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "check": "tsc --noEmit",
+    "test": "tsx --test tests/lifecycle.test.ts",
     "seed:roles": "tsx src/database/seedRoles.ts",
     "seed:movtype": "tsx src/database/seedMovementType.ts",
     "seed:reftype": "tsx src/database/seedRefrenceType.ts",
-    "seed:distype": "tsx src/database/seedRefrenceType.ts",
-    "seed:actype": "tsx src/database/seedRefrenceType.ts",
+    "seed:distype": "tsx src/database/seedDiscountType.ts",
+    "seed:actype": "tsx src/database/seedActionType.ts",
     "seed:uomtype": "tsx src/database/seedUomType.ts"
-
   },
   "keywords": [],
   "author": "",

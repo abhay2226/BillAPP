@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: "{{base_url}}/auth/signup-stores?search=main"
+method: GET
+queryParams:
+  search: main
+auth:
+  type: noauth
+settings:
+  strictSSL: false
+  followRedirects: true
+  disableCookies: false
+  maxResponseSize: 52428800
+order: 1788929390849
