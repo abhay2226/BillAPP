@@ -1,4 +1,4 @@
-﻿import "reflect-metadata";
+import "reflect-metadata";
 
 import { DataSource } from "typeorm";
 
@@ -22,44 +22,35 @@ import { DamagedGoods } from "./entity/TransactionsDamagedGoods.js";
 import { StockMovement } from "./entity/TransactionsStockMovement.js";
 import { Session } from "./entity/TransactionsSession.js";
 import { Audit } from "./entity/TransactionsAudit.js";
-import {  ActionType } from "./entity/MasterActionType.js";
-
+import { ActionType } from "./entity/MasterActionType.js";
 
 export const AppDataSource = new DataSource({
-
     type: "sqlite",
-
     database: "shop_inventory.sqlite",
-
-    synchronize: true,
-
+    synchronize:true,
     logging: false,
-
     entities: [
         ActionType,
-        DiscountType,          
+        DiscountType,
         MovementType,
-        ReferenceType,          
-        Brand,          
-        Type,           
-        Role,                  
-        UoM,                 
-        Audit,           
-        Bill, 
-        BillItem,         
-        Customer,          
-        DamagedGoods,  
-        Discount,   
-        Inventory,       
-        Product,         
-        Session,         
-        StockMovement,   
-        Store,           
+        ReferenceType,
+        Brand,
+        Type,
+        Role,
+        UoM,
+        Audit,
+        Bill,
+        BillItem,
+        Customer,
+        DamagedGoods,
+        Discount,
+        Inventory,
+        Product,
+        Session,
+        StockMovement,
+        Store,
         User,
-
     ],
-
     migrations: [],
-
     subscribers: []
 });

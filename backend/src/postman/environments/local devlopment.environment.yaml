@@ -1,0 +1,30 @@
+name: local devlopment
+values:
+  - key: base_url
+    value: ''
+  - key: |-
+      roleId 
+      userId =
+      storeId =
+      sessionId =
+      productId =
+      inventoryId =
+      customerId =
+      discountId =
+      billId =
+      movementId =
+      damageId =
+      auditId =
+      token 
+    value: ''
+  - key: token
+    value: ''
+  - key: userId
+    value: ''
+  - key: roleId
+    value: ''
+  - key: storeId
+    value: ''
+  - key: sessionId
+    value: ''
+color: 0

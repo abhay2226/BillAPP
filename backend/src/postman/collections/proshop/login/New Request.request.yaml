@@ -1,0 +1,17 @@
+$kind: http-request
+description: ""
+url: "{{base_url}}/users/6"
+method: PUT
+body:
+  type: json
+  content: '{ "firstname": "Bobby", "email": "bob2@shop.com", "role_id": 3, "is_active": true }'
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+settings:
+  strictSSL: false
+  followRedirects: true
+  disableCookies: false
+  maxResponseSize: 52428800
+order: 3994917784072915

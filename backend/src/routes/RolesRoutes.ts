@@ -12,10 +12,10 @@ import { authorize } from "../middleware/Authorize.js";
 const roleRouter = Router();
 roleRouter.use(authenticate);
 
-roleRouter.get("/",authorize("OWNER", "ADMIN", "STAFF"), getRolesController);
-roleRouter.get("/:id",authorize("OWNER", "ADMIN", "STAFF"), getRoleByIdController);
-roleRouter.post("/",authorize("ADMIN"), createRoleController);
-roleRouter.patch("/:id",authorize("ADMIN"), updateRoleController);
-roleRouter.delete("/:id",authorize("ADMIN"), deleteRoleController);
+roleRouter.get("/",authorize("OWNER", "STAFF"), getRolesController);
+roleRouter.get("/:id",authorize("OWNER", "STAFF"), getRoleByIdController);
+roleRouter.post("/",authorize("OWNER"), createRoleController);
+roleRouter.patch("/:id",authorize("OWNER"), updateRoleController);
+roleRouter.delete("/:id",authorize("OWNER"), deleteRoleController);
 
 export default roleRouter;
