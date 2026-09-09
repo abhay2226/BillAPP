@@ -1,0 +1,45 @@
+$kind: http-request
+description: ""
+url: "{{base_url}}/auth/login"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    //   \"email\": \"alice@shop.com\",\r
+
+    //   \"password\": \"password123\"\r
+
+    \    \"email\": \"owner1@test.com\",\r
+
+    \    \"password\": \"Passw0rd!23\"\r
+
+    }"
+scripts:
+  - type: afterResponse
+    code: "const jsonData = pm.response.json();\r
+
+      if (jsonData.success && jsonData.data && jsonData.data.token) {\r
+
+      \    const data = jsonData.data;\r
+
+      \    pm.environment.set(\"token\", data.token);\r
+
+      \    pm.environment.set(\"userId\", data.user.userId);\r
+
+      \    pm.environment.set(\"roleId\", data.user.roleId);\r
+
+      \    pm.environment.set(\"storeId\", data.user.storeId);\r
+
+      \    pm.environment.set(\"sessionId\", data.user.sessionId);\r
+
+      \    console.log(\"Auth data saved\");\r
+
+      }"
+    language: text/javascript
+settings:
+  strictSSL: false
+  followRedirects: true
+  disableCookies: false
+  maxResponseSize: 52428800
+order: 4456126274340957

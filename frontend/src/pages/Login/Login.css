@@ -1,206 +1,737 @@
-
-
 .login-signup-page {
     width: 100%;
-    min-height: 100%;
-    flex: 1;
+    min-height: 100vh;
+    box-sizing: border-box;
+
     display: flex;
     flex-direction: column;
     align-items: center;
+
     padding: 3rem 1rem;
+
     background: #f4f6f5;
+
     font-family: Arial, Helvetica, sans-serif;
 }
+
+/* =========================================================
+   HEADER
+========================================================= */
 
 .auth-header-block {
     display: flex;
     flex-direction: column;
     align-items: center;
+
     text-align: center;
+
     margin-bottom: 2rem;
 }
 
 .auth-icon-badge {
     width: 3.5rem;
     height: 3.5rem;
+
     border-radius: 50%;
+
     background: #0b8a6a;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     margin-bottom: 1rem;
-    box-shadow: 0 0.5rem 1rem rgba(11, 138, 106, 0.25);
+
+    box-shadow:
+        0 0.5rem 1rem rgba(11, 138, 106, 0.25);
 }
+
 .auth-icon-badge img {
     width: 1.6rem;
     height: 1.6rem;
+
     object-fit: contain;
+
     filter: brightness(0) invert(1);
 }
 
 .auth-header-block h1 {
     margin: 0;
+
     color: #1a2420;
+
     font-size: 1.5rem;
     font-weight: 700;
 }
+
 .auth-header-block p {
     margin: 0.4rem 0 0;
+
     color: #6b7570;
+
     font-size: 0.9rem;
 }
+
+
+/* =========================================================
+   CARD
+========================================================= */
 
 .auth-card {
     width: 100%;
     max-width: 26rem;
+
+    box-sizing: border-box;
+
     background: #ffffff;
+
     border-radius: 1rem;
+
     border: 1px solid #e5e7eb;
-    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.06);
+
+    box-shadow:
+        0 0.25rem 1rem rgba(0, 0, 0, 0.06);
+
     padding: 2rem;
 }
 
 .auth-card form {
     display: grid;
+
     gap: 0.5rem;
 }
 
+
+/* =========================================================
+   LABELS
+========================================================= */
+
 .auth-card label {
     color: #1a2420;
+
     font-size: 0.85rem;
+
     font-weight: 600;
+
     margin: 0.4rem 0 0.1rem;
 }
 
 .auth-label-row {
     display: flex;
+
     align-items: center;
     justify-content: space-between;
+
     margin-top: 0.4rem;
 }
+
 .auth-label-row label {
     margin: 0;
 }
 
-.auth-forgot-link {
-    border: none;
-    background: transparent;
-    color: #0b8a6a;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0;
-}
+
+/* =========================================================
+   INPUTS
+========================================================= */
 
 .auth-input-wrap {
     display: flex;
+
     align-items: center;
+
     gap: 0.6rem;
-    height: 2.9rem;
+
+    min-height: 2.9rem;
+
+    box-sizing: border-box;
+
     padding: 0 0.9rem;
+
     border: 1px solid #dfe5e2;
+
     border-radius: 0.5rem;
+
     background: #ffffff;
-    transition: border-color 0.15s ease;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
+
 .auth-input-wrap:focus-within {
     border-color: #0b8a6a;
+
+    box-shadow:
+        0 0 0 2px rgba(11, 138, 106, 0.08);
 }
+
 .auth-input-wrap svg {
     width: 1.1rem;
     height: 1.1rem;
+
     color: #9aa5a0;
+
     flex-shrink: 0;
 }
+
 .auth-input-wrap input {
     flex: 1;
+
+    min-width: 0;
+
     height: 100%;
+
     padding: 0;
+
     border: 0;
+
     outline: 0;
+
     background: transparent;
+
     color: #1a2420;
+
     font-size: 0.9rem;
 }
+
 .auth-input-wrap input::placeholder {
     color: #a7b0ac;
 }
 
+
+/* =========================================================
+   PASSWORD EYE
+========================================================= */
+
 .auth-eye-toggle {
     border: none;
+
     background: transparent;
+
     padding: 0;
+
     cursor: pointer;
+
     display: flex;
+
     color: #9aa5a0;
 }
+
+.auth-eye-toggle:hover {
+    color: #0b8a6a;
+}
+
 .auth-eye-toggle svg {
     width: 1.1rem;
     height: 1.1rem;
 }
 
+
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
+
+.auth-forgot-link {
+    border: none;
+
+    background: transparent;
+
+    color: #0b8a6a;
+
+    font-size: 0.8rem;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    padding: 0;
+}
+
+.auth-forgot-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   SIGNUP TYPE
+========================================================= */
+
+.signup-type-section {
+    margin-top: 0.35rem;
+}
+
+.signup-type-section > label {
+    display: block;
+
+    margin-bottom: 0.5rem;
+}
+
+.signup-type-options {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 0.6rem;
+}
+
+.signup-type-card {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.55rem;
+
+    padding: 0.75rem;
+
+    border: 1px solid #dfe5e2;
+
+    border-radius: 0.6rem;
+
+    background: #ffffff;
+
+    color: #1a2420;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.signup-type-card:hover {
+    border-color: #a9cfc4;
+}
+
+.signup-type-card.active {
+    border-color: #0b8a6a;
+
+    background: #f0faf7;
+
+    box-shadow:
+        0 0 0 1px rgba(11, 138, 106, 0.08);
+}
+
+.signup-type-radio {
+    width: 1.2rem;
+    height: 1.2rem;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #cbd5d1;
+
+    border-radius: 50%;
+
+    color: #ffffff;
+
+    font-size: 0.7rem;
+
+    background: #ffffff;
+}
+
+.signup-type-card.active .signup-type-radio {
+    border-color: #0b8a6a;
+
+    background: #0b8a6a;
+}
+
+.signup-type-content {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 0.15rem;
+}
+
+.signup-type-content strong {
+    font-size: 0.78rem;
+
+    line-height: 1.15;
+}
+
+.signup-type-content small {
+    color: #6b7570;
+
+    font-size: 0.68rem;
+
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   SIGNUP DETAILS
+========================================================= */
+
+.signup-details {
+    display: grid;
+
+    gap: 0.5rem;
+
+    margin-top: 0.15rem;
+}
+
+
+/* =========================================================
+   ROLE INFORMATION
+========================================================= */
+
+.signup-role-note {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.15rem;
+
+    padding: 0.65rem 0.75rem;
+
+    margin-top: 0.25rem;
+
+    margin-bottom: 0.2rem;
+
+    border-radius: 0.5rem;
+
+    background: #f4f8f6;
+
+    border: 1px solid #e2ebe7;
+}
+
+.signup-role-note strong {
+    color: #0b8a6a;
+
+    font-size: 0.76rem;
+}
+
+.signup-role-note span {
+    color: #6b7570;
+
+    font-size: 0.72rem;
+
+    line-height: 1.3;
+}
+
+
+/* =========================================================
+   EXISTING STORE SEARCH / LIST
+========================================================= */
+
+.store-selection {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.4rem;
+
+    max-height: 10rem;
+
+    overflow-y: auto;
+
+    margin-top: 0.1rem;
+}
+
+.store-option {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.65rem;
+
+    padding: 0.65rem 0.7rem;
+
+    border: 1px solid #e3e8e5;
+
+    border-radius: 0.5rem;
+
+    background: #ffffff;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+.store-option:hover {
+    border-color: #a9cfc4;
+
+    background: #fafdfc;
+}
+
+.store-option.selected {
+    border-color: #0b8a6a;
+
+    background: #f0faf7;
+}
+
+.store-option-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 0.4rem;
+
+    background: #f1f5f3;
+
+    font-size: 0.9rem;
+}
+
+.store-option-info {
+    min-width: 0;
+
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.15rem;
+}
+
+.store-option-info strong {
+    color: #1a2420;
+
+    font-size: 0.8rem;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+.store-option-info small {
+    color: #7b8580;
+
+    font-size: 0.7rem;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+.store-option-check {
+    width: 1.2rem;
+
+    color: #0b8a6a;
+
+    font-weight: 700;
+
+    text-align: center;
+}
+
+.store-loading,
+.store-empty {
+    padding: 0.8rem;
+
+    border: 1px dashed #dfe5e2;
+
+    border-radius: 0.5rem;
+
+    color: #7b8580;
+
+    font-size: 0.75rem;
+
+    text-align: center;
+
+    background: #fafcfb;
+}
+
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
 .auth-checkbox-row {
     display: flex;
+
     align-items: center;
+
     gap: 0.5rem;
+
     margin: 0.6rem 0 0.2rem;
+
     font-size: 0.85rem;
+
     color: #53605a;
+
     font-weight: 400;
+
     cursor: pointer;
 }
+
 .auth-checkbox-row input {
     width: 1rem;
     height: 1rem;
+
     accent-color: #0b8a6a;
 }
 
+
+/* =========================================================
+   FEEDBACK
+========================================================= */
+
+.auth-feedback {
+    margin: 0.5rem 0 0;
+
+    padding: 0.65rem 0.75rem;
+
+    border-radius: 0.45rem;
+
+    font-size: 0.8rem;
+
+    text-align: center;
+
+    line-height: 1.35;
+}
+
+.auth-feedback.success {
+    color: #0b8a6a;
+
+    background: #f0faf7;
+
+    border: 1px solid #d7eee6;
+}
+
+.auth-feedback.error {
+    color: #d64545;
+
+    background: #fff5f5;
+
+    border: 1px solid #f2d7d7;
+}
+
+
+/* =========================================================
+   SUBMIT BUTTON
+========================================================= */
+
 .auth-submit {
     margin-top: 1rem;
+
     padding: 0.75rem;
+
     border: 0;
+
     border-radius: 0.5rem;
+
     background: #0b8a6a;
+
     color: #ffffff;
+
     font-size: 0.95rem;
+
     font-weight: 700;
+
     cursor: pointer;
+
     display: flex;
+
     align-items: center;
     justify-content: center;
+
     gap: 0.5rem;
-    transition: background 0.15s ease;
+
+    transition:
+        background 0.15s ease,
+        transform 0.1s ease;
 }
+
 .auth-submit:hover {
     background: #097a5d;
 }
+
+.auth-submit:active {
+    transform: translateY(1px);
+}
+
 .auth-submit:disabled {
     opacity: 0.7;
+
     cursor: default;
+
+    transform: none;
 }
+
 .auth-submit-arrow {
     font-size: 1rem;
 }
 
-.auth-feedback {
-    margin: 0.4rem 0 0;
-    font-size: 0.8rem;
-    text-align: center;
-}
-.auth-feedback.success { color: #0b8a6a; }
-.auth-feedback.error { color: #d64545; }
+
+/* =========================================================
+   SWITCH LOGIN / SIGNUP
+========================================================= */
 
 .auth-switch-text {
     margin-top: 1.5rem;
+
     color: #53605a;
+
     font-size: 0.85rem;
+
+    text-align: center;
 }
+
 .auth-switch {
     padding: 0;
+
     border: 0;
+
     background: transparent;
+
     color: #0b8a6a;
+
     cursor: pointer;
+
     font: inherit;
+
     font-weight: 700;
+}
+
+.auth-switch:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 520px) {
+    .login-signup-page {
+        padding: 2rem 0.75rem;
+    }
+
+    .auth-card {
+        padding: 1.4rem;
+    }
+
+    .signup-type-options {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-header-block h1 {
+        font-size: 1.35rem;
+    }
 }

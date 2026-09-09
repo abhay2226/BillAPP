@@ -1,0 +1,283 @@
+$kind: http-request
+description: ""
+url: "{{base_url}}/auth/signup"
+method: POST
+body:
+  type: json
+  content: "// {\r
+
+    //   \"firstname\": \"John\",\r
+
+    //   \"lastname\": \"Mathew\",\r
+
+    //   \"email\": \"owner1@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 1,\r
+
+    //   \"store_name\": \"ABC Traders\",\r
+
+    //   \"gst_no\": \"29ABCDE1234F1Z5\",\r
+
+    //   \"location\": \"Mumbai\"\r
+
+    // }\r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"Priya\",\r
+
+    //   \"lastname\": \"Sharma\",\r
+
+    //   \"email\": \"owner2@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 1,\r
+
+    //   \"store_name\": \"Community Mart\",\r
+
+    //   \"gst_no\": \"29XYZAB5678G1Z2\",\r
+
+    //   \"location\": \"Bangalore\"\r
+
+    // }\r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"Priya\",\r
+
+    //   \"lastname\": \"Sharma\",\r
+
+    //   \"email\": \"staff@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 3,\r
+
+    //   \"store_id\": 1\r
+
+    // }\r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"Priya\",\r
+
+    //   \"lastname\": \"Sharma\",\r
+
+    //   \"email\": \"staff@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 2,\r
+
+    //   \"store_id\": 2\r
+
+    // }\r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"J\",\r
+
+    //   \"lastname\": \"M\",\r
+
+    //   \"email\": \"owner1@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 1,\r
+
+    //   \"store_name\": \"ABC Traders\",\r
+
+    //   \"gst_no\": \"24ABCDE1234F1Z5\",\r
+
+    //   \"location\": \"Mumbai\"\r
+
+    // }\r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"John\",\r
+
+    //   \"lastname\": \"Mathew\",\r
+
+    //   \"email\": \"owner4@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 999,\r
+
+    //   \"store_name\": \"ABC Traders\",\r
+
+    //   \"gst_no\": \"25ABCDE1234F1Z5\",\r
+
+    //   \"location\": \"Mumbai\"\r
+
+    // }\r
+
+    \r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"John\",\r
+
+    //   \"lastname\": \"Mathew\",\r
+
+    //   \"email\": \"owner6@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 2,\r
+
+    //   \"store_id\":999\r
+
+    // }\r
+
+    \r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"Jake\",\r
+
+    //   \"lastname\": \"Mathew\",\r
+
+    //   \"email\": \"owner4@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 1,\r
+
+    //   \"store_name\": \"ABC sweets\",\r
+
+    //   \"gst_no\": \"28ABCDE1234F1Z5\",\r
+
+    //   \"location\": \"Delhi\"\r
+
+    // }\r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"Jake\",\r
+
+    //   \"lastname\": \"Mathew\",\r
+
+    //   \"email\": \"staff4@test.com\",\r
+
+    //   \"password\": \"Passw0rd!23\",\r
+
+    //   \"role_id\": 3,\r
+
+    //   \"store_id\": 3\r
+
+    // }\r
+
+    \r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"Alice\",\r
+
+    //   \"lastname\": \"Owner\",\r
+
+    //   \"email\": \"alice@shop.com\",\r
+
+    //   \"password\": \"password123\",\r
+
+    //   \"store_name\": \"Alice Superstore\",\r
+
+    //   \"gst_no\": \"GSTIN998877\",\r
+
+    //   \"location\": \"Main Road\"\r
+
+    // }\r
+
+    \r
+
+    \r
+
+    // {\r
+
+    //   \"firstname\": \"Bob\",\r
+
+    //   \"lastname\": \"Staff\",\r
+
+    //   \"email\": \"bob@shop.com\",\r
+
+    //   \"password\": \"password123\",\r
+
+    //   \"store_id\": 1\r
+
+    // }\r
+
+    \r
+
+    {\r
+
+    \  \"firstname\": \"job\",\r
+
+    \  \"lastname\": \"Admin\",\r
+
+    \  \"email\": \"job@shop.com\",\r
+
+    \  \"password\": \"password123\",\r
+
+    \  \"role_id\":3,\r
+
+    \  \"store_id\": 1\r
+
+    }\r
+
+    \r
+
+    \r\n"
+scripts:
+  - type: afterResponse
+    code: "if (pm.response.code === 201) {\r
+
+      \    const jsonData = pm.response.json();\r
+
+      \    const data = jsonData.data;\r
+
+      \r
+
+      \    pm.environment.set(\"token\", data.token);\r
+
+      \    pm.environment.set(\"userId\", data.user.userId);\r
+
+      \    pm.environment.set(\"roleId\", data.user.roleId);\r
+
+      \    pm.environment.set(\"storeId\", data.user.storeId);\r
+
+      \    pm.environment.set(\"sessionId\", data.user.sessionId);\r
+
+      \r
+
+      \    console.log(\"Login data saved\");\r
+
+      }"
+    language: text/javascript
+settings:
+  strictSSL: false
+  followRedirects: true
+  disableCookies: false
+  maxResponseSize: 52428800
+order: 4503451328700553

@@ -1,0 +1,15 @@
+$kind: http-request
+name: New Request
+description: ""
+url: "{{base_url}}/auth/logout"
+method: POST
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+settings:
+  strictSSL: false
+  followRedirects: true
+  disableCookies: false
+  maxResponseSize: 52428800
+order: 4497684587639664
