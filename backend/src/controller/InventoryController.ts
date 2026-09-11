@@ -203,7 +203,8 @@ export const createInventory = async (
                 qty: quantity,
                 cost_price: costPrice,
                 selling_price: sellingPrice,
-                created_by: req.auth.userId
+                created_by: req.auth.userId,
+                session_id: req.auth.sessionId
             });
 
         res.status(201).json({
