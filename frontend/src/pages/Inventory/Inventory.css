@@ -1,1739 +1,1483 @@
-/* ========================================================= 
-   SEARCH  
-========================================================= */ 
+/* =========================================================   
+   SEARCH    
+========================================================= */   
+   
+.main-container {   
+  margin-top: 0;   
+  padding-top: 0;   
+  padding: 0.5rem;   
+  height: 100%;   
+  max-height: 100%;   
+  display: flex;   
+  flex-direction: column;   
+}   
+   
+.search-inventory-cards {   
+  position: sticky;   
+  top: 0;   
+  z-index: 50;   
+  background-color: #f7f8f9 !important;   
+  padding: 0.75rem 0.5rem 0.5rem 0.5rem;   
+  margin: 0;   
+  flex-shrink: 0;   
+  box-shadow: 0 4px 6px -4px rgba(0, 0, 0, 0.05);   
+}   
+   
+.app-shell-content {   
+  padding-top: 4.5rem;   
+  overflow: scroll !important;   
+}   
+   
+.app-shell-body {   
+  overflow: scroll !important;   
+}   
+   
+.search-container {   
+  width: 100%;   
+  position: static;   
+  background-color: transparent;   
+  margin-bottom: 0.75rem;   
+}   
+   
+.search-input-wrapper {   
+  width: 100%;   
+  height: 3rem;   
+  display: flex;   
+  align-items: center;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #e5e7eb;   
+  border-radius: 0.75rem;   
+  padding: 0 1rem;   
+}   
+   
+.search-icon {   
+  width: 1.25rem;   
+  height: 1.25rem;   
+  object-fit: contain;   
+  margin-right: 0.75rem;   
+}   
+   
+.search-input {   
+  width: 100%;   
+  height: 100%;   
+  border: none;   
+  outline: none;   
+  background-color: transparent;   
+  font-size: 0.9rem;   
+  color: #22272b;   
+}   
+   
+.search-input::placeholder {   
+  color: #9ca3af;   
+}   
+   
+   
+/* =========================================================   
+   CARDS   
+========================================================= */   
+   
+.card_section {   
+  width: 100%;   
+  background-color: transparent;   
+  position: static;   
+  margin-bottom: 0.5rem;   
+  top: 4rem;   
+  z-index: 5;   
+  display: grid;   
+  grid-template-columns: repeat(3, minmax(0, 1fr));   
+  gap: 1.25rem;   
+  overflow: hidden;   
+  background-color: #f7f8f9;   
+}   
+   
+.card_box {   
+  width: 100%;   
+  min-height: 7rem;   
+  padding: 1.25rem;   
+  display: flex;   
+  flex-direction: column;   
+  justify-content: center;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #e5e7eb;   
+  border-radius: 0.9rem;   
+  box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.05);   
+}   
+   
+.card_box_header {   
+  margin-bottom: 0.5rem;   
+  color: #53605a;   
+  font-size: 0.8rem;   
+  font-weight: 600;   
+  text-transform: uppercase;   
+}   
+   
+.card_box_count {   
+  color: #008f6b;   
+  font-size: 1.5rem;   
+  font-weight: 700;   
+}   
+   
+.card_box:nth-child(2) .card_box_count {   
+  color: #f28c00;   
+}   
+   
+.card_box:nth-child(3) .card_box_count {   
+  color: #e00000;   
+}   
+   
+   
+/* ============================================================ 
+   BILL SUMMARY & DISCOUNT SECTION 
+============================================================ */ 
  
-.main-container { 
-  margin-top: 0; 
-  padding-top: 0; 
-  padding: 0.5rem; 
-  height: 100%; 
-  max-height: 100%; 
+.bill-summary { 
+  width: 100%; 
+  margin-top: 1.5rem; 
+  padding: 1rem 0; 
+} 
+ 
+.summary-row { 
   display: flex; 
-  flex-direction: column; 
-} 
- 
-.search-inventory-cards { 
-  position: sticky; 
-  top: 0; 
-  z-index: 50; 
-  background-color: #f7f8f9 !important; 
-  padding: 0.75rem 0.5rem 0.5rem 0.5rem; 
-  margin: 0; 
-  flex-shrink: 0; 
-  box-shadow: 0 4px 6px -4px rgba(0, 0, 0, 0.05); 
-} 
- 
-/* .search-inventory-cards{ 
-  position: sticky; 
-  top: 0; 
-  z-index: 1000; 
-  /* border:none; */ 
-  /*padding:0; 
-  margin:0; 
-  background-color: #f7f8f9; 
-  overflow: hidden; 
-  flex-shrink: 0; 
-} */ 
- 
-/* .search-inventory-cards { 
-  position: sticky; 
-  top: 0; 
-  z-index: 100; 
-  background-color: #f7f8f9 !important; 
-  padding-bottom: 0.5rem; 
-  box-shadow: 0 4px 6px -4px rgba(0, 0, 0, 0.08); 
-} */ 
- 
-/* Ensure child elements inside search-inventory-cards are static */ 
-/* .search-container { 
-  position: static; 
-  margin-bottom: 0.5rem; 
-} */ 
- 
-/* .card_section { 
-  position: static; 
-  margin-bottom: 0.5rem; 
-} */ 
- 
-.app-shell-content { 
-  padding-top: 4.5rem; 
-  overflow: scroll !important; 
-} 
- 
-.app-shell-body { 
-  overflow: scroll !important; 
-} 
- 
-/* .search-container { 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 1rem; 
   width: 100%; 
-  position: static; 
-  top: 0; 
-  z-index: 10; 
-  background-color: #f7f8f9; 
+  margin-bottom: 0.75rem; 
+  font-size: 0.95rem; 
+} 
  
-  margin-bottom: 1rem; 
-} */ 
- 
-.search-container { 
+.discount-row { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 1rem; 
   width: 100%; 
-  position: static; 
-  background-color: transparent; 
   margin-bottom: 0.75rem; 
 } 
  
-.search-input-wrapper { 
-  width: 100%; 
-  height: 3rem; 
- 
+.discount-label-container { 
   display: flex; 
   align-items: center; 
- 
-  background-color: #ffffff; 
- 
-  border: 0.0625rem solid #e5e7eb; 
-  border-radius: 0.75rem; 
- 
-  padding: 0 1rem; 
+  gap: 0.5rem; 
+  flex: 1; 
 } 
  
-.search-icon { 
-  width: 1.25rem; 
-  height: 1.25rem; 
- 
-  object-fit: contain; 
- 
-  margin-right: 0.75rem; 
-} 
- 
-.search-input { 
-  width: 100%; 
-  height: 100%; 
- 
-  border: none; 
-  outline: none; 
- 
-  background-color: transparent; 
- 
-  font-size: 0.9rem; 
-  color: #22272b; 
-} 
- 
-.search-input::placeholder { 
-  color: #9ca3af; 
-} 
- 
- 
-/* ========================================================= 
-   CARDS 
-========================================================= */ 
- 
-.card_section { 
-  width: 100%; 
- 
-  background-color: transparent; 
- 
-  /* position: sticky; */ 
-  position: static; 
-  margin-bottom: 0.5rem; 
-  top: 4rem; 
-  z-index: 5; 
- 
-  display: grid; 
-  grid-template-columns: repeat(3, minmax(0, 1fr)); 
- 
-  gap: 1.25rem; 
- 
-  /* margin-bottom: 1.25rem; */ 
-  overflow: hidden; 
-  background-color: #f7f8f9; 
-} 
- 
-.card_box { 
-  width: 100%; 
- 
-  min-height: 7rem; 
- 
-  padding: 1.25rem; 
- 
-  display: flex; 
-  flex-direction: column; 
-  justify-content: center; 
- 
-  background-color: #ffffff; 
- 
-  border: 0.0625rem solid #e5e7eb; 
-  border-radius: 0.9rem; 
- 
-  box-shadow: 0 0.2rem 0.7rem rgba(0, 0, 0, 0.05); 
-} 
- 
-.card_box_header { 
-  margin-bottom: 0.5rem; 
- 
-  color: #53605a; 
- 
-  font-size: 0.8rem; 
-  font-weight: 600; 
- 
-  text-transform: uppercase; 
-} 
- 
-.card_box_count { 
-  color: #008f6b; 
- 
-  font-size: 1.5rem; 
-  font-weight: 700; 
-} 
- 
- 
-/* LOW STOCK */ 
- 
-.card_box:nth-child(2) .card_box_count { 
-  color: #f28c00; 
-} 
- 
- 
-/* OUT OF STOCK */ 
- 
-.card_box:nth-child(3) .card_box_count { 
-  color: #e00000; 
-} 
- 
- 
-/* ========================================================= 
-   ADD PRODUCT BUTTON 
-========================================================= */ 
- 
-.add-product-container { 
-  width: 100%; 
- 
-  display: flex; 
-  align-items: center; 
-  justify-content: flex-end; 
- 
-  margin-bottom: 0.4rem; 
-} 
- 
-.add-product-button { 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
- 
-  gap: 0.35rem; 
- 
-  padding: 0.35rem 0.5rem; 
- 
-  background-color: transparent; 
- 
-  border: none; 
- 
-  color: #008f6b; 
- 
-  font-size: 0.8rem; 
-  font-weight: 600; 
- 
-  cursor: pointer; 
-} 
- 
-.add-product-button span { 
-  font-size: 1.25rem; 
- 
+.discount-label-container label { 
+  font-size: 0.95rem; 
   font-weight: 500; 
- 
-  line-height: 1; 
+  white-space: nowrap; 
 } 
  
-.add-product-button:hover { 
-  color: #007a5c; 
-} 
- 
- 
-/* ========================================================= 
-   TABLE CONTAINER 
-   ONLY THIS AREA WILL SCROLL 
-========================================================= */ 
- 
-.table-container { 
-  width: 100%; 
-  max-width: 100%; 
- 
-  /* 
-    Important: 
-    Allows the table to become horizontally scrollable 
-    without making the complete page scroll. 
-  */ 
-  min-width: 0; 
- 
-  /* 
-    Vertical scrolling only inside table container. 
-  */ 
-  max-height: 25rem; 
- 
-  /* overflow-x: auto; */ 
-  overflow-y: auto; 
- 
-  background-color: #ffffff; 
- 
-  border: 0.0625rem solid #e5e7eb; 
-  border-radius: 0.75rem; 
- 
-  scrollbar-width: thin; 
-  flex-shrink: 1; 
-} 
- 
- 
-/* ========================================================= 
-   PRODUCT CARDS (mobile view) 
-========================================================= */ 
- 
-.bill-cards-container { 
-  display: none; 
-  overflow-y: auto; 
-  overflow-x: hidden; 
-  max-height: 18rem; 
-  -webkit-overflow-scrolling: touch; 
-  scrollbar-width: thin; 
-  flex-shrink: 1; 
-} 
- 
-.bill-card { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 0.5rem; 
- 
-  padding: 0.9rem; 
- 
-  background-color: #ffffff; 
- 
-  border: 0.0625rem solid #e5e7eb; 
-  border-radius: 0.75rem; 
-} 
- 
-.bill-card-header { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
- 
-  padding-bottom: 0.4rem; 
- 
-  border-bottom: 0.0625rem solid #e5e7eb; 
- 
+.discount-input, 
+select.discount-input { 
+  width: 8rem; 
+  min-height: 2.35rem; 
+  padding: 0.45rem 0.65rem; 
   font-size: 0.9rem; 
-} 
- 
-.bill-card-row { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
- 
-  font-size: 0.82rem; 
-} 
- 
-.bill-card-label { 
-  color: #7a8580; 
-} 
- 
-.bill-card-value { 
-  color: #22272b; 
-  font-weight: 600; 
-} 
- 
-.bill-card-status .bill-card-value { 
-  display: flex; 
-  align-items: center; 
-} 
- 
- 
-/* ========================================================= 
-   TABLE 
-========================================================= */ 
- 
-.table-container table { 
-  width: 100%; 
- 
-  /* 
-    Keeps the table wide enough so that 
-    horizontal scrolling appears on smaller screens. 
-  */ 
-  min-width: 55rem; 
- 
-  border-collapse: collapse; 
- 
-  table-layout: fixed; 
- 
+  font-family: inherit; 
   background-color: #ffffff; 
-} 
- 
- 
-/* ========================================================= 
-   TABLE HEADER 
-========================================================= */ 
- 
-.table-container thead { 
-  /* 
-    Header stays visible when table body 
-    is vertically scrolled. 
-  */ 
-  position: sticky; 
-  top: 0; 
- 
-  z-index: 10; 
- 
-  background-color: #f8fafc; 
-} 
- 
-.table-container th { 
-  height: 3.5rem; 
- 
-  padding: 0.75rem 1rem; 
- 
-  border-bottom: 0.0625rem solid #dfe5e2; 
- 
-  color: #53605a; 
- 
-  font-size: 0.8rem; 
- 
-  font-weight: 600; 
- 
-  text-align: center; 
- 
-  text-transform: uppercase; 
- 
-  background-color: #f8fafc; 
-} 
- 
-.table-container th:first-child { 
-  text-align: left; 
-} 
- 
- 
-/* ========================================================= 
-   TABLE BODY 
-========================================================= */ 
- 
-.table-container td { 
-  height: 3.75rem; 
- 
-  padding: 0.75rem 1rem; 
- 
-  border-bottom: 0.0625rem solid #e5e7eb; 
- 
-  color: #22272b; 
- 
-  font-size: 0.85rem; 
- 
-  text-align: center; 
- 
-  vertical-align: middle; 
- 
-  background-color: #ffffff; 
-} 
- 
-.table-container tbody tr:last-child td { 
-  border-bottom: none; 
-} 
- 
- 
-/* ========================================================= 
-   ITEM 
-========================================================= */ 
- 
-.item { 
-  display: flex; 
- 
-  flex-direction: column; 
- 
-  align-items: flex-start; 
- 
-  gap: 0.25rem; 
-} 
- 
-.item strong { 
-  color: #22272b; 
- 
-  font-size: 0.9rem; 
- 
-  font-weight: 600; 
-} 
- 
-.item small { 
-  color: #7a8580; 
- 
-  font-size: 0.7rem; 
-} 
- 
- 
-/* ========================================================= 
-   PRICE 
-========================================================= */ 
- 
-.price { 
-  color: #008f6b !important; 
- 
-  font-weight: 600; 
-} 
- 
- 
-/* ========================================================= 
-   META TEXT 
-========================================================= */ 
- 
-.meta-text { 
-  color: #53605a !important; 
- 
-  font-weight: 500; 
-} 
- 
- 
-/* ========================================================= 
-   STATUS CELL 
-========================================================= */ 
- 
-.status-cell { 
-  text-align: center !important; 
- 
-  vertical-align: middle !important; 
-} 
- 
- 
-/* ========================================================= 
-   STATUS BUTTON 
-========================================================= */ 
- 
-.status-btn { 
-  width: 2rem; 
-  height: 2rem; 
- 
-  margin: 0 auto; 
- 
-  padding: 0; 
- 
-  display: flex; 
- 
-  align-items: center; 
-  justify-content: center; 
- 
-  border: none; 
- 
-  background-color: transparent; 
- 
-  cursor: default; 
-} 
- 
-.status-btn img { 
-  width: 1.2rem; 
-  height: 1.2rem; 
- 
-  object-fit: contain; 
-} 
- 
- 
-/* ========================================================= 
-   AVAILABLE STATUS 
-========================================================= */ 
- 
-#available .status-btn { 
-  background-color: #e8f7f2; 
- 
-  border-radius: 50%; 
-} 
- 
- 
-/* ========================================================= 
-   LOW STOCK STATUS 
-========================================================= */ 
- 
-#lowStock .status-btn { 
-  background-color: #fff3dc; 
- 
-  border-radius: 50%; 
-} 
- 
- 
-/* ========================================================= 
-   OUT OF STOCK STATUS 
-========================================================= */ 
- 
-#outOfStock .status-btn { 
-  background-color: #ffe8e8; 
- 
-  border-radius: 50%; 
-} 
- 
- 
-/* ========================================================= 
-   ACTION BUTTONS 
-========================================================= */ 
- 
-.action-buttons { 
-  position: relative; 
- 
-  display: flex; 
- 
-  align-items: center; 
-  justify-content: center; 
- 
-  gap: 0.5rem; 
-} 
- 
-.icon-btn { 
-  width: 2rem; 
-  height: 2rem; 
- 
-  padding: 0; 
- 
-  display: flex; 
- 
-  align-items: center; 
-  justify-content: center; 
- 
-  border: none; 
- 
-  background-color: transparent; 
- 
-  cursor: pointer; 
-} 
- 
-.icon-btn img { 
-  width: 1.1rem; 
-  height: 1.1rem; 
- 
-  object-fit: contain; 
-} 
- 
-.icon-btn:hover { 
-  opacity: 0.7; 
-} 
- 
- 
-/* ========================================================= 
-   PRODUCT ACTION MENU 
-   Desktop Product table only 
-========================================================= */ 
- 
-.product-action-menu { 
-  position: absolute; 
- 
-  top: 2.2rem; 
-  right: 0; 
- 
-  z-index: 100; 
- 
-  min-width: 10rem; 
- 
-  padding: 0.3rem 0; 
- 
-  background-color: #ffffff; 
- 
-  border: 0.0625rem solid #e5e7eb; 
-  border-radius: 0.5rem; 
- 
-  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.15); 
-} 
- 
-.product-action-menu button { 
-  width: 100%; 
- 
-  display: block; 
- 
-  padding: 0.6rem 0.8rem; 
- 
-  border: none; 
- 
-  background-color: transparent; 
- 
-  color: #22272b; 
- 
-  text-align: left; 
- 
-  font-size: 0.8rem; 
- 
-  cursor: pointer; 
-} 
- 
-.product-action-menu button:hover { 
-  background-color: #f5f7f6; 
-} 
- 
- 
-/* ========================================================= 
-   MOBILE PRODUCT MORE ACTIONS
-========================================================= */ 
- 
-.mobile-product-more { 
-  position: relative; 
- 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
- 
-  flex-shrink: 0; 
-} 
- 
-.more-item-button { 
-  width: 2rem; 
-  height: 2rem; 
- 
-  min-width: 2rem; 
-  min-height: 2rem; 
- 
-  padding: 0; 
- 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
- 
-  flex-shrink: 0; 
- 
-  border: none; 
-  background-color: transparent; 
- 
-  cursor: pointer; 
-} 
- 
-.more-item-button img { 
-  width: 1.1rem; 
-  height: 1.1rem; 
- 
-  object-fit: contain; 
-} 
- 
-.more-item-button:hover { 
-  opacity: 0.7; 
-} 
- 
-.mobile-product-action-menu { 
-  position: absolute; 
- 
-  top: 2.2rem; 
-  right: 0; 
- 
-  z-index: 100; 
- 
-  min-width: 10rem; 
- 
-  padding: 0.3rem 0; 
- 
-  background-color: #ffffff; 
- 
-  border: 0.0625rem solid #e5e7eb; 
-  border-radius: 0.5rem; 
- 
-  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.15); 
-} 
- 
-.mobile-product-action-menu button { 
-  width: 100%; 
- 
-  display: block; 
- 
-  padding: 0.6rem 0.8rem; 
- 
-  border: none; 
- 
-  background-color: transparent; 
- 
-  color: #22272b; 
- 
-  text-align: left; 
- 
-  font-size: 0.8rem; 
- 
-  cursor: pointer; 
-} 
- 
-.mobile-product-action-menu button:hover { 
-  background-color: #f5f7f6; 
-} 
- 
- 
-/* ========================================================= 
-   EMPTY TABLE 
-========================================================= */ 
- 
-.empty-bill-cell { 
-  height: 5rem !important; 
- 
-  color: #64748b !important; 
- 
-  font-size: 0.8rem !important; 
- 
-  text-align: center !important; 
-} 
- 
- 
-/* ========================================================= 
-   PAGINATION 
-========================================================= */ 
- 
-.pagination-container { 
-  width: 100%; 
- 
-  min-height: 4rem; 
- 
-  display: flex; 
- 
-  align-items: center; 
-  justify-content: space-between; 
- 
-  padding: 0.75rem 0; 
-} 
- 
-.pagination-text { 
-  color: #64748b; 
- 
-  font-size: 0.8rem; 
-} 
- 
-.pagination-buttons { 
-  display: flex; 
- 
-  align-items: center; 
- 
-  gap: 0.5rem; 
-} 
- 
-.pagination-btn { 
-  width: 2.25rem; 
-  height: 2.25rem; 
- 
-  display: flex; 
- 
-  align-items: center; 
-  justify-content: center; 
- 
-  border: 0.0625rem solid #e5e7eb; 
- 
-  border-radius: 0.5rem; 
- 
-  background-color: transparent; 
- 
-  cursor: pointer; 
-} 
- 
-.pagination-btn img { 
-  width: 0.9rem; 
-  height: 0.9rem; 
- 
-  object-fit: contain; 
- 
-  filter: brightness(0); 
-} 
- 
-.pagination-btn:disabled { 
-  opacity: 0.4; 
- 
-  cursor: not-allowed; 
-} 
- 
- 
-/* ========================================================= 
-   ADD PRODUCT POPUP 
-========================================================= */ 
- 
-.popup { 
-  position: fixed; 
- 
-  top: 0; 
-  left: 0; 
- 
-  width: 100%; 
-  height: 100%; 
- 
-  display: flex; 
- 
-  align-items: center; 
-  justify-content: center; 
- 
-  background-color: rgba(0, 0, 0, 0.45); 
- 
-  z-index: 1000; 
-} 
- 
-.popup-content { 
-  width: 28rem; 
- 
-  max-width: calc(100% - 2rem); 
- 
-  padding: 1.5rem; 
- 
-  display: flex; 
- 
-  flex-direction: column; 
- 
-  gap: 0.8rem; 
- 
-  background-color: #ffffff; 
- 
-  border-radius: 0.75rem; 
- 
-  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2); 
-} 
- 
-.popup-content h2 { 
-  margin-bottom: 0.5rem; 
- 
-  text-align: center; 
- 
-  color: #008f6b; 
- 
-  font-size: 1.7rem; 
- 
-  font-weight: 600; 
-} 
- 
-.popup-content input, 
-.popup-content select { 
-  width: 100%; 
- 
-  height: 2.75rem; 
- 
-  padding: 0 0.75rem; 
- 
-  background-color: #ffffff; 
- 
-  border: 0.0625rem solid #dfe5e2; 
- 
+  border: 1px solid #d8d8d8; 
   border-radius: 0.4rem; 
- 
   outline: none; 
- 
-  color: #22272b; 
- 
-  font-size: 0.85rem; 
+  box-sizing: border-box; 
 } 
  
-.popup-content input:focus, 
-.popup-content select:focus { 
+.discount-input:focus { 
   border-color: #008f6b; 
+  box-shadow: 0 0 0 0.12rem rgba(0, 143, 107, 0.1); 
 } 
  
-.popup-buttons { 
-  display: grid; 
- 
-  grid-template-columns: repeat(2, minmax(0, 1fr)); 
- 
-  align-items: center; 
-  justify-content: flex-end; 
- 
-  gap: 0.5rem; 
- 
-  margin-top: 0.5rem; 
-} 
- 
-.popup-buttons button { 
-  min-width: 10rem; 
- 
-  height: 2.5rem; 
- 
-  padding: 0 1rem; 
- 
-  border: none; 
- 
-  border-radius: 0.4rem; 
- 
+.discount-input option { 
   font-size: 0.9rem; 
+} 
  
+.summary-line { 
+  width: 100%; 
+  height: 1px; 
+  margin: 1rem 0; 
+  background-color: #e5e5e5; 
+} 
+ 
+.grand-total-row { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 1rem; 
+  width: 100%; 
+  margin-top: 0.75rem; 
+} 
+ 
+.grand-total-label { 
+  font-size: 1rem; 
   font-weight: 600; 
- 
-  cursor: pointer; 
 } 
  
-.popup-buttons button:first-child { 
-  background-color: #f1f3f2; 
- 
-  color: #53605a; 
-} 
- 
-.popup-buttons button:last-child { 
-  background-color: #008f6b; 
- 
-  color: #ffffff; 
-} 
- 
-.popup-buttons button:hover { 
-  opacity: 0.85; 
+.grand-total-price { 
+  font-size: 1.1rem; 
+  font-weight: 700; 
+  white-space: nowrap; 
 } 
  
  
-/* ========================================================= 
-   DESKTOP SIDEBAR 
-   Visual styling only. 
-   Open / close is handled by AppShell.css 
-========================================================= */ 
+/* ============================================================ 
+   GENERATE BILL BUTTON 
+============================================================ */ 
  
-.sidebar-desktop { 
-  position: fixed; 
- 
-  left: 0; 
- 
-  top: 4.5rem; 
- 
-  bottom: 0; 
- 
-  width: var(--sidebar-width); 
- 
+.new-bill-container { 
   display: flex; 
- 
-  flex-direction: column; 
- 
+  justify-content: flex-end; 
   align-items: center; 
- 
-  padding: 1.5rem 0; 
- 
-  background-color: #ffffff; 
- 
-  border-right: 0.0625rem solid #e5e7eb; 
- 
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08); 
- 
-  z-index: 450; 
+  width: 100%; 
+  margin-top: 1rem; 
 } 
  
- 
-/* ========================================================= 
-   SIDEBAR ITEMS 
-========================================================= */ 
- 
-.sidebar-desktop .nav-item { 
-  width: 100%; 
- 
+.new-bill { 
   display: flex; 
- 
-  justify-content: center; 
- 
-  margin-bottom: 1rem; 
-} 
- 
-.sidebar-desktop .sidebar-link { 
-  width: 100%; 
- 
-  min-height: 4.2rem; 
- 
-  display: flex; 
- 
-  flex-direction: column; 
- 
   align-items: center; 
- 
   justify-content: center; 
- 
   gap: 0.5rem; 
- 
-  position: relative; 
- 
-  text-decoration: none; 
- 
-  color: #53605a; 
+  min-width: 9rem; 
+  min-height: 2.7rem; 
+  padding: 0.6rem 1rem; 
+  background-color: #000000; 
+  color: #ffffff; 
+  border: none; 
+  border-radius: 0.45rem; 
+  cursor: pointer; 
+  font-family: inherit; 
+  transition: 
+    background-color 0.2s ease, 
+    transform 0.2s ease; 
 } 
  
-.sidebar-desktop .sidebar-link.active { 
-  background-color: #e8f7f2; 
- 
-  color: #008f6b; 
- 
-  border-radius: 0.5rem; 
+.new-bill:hover { 
+  background-color: #222222; 
 } 
  
-.sidebar-desktop .sidebar-link.active .nav-label { 
-  color: #008f6b; 
- 
-  font-weight: 600; 
+.new-bill:active { 
+  transform: scale(0.98); 
 } 
  
-.sidebar-desktop .sidebar-link.active::before { 
-  content: ""; 
- 
-  position: absolute; 
- 
-  left: 0; 
- 
-  top: 50%; 
- 
-  transform: translateY(-50%); 
- 
-  width: 0.25rem; 
- 
-  height: 2.5rem; 
- 
-  background-color: #008f6b; 
- 
-  border-radius: 0 0.25rem 0.25rem 0; 
-} 
- 
-.sidebar-desktop .nav-icon { 
-  width: 2rem; 
-  height: 2rem; 
- 
-  display: flex; 
- 
-  align-items: center; 
-  justify-content: center; 
-} 
- 
-.sidebar-desktop .nav-icon img { 
-  width: 1.8rem; 
-  height: 1.8rem; 
- 
+.new-bill img { 
+  width: 1rem; 
+  height: 1rem; 
   object-fit: contain; 
 } 
  
-.sidebar-desktop .nav-label { 
-  font-size: 0.75rem; 
+.new-bill p { 
+  margin: 0; 
+  font-size: 0.9rem; 
+  font-weight: 600; 
+} 
  
-  font-weight: 500; 
- 
-  color: #53605a; 
+.new-bill span { 
+  font-size: 0.85rem; 
 } 
  
  
-/* ========================================================= 
-   BOTTOM NAV 
-========================================================= */ 
+/* ============================================================ 
+   DISCOUNT RESPONSIVE 
+============================================================ */ 
  
-.bottom-nav { 
-  display: none; 
-} 
- 
- 
-/* ========================================================= 
-   RESPONSIVE MEDIA QUERIES 
-========================================================= */ 
- 
- 
-/* ========================================================= 
-   LARGE DESKTOP 
-   1200px and above 
-========================================================= */ 
- 
-@media screen and (min-width: 1200px) { 
- 
-  .search-container { 
-    width: 100%; 
-    max-width: 100%; 
+@media (max-width: 768px) { 
+  .bill-summary { 
+    margin-top: 1rem; 
+    padding: 0.75rem 0; 
   } 
  
-  .card_section { 
-    width: 100%; 
-    grid-template-columns: repeat(3, minmax(0, 1fr)); 
-    gap: 1.25rem; 
+  .summary-row { 
+    font-size: 0.9rem; 
   } 
  
-  .table-container { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    max-height: 25rem; 
- 
-    overflow-x: auto; 
-    overflow-y: auto; 
- 
-    scrollbar-width: thin; 
-  } 
- 
-  .table-container table { 
-    width: 100%; 
-    min-width: 55rem; 
-  } 
-} 
- 
- 
-/* ========================================================= 
-   DESKTOP 
-   769px - 1199px 
-========================================================= */ 
- 
-/* @media screen and (min-width: 769px) and (max-width: 1199px) { 
- 
-  .table-container { 
-    display: none; 
-  } 
- 
-  .bill-cards-container { 
-    display: flex; 
+  .discount-row { 
+    align-items: flex-start; 
     flex-direction: column; 
-    gap: 0.75rem; 
- 
-    margin-top: 0.4rem; 
+    gap: 0.5rem; 
   } 
  
-  .search-container { 
+  .discount-label-container { 
     width: 100%; 
-    max-width: 100%; 
   } 
  
-  .card_section { 
+  .discount-input, 
+  select.discount-input { 
     width: 100%; 
- 
-    grid-template-columns: repeat(3, minmax(0, 1fr)); 
- 
-    gap: 1rem; 
+    min-height: 2.5rem; 
   } 
  
-  .card_box { 
-    min-width: 0; 
-    padding: 1rem; 
+  .grand-total-row { 
+    margin-top: 0.75rem; 
   } 
  
-  .card_box_header { 
-    font-size: 0.75rem; 
+  .grand-total-label { 
+    font-size: 0.95rem; 
   } 
  
-  .card_box_count { 
-    font-size: 1.4rem; 
-  } 
- 
- 
-  .table-container { 
-    width: 100%; 
-    max-width: 100%; 
-    min-width: 0; 
- 
-    max-height: 25rem; 
- 
-    overflow-x: auto; 
-    overflow-y: auto; 
- 
-    scrollbar-width: thin; 
- 
-    -webkit-overflow-scrolling: touch; 
-  } 
- 
-  .table-container table { 
-    width: 100%; 
-    min-width: 55rem; 
-  } 
- 
-  .pagination-container { 
-    width: 100%; 
-    max-width: 100%; 
-  } 
-} */ 
- 
- 
-/* ========================================================= 
-   TABLET 
-   481px - 768px 
-========================================================= */ 
- 
-@media screen and (min-width: 481px) and (max-width: 768px) { 
- 
-  .main-container { 
-    height: 100%; 
-    max-height: 100%; 
-    display: flex; 
-    flex-direction: column; 
-    overflow: hidden; 
-    padding: 0 0.75rem !important; 
-  } 
- 
-  .main-container > div { 
-    height: 100%; 
-    display: flex; 
-    flex-direction: column; 
-    overflow: hidden; 
-    padding: 0 !important; 
-  } 
- 
-  .search-inventory-cards { 
-    position: static !important; 
-    flex-shrink: 0; 
-    width: 100%; 
-    background-color: #ffffff; 
-    padding: 0.5rem 0 0.25rem 0; 
-    z-index: 10; 
-  } 
- 
-  .add-product-container { 
-    flex-shrink: 0; 
-    margin-bottom: 0.25rem; 
-  } 
- 
-  .bill-cards-container { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 0.75rem; 
-    flex: 1 1 auto; 
-    min-height: 0; 
-    max-height: none !important; 
-    overflow-y: auto !important; 
-    overflow-x: hidden; 
-    -webkit-overflow-scrolling: touch; 
-    padding: 0.25rem 0 1rem 0; 
-  } 
- 
-  .pagination-container { 
-    flex-shrink: 0; 
-    padding: 0.5rem 0; 
-    background-color: #ffffff; 
-    border-top: 1px solid #f1f3f2; 
-  } 
- 
-  .table-container { 
-    display: none; 
-  } 
- 
-  .search-container { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    margin-bottom: 1rem; 
-  } 
- 
-  .search-input-wrapper { 
-    width: 100%; 
-    max-width: 100%; 
-  } 
- 
-  .card_section { 
-    width: 100%; 
-    max-width: 100%; 
-    min-width: 0; 
- 
-    grid-template-columns: repeat(3, minmax(0, 1fr)); 
- 
-    gap: 0.75rem; 
-  } 
- 
-  .card_box { 
-    width: 100%; 
-    min-width: 0; 
- 
-    min-height: 6rem; 
- 
-    padding: 1rem; 
-  } 
- 
-  .card_box_header { 
-    font-size: 0.7rem; 
-  } 
- 
-  .card_box_count { 
-    font-size: 1.3rem; 
-  } 
- 
-  .pagination-text { 
-    white-space: nowrap; 
-  } 
- 
-  .bottom-nav { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    height: 4.5rem; 
-    min-height: 4.5rem; 
- 
-    display: flex; 
- 
-    align-items: center; 
-    justify-content: space-around; 
- 
-    background-color: #ffffff; 
- 
-    border-top: 0.0625rem solid #e5e7eb; 
- 
-    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08); 
- 
-    z-index: 600; 
-  } 
- 
-} 
- 
- 
-/* ========================================================= 
-   MOBILE 
-   391px - 480px 
-========================================================= */ 
- 
-@media screen and (min-width: 391px) and (max-width: 480px) { 
- 
-  .table-container { 
-    display: none; 
-  } 
- 
-  .bill-cards-container { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 0.75rem; 
- 
-    max-height: 18rem; 
-    overflow-y: auto; 
-    overflow-x: hidden; 
-    -webkit-overflow-scrolling: touch; 
- 
-    margin-top: 0.4rem; 
-  } 
- 
-  .main-container { 
-    width: 100%; 
-    max-width: 100%; 
-    min-width: 0; 
- 
-    padding: 0.5rem; 
-  } 
- 
-  .main-container > div { 
-    width: 100%; 
-    max-width: 100%; 
-    min-width: 0; 
- 
-    padding: 0.5rem; 
-  } 
- 
-  .search-container { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    margin-bottom: 0.9rem; 
-  } 
- 
-  .search-input-wrapper { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    height: 2.75rem; 
- 
-    padding: 0 0.75rem; 
-  } 
- 
-  .search-input { 
-    width: 100%; 
- 
-    font-size: 0.8rem; 
-  } 
- 
-  .card_section { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    grid-template-columns: repeat(3, minmax(0, 1fr)); 
- 
-    gap: 0.6rem; 
-  } 
- 
-  .card_box { 
-    width: 100%; 
-    min-width: 0; 
- 
-    min-height: 5.5rem; 
- 
-    padding: 0.75rem; 
-  } 
- 
-  .card_box_header { 
-    font-size: 0.65rem; 
- 
-    white-space: nowrap; 
-  } 
- 
-  .card_box_count { 
-    font-size: 1.2rem; 
-  } 
- 
-  .add-product-container { 
-    width: 100%; 
-    max-width: 100%; 
-  } 
- 
-  .add-product-button { 
-    font-size: 0.75rem; 
-  } 
- 
-  .pagination-container { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    min-height: 3.5rem; 
- 
-    padding: 0.6rem 0; 
-  } 
- 
-  .pagination-text { 
-    font-size: 0.7rem; 
- 
-    white-space: nowrap; 
-  } 
- 
-  .pagination-buttons { 
-    gap: 0.35rem; 
-  } 
- 
-  .pagination-btn { 
-    width: 2rem; 
-    height: 2rem; 
-  } 
- 
-  .bottom-nav { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    height: 4.5rem; 
-    min-height: 4.5rem; 
- 
-    display: flex; 
- 
-    align-items: center; 
-    justify-content: space-around; 
- 
-    background-color: #ffffff; 
- 
-    border-top: 0.0625rem solid #e5e7eb; 
- 
-    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08); 
- 
-    z-index: 600; 
-  } 
-} 
- 
- 
-/* ========================================================= 
-   SMALL MOBILE 
-   390px and below 
-========================================================= */ 
- 
-@media screen and (max-width: 390px) { 
- 
-  .table-container { 
-    display: none; 
-  } 
- 
-  .bill-cards-container { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 0.75rem; 
- 
-    max-height: 18rem; 
-    overflow-y: auto; 
-    overflow-x: hidden; 
-    -webkit-overflow-scrolling: touch; 
- 
-    margin-top: 0.4rem; 
-  } 
- 
-  .main-container { 
-    width: 100%; 
-    max-width: 100%; 
-    min-width: 0; 
- 
-    padding: 0.5rem; 
-  } 
- 
-  .main-container > div { 
-    width: 100%; 
-    max-width: 100%; 
-    min-width: 0; 
- 
-    padding: 0.5rem; 
-  } 
- 
-  .search-container { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    margin-bottom: 0.75rem; 
-  } 
- 
-  .search-input-wrapper { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    height: 2.6rem; 
- 
-    padding: 0 0.65rem; 
-  } 
- 
-  .search-icon { 
-    width: 1rem; 
-    height: 1rem; 
- 
-    margin-right: 0.5rem; 
-  } 
- 
-  .search-input { 
-    width: 100%; 
- 
-    font-size: 0.75rem; 
-  } 
- 
-  .card_section { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    grid-template-columns: repeat(3, minmax(0, 1fr)); 
- 
-    gap: 0.45rem; 
-  } 
- 
-  .card_box { 
-    width: 100%; 
-    min-width: 0; 
- 
-    min-height: 4.75rem; 
- 
-    padding: 0.65rem; 
-  } 
- 
-  .card_box_header { 
-    font-size: 0.55rem; 
- 
-    margin-bottom: 0.35rem; 
- 
-    white-space: nowrap; 
-  } 
- 
-  .card_box_count { 
+  .grand-total-price { 
     font-size: 1rem; 
   } 
  
-  .add-product-container { 
+  .new-bill-container { 
+    justify-content: stretch; 
+  } 
+ 
+  .new-bill { 
     width: 100%; 
-    max-width: 100%; 
- 
-    margin-bottom: 0.4rem; 
   } 
+} 
  
-  .add-product-button { 
-    font-size: 0.7rem; 
  
-    padding: 0.3rem 0.4rem; 
-  } 
- 
-  .add-product-button span { 
-    font-size: 1.1rem; 
-  } 
- 
-  .pagination-container { 
-    width: 100%; 
-    max-width: 100%; 
- 
-    min-height: 3.5rem; 
- 
+@media (max-width: 480px) { 
+  .bill-summary { 
+    margin-top: 0.75rem; 
     padding: 0.5rem 0; 
   } 
  
-  .pagination-text { 
-    font-size: 0.65rem; 
- 
-    white-space: nowrap; 
+  .summary-row { 
+    font-size: 0.85rem; 
   } 
  
-  .pagination-buttons { 
-    gap: 0.3rem; 
+  .discount-label-container label { 
+    font-size: 0.85rem; 
   } 
  
-  .pagination-btn { 
-    width: 1.9rem; 
-    height: 1.9rem; 
+  .discount-input, 
+  select.discount-input { 
+    min-height: 2.35rem; 
+    font-size: 0.85rem; 
   } 
  
-  .popup-content { 
-    width: calc(100% - 1.5rem); 
- 
-    max-width: calc(100% - 1.5rem); 
- 
-    padding: 1rem; 
+  .grand-total-label { 
+    font-size: 0.9rem; 
   } 
  
-  .popup-content h2 { 
-    font-size: 1.4rem; 
+  .grand-total-price { 
+    font-size: 0.95rem; 
   } 
  
-  .popup-buttons { 
-    flex-direction: column; 
+  .new-bill { 
+    min-height: 2.5rem; 
+    font-size: 0.85rem; 
   } 
- 
-  .popup-buttons button { 
-    width: 100%; 
- 
-    min-width: 0; 
-  } 
-} 
- 
- 
-/* ========================================================= 
-   MOBILE PRODUCT CARD - 3 ICON ALIGNMENT
-========================================================= */ 
- 
-@media screen and (max-width: 768px) { 
- 
-  .row-actions { 
-    display: flex; 
-    align-items: center; 
-    justify-content: flex-end; 
- 
-    gap: 0.5rem; 
- 
-    flex-shrink: 0; 
-  } 
- 
-  .edit-item-button, 
-  .delete-item-button, 
-  .more-item-button { 
-    width: 2rem; 
-    height: 2rem; 
- 
-    min-width: 2rem; 
-    min-height: 2rem; 
- 
-    padding: 0; 
- 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
- 
-    flex-shrink: 0; 
- 
-    border: none; 
-    background-color: transparent; 
- 
-    cursor: pointer; 
-  } 
- 
-  .edit-item-button img, 
-  .delete-item-button img, 
-  .more-item-button img { 
-    width: 1.1rem; 
-    height: 1.1rem; 
- 
-    object-fit: contain; 
-  } 
- 
-} 
- 
- 
- 
-.inventory-tabs { 
-  display: flex; 
-  align-items: center; 
-  justify-content: flex-start; 
- 
-  gap: 0.5rem; 
- 
-  margin-bottom: 0.8rem; 
-} 
- 
-.inventory-tab { 
-  padding: 0.65rem 1.2rem; 
- 
-  border: none; 
-  border-radius: 0.4rem; 
- 
-  background-color: transparent; 
-  color: Green; 
- 
-  font-size: 0.85rem; 
-  font-weight: 500; 
- 
-  cursor: pointer; 
- 
-  transition: all 0.2s ease; 
-} 
- 
-.inventory-tab:hover { 
-  background-color: #f5f7f6; 
-} 
- 
-.inventory-tab.active { 
-  background-color: green; 
-  color: #ffffff; 
+}   
+   
+   
+/* =========================================================   
+   ADD PRODUCT BUTTON   
+========================================================= */   
+   
+.add-product-container {   
+  width: 100%;   
+  display: flex;   
+  align-items: center;   
+  justify-content: flex-end;   
+  margin-bottom: 0.4rem;   
+}   
+   
+.add-product-button {   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  gap: 0.35rem;   
+  padding: 0.35rem 0.5rem;   
+  background-color: transparent;   
+  border: none;   
+  color: #008f6b;   
+  font-size: 0.8rem;   
+  font-weight: 600;   
+  cursor: pointer;   
+}   
+   
+.add-product-button span {   
+  font-size: 1.25rem;   
+  font-weight: 500;   
+  line-height: 1;   
+}   
+   
+.add-product-button:hover {   
+  color: #007a5c;   
+}   
+   
+   
+/* =========================================================   
+   TABLE CONTAINER   
+========================================================= */   
+   
+.table-container {   
+  width: 100%;   
+  max-width: 100%;   
+  min-width: 0;   
+  max-height: 25rem;   
+  overflow-y: auto;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #e5e7eb;   
+  border-radius: 0.75rem;   
+  scrollbar-width: thin;   
+  flex-shrink: 1;   
+}   
+   
+   
+/* =========================================================   
+   PRODUCT CARDS   
+========================================================= */   
+   
+.bill-cards-container {   
+  display: none;   
+  overflow-y: auto;   
+  overflow-x: hidden;   
+  max-height: 18rem;   
+  -webkit-overflow-scrolling: touch;   
+  scrollbar-width: thin;   
+  flex-shrink: 1;   
+}   
+   
+.bill-card {   
+  display: flex;   
+  flex-direction: column;   
+  gap: 0.5rem;   
+  padding: 0.9rem;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #e5e7eb;   
+  border-radius: 0.75rem;   
+}   
+   
+.bill-card-header {   
+  display: flex;   
+  align-items: center;   
+  justify-content: space-between;   
+  padding-bottom: 0.4rem;   
+  border-bottom: 0.0625rem solid #e5e7eb;   
+  font-size: 0.9rem;   
+}   
+   
+.bill-card-row {   
+  display: flex;   
+  justify-content: space-between;   
+  align-items: center;   
+  font-size: 0.82rem;   
+}   
+   
+.bill-card-label {   
+  color: #7a8580;   
+}   
+   
+.bill-card-value {   
+  color: #22272b;   
+  font-weight: 600;   
+}   
+   
+.bill-card-status .bill-card-value {   
+  display: flex;   
+  align-items: center;   
+}   
+   
+   
+/* =========================================================   
+   TABLE   
+========================================================= */   
+   
+.table-container table {   
+  width: 100%;   
+  min-width: 55rem;   
+  border-collapse: collapse;   
+  table-layout: fixed;   
+  background-color: #ffffff;   
+}   
+   
+.table-container thead {   
+  position: sticky;   
+  top: 0;   
+  z-index: 10;   
+  background-color: #f8fafc;   
+}   
+   
+.table-container th {   
+  height: 3.5rem;   
+  padding: 0.75rem 1rem;   
+  border-bottom: 0.0625rem solid #dfe5e2;   
+  color: #53605a;   
+  font-size: 0.8rem;   
+  font-weight: 600;   
+  text-align: center;   
+  text-transform: uppercase;   
+  background-color: #f8fafc;   
+}   
+   
+.table-container th:first-child {   
+  text-align: left;   
+}   
+   
+.table-container td {   
+  height: 3.75rem;   
+  padding: 0.75rem 1rem;   
+  border-bottom: 0.0625rem solid #e5e7eb;   
+  color: #22272b;   
+  font-size: 0.85rem;   
+  text-align: center;   
+  vertical-align: middle;   
+  background-color: #ffffff;   
+}   
+   
+.table-container tbody tr:last-child td {   
+  border-bottom: none;   
+}   
+   
+.item {   
+  display: flex;   
+  flex-direction: column;   
+  align-items: flex-start;   
+  gap: 0.25rem;   
+}   
+   
+.item strong {   
+  color: #22272b;   
+  font-size: 0.9rem;   
+  font-weight: 600;   
+}   
+   
+.item small {   
+  color: #7a8580;   
+  font-size: 0.7rem;   
+}   
+   
+.price {   
+  color: #008f6b !important;   
+  font-weight: 600;   
+}   
+   
+.meta-text {   
+  color: #53605a !important;   
+  font-weight: 500;   
+}   
+   
+.status-cell {   
+  text-align: center !important;   
+  vertical-align: middle !important;   
+}   
+   
+.status-btn {   
+  width: 2rem;   
+  height: 2rem;   
+  margin: 0 auto;   
+  padding: 0;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  border: none;   
+  background-color: transparent;   
+  cursor: default;   
+}   
+   
+.status-btn img {   
+  width: 1.2rem;   
+  height: 1.2rem;   
+  object-fit: contain;   
+}   
+   
+#available .status-btn {   
+  background-color: #e8f7f2;   
+  border-radius: 50%;   
+}   
+   
+#lowStock .status-btn {   
+  background-color: #fff3dc;   
+  border-radius: 50%;   
+}   
+   
+#outOfStock .status-btn {   
+  background-color: #ffe8e8;   
+  border-radius: 50%;   
+}   
+   
+   
+/* =========================================================   
+   ACTION BUTTONS   
+========================================================= */   
+   
+.action-buttons {   
+  position: relative;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  gap: 0.5rem;   
+}   
+   
+.icon-btn {   
+  width: 2rem;   
+  height: 2rem;   
+  padding: 0;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  border: none;   
+  background-color: transparent;   
+  cursor: pointer;   
+}   
+   
+.icon-btn img {   
+  width: 1.1rem;   
+  height: 1.1rem;   
+  object-fit: contain;   
+}   
+   
+.icon-btn:hover {   
+  opacity: 0.7;   
+}   
+   
+.product-action-menu {   
+  position: absolute;   
+  top: 2.2rem;   
+  right: 0;   
+  z-index: 100;   
+  min-width: 10rem;   
+  padding: 0.3rem 0;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #e5e7eb;   
+  border-radius: 0.5rem;   
+  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.15);   
+}   
+   
+.product-action-menu button {   
+  width: 100%;   
+  display: block;   
+  padding: 0.6rem 0.8rem;   
+  border: none;   
+  background-color: transparent;   
+  color: #22272b;   
+  text-align: left;   
+  font-size: 0.8rem;   
+  cursor: pointer;   
+}   
+   
+.product-action-menu button:hover {   
+  background-color: #f5f7f6;   
+}   
+   
+   
+/* =========================================================   
+   MOBILE PRODUCT MORE ACTIONS   
+========================================================= */   
+   
+.mobile-product-more {   
+  position: relative;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  flex-shrink: 0;   
+}   
+   
+.more-item-button {   
+  width: 2rem;   
+  height: 2rem;   
+  min-width: 2rem;   
+  min-height: 2rem;   
+  padding: 0;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  flex-shrink: 0;   
+  border: none;   
+  background-color: transparent;   
+  cursor: pointer;   
+}   
+   
+.more-item-button img {   
+  width: 1.1rem;   
+  height: 1.1rem;   
+  object-fit: contain;   
+}   
+   
+.more-item-button:hover {   
+  opacity: 0.7;   
+}   
+   
+.mobile-product-action-menu {   
+  position: absolute;   
+  top: 2.2rem;   
+  right: 0;   
+  z-index: 100;   
+  min-width: 10rem;   
+  padding: 0.3rem 0;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #e5e7eb;   
+  border-radius: 0.5rem;   
+  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.15);   
+}   
+   
+.mobile-product-action-menu button {   
+  width: 100%;   
+  display: block;   
+  padding: 0.6rem 0.8rem;   
+  border: none;   
+  background-color: transparent;   
+  color: #22272b;   
+  text-align: left;   
+  font-size: 0.8rem;   
+  cursor: pointer;   
+}   
+   
+.mobile-product-action-menu button:hover {   
+  background-color: #f5f7f6;   
+}   
+   
+   
+/* =========================================================   
+   EMPTY TABLE   
+========================================================= */   
+   
+.empty-bill-cell {   
+  height: 5rem !important;   
+  color: #64748b !important;   
+  font-size: 0.8rem !important;   
+  text-align: center !important;   
+}   
+   
+   
+/* =========================================================   
+   PAGINATION   
+========================================================= */   
+   
+.pagination-container {   
+  width: 100%;   
+  min-height: 4rem;   
+  display: flex;   
+  align-items: center;   
+  justify-content: space-between;   
+  padding: 0.75rem 0;   
+}   
+   
+.pagination-text {   
+  color: #64748b;   
+  font-size: 0.8rem;   
+}   
+   
+.pagination-buttons {   
+  display: flex;   
+  align-items: center;   
+  gap: 0.5rem;   
+}   
+   
+.pagination-btn {   
+  width: 2.25rem;   
+  height: 2.25rem;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  border: 0.0625rem solid #e5e7eb;   
+  border-radius: 0.5rem;   
+  background-color: transparent;   
+  cursor: pointer;   
+}   
+   
+.pagination-btn img {   
+  width: 0.9rem;   
+  height: 0.9rem;   
+  object-fit: contain;   
+  filter: brightness(0);   
+}   
+   
+.pagination-btn:disabled {   
+  opacity: 0.4;   
+  cursor: not-allowed;   
+}   
+   
+   
+/* =========================================================   
+   POPUP   
+========================================================= */   
+   
+.popup {   
+  position: fixed;   
+  top: 0;   
+  left: 0;   
+  width: 100%;   
+  height: 100%;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+  background-color: rgba(0, 0, 0, 0.45);   
+  z-index: 1000;   
+}   
+   
+.popup-content {   
+  width: 28rem;   
+  max-width: calc(100% - 2rem);   
+  padding: 1.5rem;   
+  display: flex;   
+  flex-direction: column;   
+  gap: 0.8rem;   
+  background-color: #ffffff;   
+  border-radius: 0.75rem;   
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2);   
+}   
+   
+.popup-content h2 {   
+  margin-bottom: 0.5rem;   
+  text-align: center;   
+  color: #008f6b;   
+  font-size: 1.7rem;   
+  font-weight: 600;   
+}   
+   
+/* UPDATED FOR DROPDOWNS */   
+.popup-content input,   
+.popup-content select {   
+  width: 100%;   
+  height: 2.75rem;   
+  padding: 0 0.75rem;   
+  box-sizing: border-box;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #dfe5e2;   
+  border-radius: 0.4rem;   
+  outline: none;   
+  color: #22272b;   
+  font-size: 0.85rem;   
+  font-family: inherit;   
+}   
+   
+.popup-content input:focus,   
+.popup-content select:focus {   
+  border-color: #008f6b;   
+}   
+   
+.popup-content select {   
+  cursor: pointer;   
+  appearance: auto;   
+}   
+   
+.popup-content select option {   
+  color: #22272b;   
+  background-color: #ffffff;   
+}   
+   
+.popup-content select option[value="__ADD_NEW__"] {   
+  color: #008f6b;   
+  font-weight: 600;   
+}   
+   
+/* UPDATED FOR ADD NEW INPUT */   
+.popup-content .add-new-input {   
+  width: 100%;   
+  height: 2.75rem;   
+  padding: 0 0.75rem;   
+  box-sizing: border-box;   
+  background-color: #ffffff;   
+  border: 0.0625rem solid #dfe5e2;   
+  border-radius: 0.4rem;   
+  outline: none;   
+  color: #22272b;   
+  font-size: 0.85rem;   
+  font-family: inherit;   
+}   
+   
+.popup-content .add-new-input:focus {   
+  border-color: #008f6b;   
+}   
+   
+.popup-buttons {   
+  display: grid;   
+  grid-template-columns: repeat(2, minmax(0, 1fr));   
+  align-items: center;   
+  justify-content: flex-end;   
+  gap: 0.5rem;   
+  margin-top: 0.5rem;   
+}   
+   
+.popup-buttons button {   
+  min-width: 10rem;   
+  height: 2.5rem;   
+  padding: 0 1rem;   
+  border: none;   
+  border-radius: 0.4rem;   
+  font-size: 0.9rem;   
+  font-weight: 600;   
+  cursor: pointer;   
+}   
+   
+.popup-buttons button:first-child {   
+  background-color: #f1f3f2;   
+  color: #53605a;   
+}   
+   
+.popup-buttons button:last-child {   
+  background-color: #008f6b;   
+  color: #ffffff;   
+}   
+   
+.popup-buttons button:hover {   
+  opacity: 0.85;   
+}   
+   
+   
+/* =========================================================   
+   DESKTOP SIDEBAR   
+========================================================= */   
+   
+.sidebar-desktop {   
+  position: fixed;   
+  left: 0;   
+  top: 4.5rem;   
+  bottom: 0;   
+  width: var(--sidebar-width);   
+  display: flex;   
+  flex-direction: column;   
+  align-items: center;   
+  padding: 1.5rem 0;   
+  background-color: #ffffff;   
+  border-right: 0.0625rem solid #e5e7eb;   
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);   
+  z-index: 450;   
+}   
+   
+.sidebar-desktop .nav-item {   
+  width: 100%;   
+  display: flex;   
+  justify-content: center;   
+  margin-bottom: 1rem;   
+}   
+   
+.sidebar-desktop .sidebar-link {   
+  width: 100%;   
+  min-height: 4.2rem;   
+  display: flex;   
+  flex-direction: column;   
+  align-items: center;   
+  justify-content: center;   
+  gap: 0.5rem;   
+  position: relative;   
+  text-decoration: none;   
+  color: #53605a;   
+}   
+   
+.sidebar-desktop .sidebar-link.active {   
+  background-color: #e8f7f2;   
+  color: #008f6b;   
+  border-radius: 0.5rem;   
+}   
+   
+.sidebar-desktop .sidebar-link.active .nav-label {   
+  color: #008f6b;   
+  font-weight: 600;   
+}   
+   
+.sidebar-desktop .sidebar-link.active::before {   
+  content: "";   
+  position: absolute;   
+  left: 0;   
+  top: 50%;   
+  transform: translateY(-50%);   
+  width: 0.25rem;   
+  height: 2.5rem;   
+  background-color: #008f6b;   
+  border-radius: 0 0.25rem 0.25rem 0;   
+}   
+   
+.sidebar-desktop .nav-icon {   
+  width: 2rem;   
+  height: 2rem;   
+  display: flex;   
+  align-items: center;   
+  justify-content: center;   
+}   
+   
+.sidebar-desktop .nav-icon img {   
+  width: 1.8rem;   
+  height: 1.8rem;   
+  object-fit: contain;   
+}   
+   
+.sidebar-desktop .nav-label {   
+  font-size: 0.75rem;   
+  font-weight: 500;   
+  color: #53605a;   
+}   
+   
+.bottom-nav {   
+  display: none;   
+}   
+   
+   
+/* =========================================================   
+   LARGE DESKTOP   
+========================================================= */   
+   
+@media screen and (min-width: 1200px) {   
+   
+  .search-container {   
+    width: 100%;   
+    max-width: 100%;   
+  }   
+   
+  .card_section {   
+    width: 100%;   
+    grid-template-columns: repeat(3, minmax(0, 1fr));   
+    gap: 1.25rem;   
+  }   
+   
+  .table-container {   
+    width: 100%;   
+    max-width: 100%;   
+    max-height: 25rem;   
+    overflow-x: auto;   
+    overflow-y: auto;   
+    scrollbar-width: thin;   
+  }   
+   
+  .table-container table {   
+    width: 100%;   
+    min-width: 55rem;   
+  }   
+}   
+   
+   
+/* =========================================================   
+   TABLET   
+========================================================= */   
+   
+@media screen and (min-width: 481px) and (max-width: 768px) {   
+   
+  .main-container {   
+    height: 100%;   
+    max-height: 100%;   
+    display: flex;   
+    flex-direction: column;   
+    overflow: hidden;   
+    padding: 0 0.75rem !important;   
+  }   
+   
+  .main-container > div {   
+    height: 100%;   
+    display: flex;   
+    flex-direction: column;   
+    overflow: hidden;   
+    padding: 0 !important;   
+  }   
+   
+  .search-inventory-cards {   
+    position: static !important;   
+    flex-shrink: 0;   
+    width: 100%;   
+    background-color: #ffffff;   
+    padding: 0.5rem 0 0.25rem 0;   
+    z-index: 10;   
+  }   
+   
+  .add-product-container {   
+    flex-shrink: 0;   
+    margin-bottom: 0.25rem;   
+  }   
+   
+  .bill-cards-container {   
+    display: flex;   
+    flex-direction: column;   
+    gap: 0.75rem;   
+    flex: 1 1 auto;   
+    min-height: 0;   
+    max-height: none !important;   
+    overflow-y: auto !important;   
+    overflow-x: hidden;   
+    -webkit-overflow-scrolling: touch;   
+    padding: 0.25rem 0 1rem 0;   
+  }   
+   
+  .pagination-container {   
+    flex-shrink: 0;   
+    padding: 0.5rem 0;   
+    background-color: #ffffff;   
+    border-top: 1px solid #f1f3f2;   
+  }   
+   
+  .table-container {   
+    display: none;   
+  }   
+   
+  .search-container {   
+    width: 100%;   
+    max-width: 100%;   
+    margin-bottom: 1rem;   
+  }   
+   
+  .search-input-wrapper {   
+    width: 100%;   
+    max-width: 100%;   
+  }   
+   
+  .card_section {   
+    width: 100%;   
+    max-width: 100%;   
+    min-width: 0;   
+    grid-template-columns: repeat(3, minmax(0, 1fr));   
+    gap: 0.75rem;   
+  }   
+   
+  .card_box {   
+    width: 100%;   
+    min-width: 0;   
+    min-height: 6rem;   
+    padding: 1rem;   
+  }   
+   
+  .card_box_header {   
+    font-size: 0.7rem;   
+  }   
+   
+  .card_box_count {   
+    font-size: 1.3rem;   
+  }   
+   
+  .pagination-text {   
+    white-space: nowrap;   
+  }   
+   
+  .bottom-nav {   
+    width: 100%;   
+    max-width: 100%;   
+    height: 4.5rem;   
+    min-height: 4.5rem;   
+    display: flex;   
+    align-items: center;   
+    justify-content: space-around;   
+    background-color: #ffffff;   
+    border-top: 0.0625rem solid #e5e7eb;   
+    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);   
+    z-index: 600;   
+  }   
+}   
+   
+   
+/* =========================================================   
+   MOBILE   
+========================================================= */   
+   
+@media screen and (min-width: 391px) and (max-width: 480px) {   
+   
+  .table-container {   
+    display: none;   
+  }   
+   
+  .bill-cards-container {   
+    display: flex;   
+    flex-direction: column;   
+    gap: 0.75rem;   
+    max-height: 18rem;   
+    overflow-y: auto;   
+    overflow-x: hidden;   
+    -webkit-overflow-scrolling: touch;   
+    margin-top: 0.4rem;   
+  }   
+   
+  .main-container {   
+    width: 100%;   
+    max-width: 100%;   
+    min-width: 0;   
+    padding: 0.5rem;   
+  }   
+   
+  .main-container > div {   
+    width: 100%;   
+    max-width: 100%;   
+    min-width: 0;   
+    padding: 0.5rem;   
+  }   
+   
+  .search-container {   
+    width: 100%;   
+    max-width: 100%;   
+    margin-bottom: 0.9rem;   
+  }   
+   
+  .search-input-wrapper {   
+    width: 100%;   
+    max-width: 100%;   
+    height: 2.75rem;   
+    padding: 0 0.75rem;   
+  }   
+   
+  .search-input {   
+    width: 100%;   
+    font-size: 0.8rem;   
+  }   
+   
+  .card_section {   
+    width: 100%;   
+    max-width: 100%;   
+    grid-template-columns: repeat(3, minmax(0, 1fr));   
+    gap: 0.6rem;   
+  }   
+   
+  .card_box {   
+    width: 100%;   
+    min-width: 0;   
+    min-height: 5.5rem;   
+    padding: 0.75rem;   
+  }   
+   
+  .card_box_header {   
+    font-size: 0.65rem;   
+    white-space: nowrap;   
+  }   
+   
+  .card_box_count {   
+    font-size: 1.2rem;   
+  }   
+   
+  .add-product-container {   
+    width: 100%;   
+    max-width: 100%;   
+  }   
+   
+  .add-product-button {   
+    font-size: 0.75rem;   
+  }   
+   
+  .pagination-container {   
+    width: 100%;   
+    max-width: 100%;   
+    min-height: 3.5rem;   
+    padding: 0.6rem 0;   
+  }   
+   
+  .pagination-text {   
+    font-size: 0.7rem;   
+    white-space: nowrap;   
+  }   
+   
+  .pagination-buttons {   
+    gap: 0.35rem;   
+  }   
+   
+  .pagination-btn {   
+    width: 2rem;   
+    height: 2rem;   
+  }   
+   
+  .bottom-nav {   
+    width: 100%;   
+    max-width: 100%;   
+    height: 4.5rem;   
+    min-height: 4.5rem;   
+    display: flex;   
+    align-items: center;   
+    justify-content: space-around;   
+    background-color: #ffffff;   
+    border-top: 0.0625rem solid #e5e7eb;   
+    box-shadow: 0 -0.25rem 0.75rem rgba(0, 0, 0, 0.08);   
+    z-index: 600;   
+  }   
+}   
+   
+   
+/* =========================================================   
+   SMALL MOBILE   
+========================================================= */   
+   
+@media screen and (max-width: 390px) {   
+   
+  .table-container {   
+    display: none;   
+  }   
+   
+  .bill-cards-container {   
+    display: flex;   
+    flex-direction: column;   
+    gap: 0.75rem;   
+    max-height: 18rem;   
+    overflow-y: auto;   
+    overflow-x: hidden;   
+    -webkit-overflow-scrolling: touch;   
+    margin-top: 0.4rem;   
+  }   
+   
+  .main-container {   
+    width: 100%;   
+    max-width: 100%;   
+    min-width: 0;   
+    padding: 0.5rem;   
+  }   
+   
+  .main-container > div {   
+    width: 100%;   
+    max-width: 100%;   
+    min-width: 0;   
+    padding: 0.5rem;   
+  }   
+   
+  .search-container {   
+    width: 100%;   
+    max-width: 100%;   
+    margin-bottom: 0.75rem;   
+  }   
+   
+  .search-input-wrapper {   
+    width: 100%;   
+    max-width: 100%;   
+    height: 2.6rem;   
+    padding: 0 0.65rem;   
+  }   
+   
+  .search-icon {   
+    width: 1rem;   
+    height: 1rem;   
+    margin-right: 0.5rem;   
+  }   
+   
+  .search-input {   
+    width: 100%;   
+    font-size: 0.75rem;   
+  }   
+   
+  .card_section {   
+    width: 100%;   
+    max-width: 100%;   
+    grid-template-columns: repeat(3, minmax(0, 1fr));   
+    gap: 0.45rem;   
+  }   
+   
+  .card_box {   
+    width: 100%;   
+    min-width: 0;   
+    min-height: 4.75rem;   
+    padding: 0.65rem;   
+  }   
+   
+  .card_box_header {   
+    font-size: 0.55rem;   
+    margin-bottom: 0.35rem;   
+    white-space: nowrap;   
+  }   
+   
+  .card_box_count {   
+    font-size: 1rem;   
+  }   
+   
+  .add-product-container {   
+    width: 100%;   
+    max-width: 100%;   
+    margin-bottom: 0.4rem;   
+  }   
+   
+  .add-product-button {   
+    font-size: 0.7rem;   
+    padding: 0.3rem 0.4rem;   
+  }   
+   
+  .add-product-button span {   
+    font-size: 1.1rem;   
+  }   
+   
+  .pagination-container {   
+    width: 100%;   
+    max-width: 100%;   
+    min-height: 3.5rem;   
+    padding: 0.5rem 0;   
+  }   
+   
+  .pagination-text {   
+    font-size: 0.65rem;   
+    white-space: nowrap;   
+  }   
+   
+  .pagination-buttons {   
+    gap: 0.3rem;   
+  }   
+   
+  .pagination-btn {   
+    width: 1.9rem;   
+    height: 1.9rem;   
+  }   
+   
+  .popup-content {   
+    width: calc(100% - 1.5rem);   
+    max-width: calc(100% - 1.5rem);   
+    padding: 1rem;   
+  }   
+   
+  .popup-content h2 {   
+    font-size: 1.4rem;   
+  }   
+   
+  /* CHANGED: popup uses grid */   
+  .popup-buttons {   
+    grid-template-columns: 1fr;   
+  }   
+   
+  .popup-buttons button {   
+    width: 100%;   
+    min-width: 0;   
+  }   
+}   
+   
+   
+/* =========================================================   
+   MOBILE PRODUCT CARD - 3 ICON ALIGNMENT   
+========================================================= */   
+   
+@media screen and (max-width: 768px) {   
+   
+  .row-actions {   
+    display: flex;   
+    align-items: center;   
+    justify-content: flex-end;   
+    gap: 0.5rem;   
+    flex-shrink: 0;   
+  }   
+   
+  .edit-item-button,   
+  .delete-item-button,   
+  .more-item-button {   
+    width: 2rem;   
+    height: 2rem;   
+    min-width: 2rem;   
+    min-height: 2rem;   
+    padding: 0;   
+    display: flex;   
+    align-items: center;   
+    justify-content: center;   
+    flex-shrink: 0;   
+    border: none;   
+    background-color: transparent;   
+    cursor: pointer;   
+  }   
+   
+  .edit-item-button img,   
+  .delete-item-button img,   
+  .more-item-button img {   
+    width: 1.1rem;   
+    height: 1.1rem;   
+    object-fit: contain;   
+  }   
+}   
+   
+   
+/* =========================================================   
+   INVENTORY TABS   
+========================================================= */   
+   
+.inventory-tabs {   
+  display: flex;   
+  align-items: center;   
+  justify-content: flex-start;   
+  gap: 0.5rem;   
+  margin-bottom: 0.8rem;   
+}   
+   
+.inventory-tab {   
+  padding: 0.65rem 1.2rem;   
+  border: none;   
+  border-radius: 0.4rem;   
+  background-color: transparent;   
+  color: Green;   
+  font-size: 0.85rem;   
+  font-weight: 500;   
+  cursor: pointer;   
+  transition: all 0.2s ease;   
+}   
+   
+.inventory-tab:hover {   
+  background-color: #f5f7f6;   
+}   
+   
+.inventory-tab.active {   
+  background-color: green;   
+  color: #ffffff;   
 }
