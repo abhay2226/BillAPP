@@ -91,7 +91,8 @@ const resolveMovementType = async (
 
 
 export const createInventoryService = async (
-    inventoryData: InventoryData
+    inventoryData: InventoryData,
+    callerStoreId: number
 ) => {
     const storeId = inventoryData.store_id;
     const productId = inventoryData.product_id;
@@ -105,6 +106,10 @@ export const createInventoryService = async (
         storeId <= 0
     ) {
         throw new Error("Valid store ID is required");
+    }
+
+    if (storeId !== callerStoreId) {
+        throw new Error("STORE_MISMATCH");
     }
 
     if (
@@ -421,7 +426,8 @@ export const updatePricingService = async (
     inventoryId: number,
     costPrice: number | null,
     sellingPrice: number,
-    userId: number
+    userId: number,
+    callerStoreId: number 
 ) => {
     const inventory = await inventoryRepository.findOne({
         where: {
@@ -432,6 +438,10 @@ export const updatePricingService = async (
 
     if (!inventory) {
         return null;
+    }
+
+    if (inventory.store_id !== callerStoreId) {
+        throw new Error("STORE_MISMATCH");
     }
 
     if (
@@ -469,7 +479,8 @@ export const updateInventoryQuantityService = async (
     movementTypeId: number,
     referenceTypeCode: string = "ADJ",
     referenceId: number | undefined,
-    userId: number
+    userId: number,
+    callerStoreId: number 
 ) => {
     if (
         !Number.isInteger(quantityChange) ||
@@ -517,9 +528,6 @@ export const updateInventoryQuantityService = async (
                 where: {
                     inventory_id: inventoryId,
                     is_active: true
-                },
-                lock: {
-                    mode: "pessimistic_write"
                 }
             });
 
@@ -527,6 +535,10 @@ export const updateInventoryQuantityService = async (
             throw new Error(
                 "Inventory not found"
             );
+        }
+
+        if (inventory.store_id !== callerStoreId) {
+            throw new Error("STORE_MISMATCH");
         }
 
         const newQuantity =
@@ -594,7 +606,8 @@ export const updateInventoryQuantityService = async (
 
 export const deactivateInventoryService = async (
     inventoryId: number,
-    userId: number
+    userId: number,
+    callerStoreId: number
 ) => {
     const queryRunner =
         AppDataSource.createQueryRunner();
@@ -613,15 +626,17 @@ export const deactivateInventoryService = async (
                 where: {
                     inventory_id: inventoryId,
                     is_active: true
-                },
-                lock: {
-                    mode: "pessimistic_write"
                 }
             });
 
         if (!inventory) {
             return null;
         }
+
+        if (inventory.store_id !== callerStoreId) {
+            throw new Error("STORE_MISMATCH");
+        }
+
 
         if (inventory.qty > 0) {
             throw new Error(

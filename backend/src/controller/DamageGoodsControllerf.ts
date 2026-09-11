@@ -1,4 +1,3 @@
-
 import type { Request, Response } from "express";
 
 import {
@@ -10,45 +9,11 @@ import {
     deactivateDamagedGoodsService
 } from "../services/DamageGoodsService.js";
 
-import { verifyToken } from "../utils/jwt.js";
-
-// interface AuthPayload {
-//     userId: number;
-//     sessionId: number;
-// }
-
-// const authenticate = (req: Request): AuthPayload => {
-//     const authHeader = req.headers.authorization;
-
-//     if (!authHeader) {
-//         throw new Error("NO_TOKEN");
-//     }
-
-//     if (!authHeader.startsWith("Bearer ")) {
-//         throw new Error("INVALID_TOKEN_FORMAT");
-//     }
-
-//     const token = authHeader.substring(7);
-
-//     if (!token) {
-//         throw new Error("NO_TOKEN");
-//     }
-
-//     const payload = verifyToken(token) as AuthPayload;
-
-//     if (!payload || !payload.userId) {
-//         throw new Error("INVALID_USER");
-//     }
-
-//     return payload;
-// };
-
 export const createDamagedGoods = async (
     req: Request,
     res: Response
 ) => {
     try {
-
         if (!req.auth.sessionId) {
             return res.status(401).json({
                 success: false,
@@ -79,44 +44,20 @@ export const createDamagedGoods = async (
         const quantity = Number(qty);
         const unitCost = Number(unit_cost);
 
-        if (
-            !Number.isInteger(inventoryId) ||
-            inventoryId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid inventory ID"
-            });
+        if (!Number.isInteger(inventoryId) || inventoryId <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid inventory ID" });
         }
 
-        if (
-            !Number.isInteger(quantity) ||
-            quantity <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Quantity must be a positive integer"
-            });
+        if (!Number.isInteger(quantity) || quantity <= 0) {
+            return res.status(400).json({ success: false, message: "Quantity must be a positive integer" });
         }
 
-        if (
-            typeof reason !== "string" ||
-            reason.trim() === ""
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Damage reason is required"
-            });
+        if (typeof reason !== "string" || reason.trim() === "") {
+            return res.status(400).json({ success: false, message: "Damage reason is required" });
         }
 
-        if (
-            !Number.isFinite(unitCost) ||
-            unitCost < 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid unit cost"
-            });
+        if (!Number.isFinite(unitCost) || unitCost < 0) {
+            return res.status(400).json({ success: false, message: "Invalid unit cost" });
         }
 
         const data = await createDamagedGoodsService(
@@ -125,7 +66,8 @@ export const createDamagedGoods = async (
             reason.trim(),
             unitCost,
             req.auth.userId,
-            req.auth.sessionId
+            req.auth.sessionId,
+            req.auth.storeId   // NEW
         );
 
         return res.status(201).json({
@@ -137,33 +79,22 @@ export const createDamagedGoods = async (
         console.error(error);
 
         if (error.message === "NO_TOKEN") {
-            return res.status(401).json({
-                success: false,
-                message: "No token provided"
-            });
+            return res.status(401).json({ success: false, message: "No token provided" });
         }
-
         if (error.message === "INVALID_TOKEN_FORMAT") {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid authorization format"
-            });
+            return res.status(401).json({ success: false, message: "Invalid authorization format" });
         }
-
         if (error.message === "INVALID_USER") {
-            return res.status(401).json({
-                success: false,
-                message: "Authenticated user not found"
-            });
+            return res.status(401).json({ success: false, message: "Authenticated user not found" });
         }
-
-        if (
-            error.name === "JsonWebTokenError" ||
-            error.name === "TokenExpiredError"
-        ) {
+        if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+            return res.status(403).json({ success: false, message: "Invalid or expired token" });
+        }
+        // NEW
+        if (error.message === "STORE_MISMATCH") {
             return res.status(403).json({
                 success: false,
-                message: "Invalid or expired token"
+                message: "You cannot report damage for inventory from another store."
             });
         }
 
@@ -179,8 +110,7 @@ export const getAllDamagedGoods = async (
     res: Response
 ) => {
     try {
-        
-        const data = await getAllDamagedGoodsService();
+        const data = await getAllDamagedGoodsService(req.auth.storeId); // CHANGED — was called with no args
 
         return res.status(200).json({
             success: true,
@@ -191,27 +121,17 @@ export const getAllDamagedGoods = async (
         console.error(error);
 
         if (error.message === "NO_TOKEN") {
-            return res.status(401).json({
-                success: false,
-                message: "No token provided"
-            });
+            return res.status(401).json({ success: false, message: "No token provided" });
         }
-
         if (
             error.message === "INVALID_TOKEN_FORMAT" ||
             error.name === "JsonWebTokenError" ||
             error.name === "TokenExpiredError"
         ) {
-            return res.status(403).json({
-                success: false,
-                message: "Invalid or expired token"
-            });
+            return res.status(403).json({ success: false, message: "Invalid or expired token" });
         }
 
-        return res.status(500).json({
-            success: false,
-            message: "Failed to fetch damaged goods records"
-        });
+        return res.status(500).json({ success: false, message: "Failed to fetch damaged goods records" });
     }
 };
 
@@ -220,25 +140,24 @@ export const getDamagedGoodsById = async (
     res: Response
 ) => {
     try {
+        const damageId = Number(req.params.id);
 
-        const damageId =  Number(req.params.id);
-
-        if (
-            !Number.isInteger(damageId) ||
-            damageId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid damage ID parameter"
-            });
+        if (!Number.isInteger(damageId) || damageId <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid damage ID parameter" });
         }
 
         const data = await getDamagedGoodsByIdService(damageId);
 
         if (!data) {
-            return res.status(404).json({
+            return res.status(404).json({ success: false, message: "Damaged goods record not found" });
+        }
+
+        // NEW: ownership check — data.inventory comes from the
+        // relations: { inventory: true } already set in the service.
+        if (data.inventory.store_id !== req.auth.storeId) {
+            return res.status(403).json({
                 success: false,
-                message: "Damaged goods record not found"
+                message: "You cannot access damage records from another store."
             });
         }
 
@@ -251,27 +170,17 @@ export const getDamagedGoodsById = async (
         console.error(error);
 
         if (error.message === "NO_TOKEN") {
-            return res.status(401).json({
-                success: false,
-                message: "No token provided"
-            });
+            return res.status(401).json({ success: false, message: "No token provided" });
         }
-
         if (
             error.message === "INVALID_TOKEN_FORMAT" ||
             error.name === "JsonWebTokenError" ||
             error.name === "TokenExpiredError"
         ) {
-            return res.status(403).json({
-                success: false,
-                message: "Invalid or expired token"
-            });
+            return res.status(403).json({ success: false, message: "Invalid or expired token" });
         }
 
-        return res.status(500).json({
-            success: false,
-            message: "Failed to fetch damaged goods record"
-        });
+        return res.status(500).json({ success: false, message: "Failed to fetch damaged goods record" });
     }
 };
 
@@ -280,21 +189,16 @@ export const getDamagedGoodsByInventory = async (
     res: Response
 ) => {
     try {
-
         const inventoryId = Number(req.params.inventoryId);
 
-        if (
-            !Number.isInteger(inventoryId) ||
-            inventoryId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid inventory ID parameter"
-            });
+        if (!Number.isInteger(inventoryId) || inventoryId <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid inventory ID parameter" });
         }
 
-        const data =
-            await getDamagedGoodsByInventoryService(inventoryId);
+        const data = await getDamagedGoodsByInventoryService(
+            inventoryId,
+            req.auth.storeId   // NEW
+        );
 
         return res.status(200).json({
             success: true,
@@ -305,27 +209,24 @@ export const getDamagedGoodsByInventory = async (
         console.error(error);
 
         if (error.message === "NO_TOKEN") {
-            return res.status(401).json({
-                success: false,
-                message: "No token provided"
-            });
+            return res.status(401).json({ success: false, message: "No token provided" });
         }
-
         if (
             error.message === "INVALID_TOKEN_FORMAT" ||
             error.name === "JsonWebTokenError" ||
             error.name === "TokenExpiredError"
         ) {
+            return res.status(403).json({ success: false, message: "Invalid or expired token" });
+        }
+        // NEW
+        if (error.message === "STORE_MISMATCH") {
             return res.status(403).json({
                 success: false,
-                message: "Invalid or expired token"
+                message: "You cannot access inventory from another store."
             });
         }
 
-        return res.status(500).json({
-            success: false,
-            message: "Failed to fetch damaged goods records"
-        });
+        return res.status(500).json({ success: false, message: "Failed to fetch damaged goods records" });
     }
 };
 
@@ -334,74 +235,33 @@ export const updateDamagedGoods = async (
     res: Response
 ) => {
     try {
-
         if (!req.auth.sessionId) {
-            return res.status(401).json({
-                success: false,
-                message: "Session ID missing from token"
-            });
+            return res.status(401).json({ success: false, message: "Session ID missing from token" });
         }
 
         const damageId = Number(req.params.id);
 
-        if (
-            !Number.isInteger(damageId) ||
-            damageId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid damage ID parameter"
-            });
+        if (!Number.isInteger(damageId) || damageId <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid damage ID parameter" });
         }
 
-        const {
-            qty,
-            reason,
-            unit_cost
-        } = req.body;
+        const { qty, reason, unit_cost } = req.body;
 
-        if (
-            qty === undefined ||
-            unit_cost === undefined ||
-            reason === undefined
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "qty, unit_cost and reason are required"
-            });
+        if (qty === undefined || unit_cost === undefined || reason === undefined) {
+            return res.status(400).json({ success: false, message: "qty, unit_cost and reason are required" });
         }
 
         const quantity = Number(qty);
         const unitCost = Number(unit_cost);
 
-        if (
-            !Number.isInteger(quantity) ||
-            quantity <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Quantity must be a positive integer"
-            });
+        if (!Number.isInteger(quantity) || quantity <= 0) {
+            return res.status(400).json({ success: false, message: "Quantity must be a positive integer" });
         }
-
-        if (
-            typeof reason !== "string" ||
-            reason.trim() === ""
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Damage reason is required"
-            });
+        if (typeof reason !== "string" || reason.trim() === "") {
+            return res.status(400).json({ success: false, message: "Damage reason is required" });
         }
-
-        if (
-            !Number.isFinite(unitCost) ||
-            unitCost < 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid unit cost"
-            });
+        if (!Number.isFinite(unitCost) || unitCost < 0) {
+            return res.status(400).json({ success: false, message: "Invalid unit cost" });
         }
 
         const data = await updateDamagedGoodsService(
@@ -410,14 +270,12 @@ export const updateDamagedGoods = async (
             reason.trim(),
             unitCost,
             req.auth.userId,
-            req.auth.sessionId
+            req.auth.sessionId,
+            req.auth.storeId   // NEW
         );
 
         if (!data) {
-            return res.status(404).json({
-                success: false,
-                message: "Damaged goods record not found"
-            });
+            return res.status(404).json({ success: false, message: "Damaged goods record not found" });
         }
 
         return res.status(200).json({
@@ -429,27 +287,23 @@ export const updateDamagedGoods = async (
         console.error(error);
 
         if (error.message === "NO_TOKEN") {
-            return res.status(401).json({
-                success: false,
-                message: "No token provided"
-            });
+            return res.status(401).json({ success: false, message: "No token provided" });
         }
-
         if (error.message === "INVALID_USER") {
-            return res.status(401).json({
-                success: false,
-                message: "Authenticated user not found"
-            });
+            return res.status(401).json({ success: false, message: "Authenticated user not found" });
         }
-
         if (
             error.message === "INVALID_TOKEN_FORMAT" ||
             error.name === "JsonWebTokenError" ||
             error.name === "TokenExpiredError"
         ) {
+            return res.status(403).json({ success: false, message: "Invalid or expired token" });
+        }
+        // NEW
+        if (error.message === "STORE_MISMATCH") {
             return res.status(403).json({
                 success: false,
-                message: "Invalid or expired token"
+                message: "You cannot modify damage records from another store."
             });
         }
 
@@ -465,38 +319,25 @@ export const deactivateDamagedGoods = async (
     res: Response
 ) => {
     try {
-
         if (!req.auth.sessionId) {
-            return res.status(401).json({
-                success: false,
-                message: "Session ID missing from token"
-            });
+            return res.status(401).json({ success: false, message: "Session ID missing from token" });
         }
 
         const damageId = Number(req.params.id);
 
-        if (
-            !Number.isInteger(damageId) ||
-            damageId <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid damage ID parameter"
-            });
+        if (!Number.isInteger(damageId) || damageId <= 0) {
+            return res.status(400).json({ success: false, message: "Invalid damage ID parameter" });
         }
 
-        const data =
-            await deactivateDamagedGoodsService(
-                damageId,
-                req.auth.userId,
-                req.auth.sessionId
-            );
+        const data = await deactivateDamagedGoodsService(
+            damageId,
+            req.auth.userId,
+            req.auth.sessionId,
+            req.auth.storeId   // NEW
+        );
 
         if (!data) {
-            return res.status(404).json({
-                success: false,
-                message: "Damaged goods record not found"
-            });
+            return res.status(404).json({ success: false, message: "Damaged goods record not found" });
         }
 
         return res.status(200).json({
@@ -508,27 +349,23 @@ export const deactivateDamagedGoods = async (
         console.error(error);
 
         if (error.message === "NO_TOKEN") {
-            return res.status(401).json({
-                success: false,
-                message: "No token provided"
-            });
+            return res.status(401).json({ success: false, message: "No token provided" });
         }
-
         if (error.message === "INVALID_USER") {
-            return res.status(401).json({
-                success: false,
-                message: "Authenticated user not found"
-            });
+            return res.status(401).json({ success: false, message: "Authenticated user not found" });
         }
-
         if (
             error.message === "INVALID_TOKEN_FORMAT" ||
             error.name === "JsonWebTokenError" ||
             error.name === "TokenExpiredError"
         ) {
+            return res.status(403).json({ success: false, message: "Invalid or expired token" });
+        }
+        // NEW
+        if (error.message === "STORE_MISMATCH") {
             return res.status(403).json({
                 success: false,
-                message: "Invalid or expired token"
+                message: "You cannot deactivate damage records from another store."
             });
         }
 

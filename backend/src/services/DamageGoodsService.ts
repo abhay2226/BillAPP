@@ -14,20 +14,12 @@ const getMovementType = async (
     manager: EntityManager,
     code: string
 ): Promise<MovementType> => {
-
     const movementType = await manager.findOne(MovementType, {
-        where: {
-            code,
-            is_active: true
-        }
+        where: { code, is_active: true }
     });
-
     if (!movementType) {
-        throw new Error(
-            `Movement type with code '${code}' not found or inactive`
-        );
+        throw new Error(`Movement type with code '${code}' not found or inactive`);
     }
-
     return movementType;
 };
 
@@ -35,68 +27,29 @@ const getReferenceType = async (
     manager: EntityManager,
     code: string
 ): Promise<ReferenceType> => {
-
     const referenceType = await manager.findOne(ReferenceType, {
-        where: {
-            code,
-            is_active: true
-        }
+        where: { code, is_active: true }
     });
-
     if (!referenceType) {
-        throw new Error(
-            `Reference type with code '${code}' not found or inactive`
-        );
+        throw new Error(`Reference type with code '${code}' not found or inactive`);
     }
-
     return referenceType;
 };
 
 
-// ======================================================
-// REPOSITORIES
-// ======================================================
-
-const damageRepository =
-    AppDataSource.getRepository(DamagedGoods);
-
-const inventoryRepository =
-    AppDataSource.getRepository(Inventory);
+const damageRepository = AppDataSource.getRepository(DamagedGoods);
+const inventoryRepository = AppDataSource.getRepository(Inventory);
 
 
-// ======================================================
-// VALIDATE ID
-// ======================================================
-
-const validateId = (
-    value: number,
-    message: string
-): void => {
-
-    if (
-        !Number.isInteger(value) ||
-        value <= 0
-    ) {
+const validateId = (value: number, message: string): void => {
+    if (!Number.isInteger(value) || value <= 0) {
         throw new Error(message);
     }
 };
 
-
-// ======================================================
-// VALIDATE QUANTITY
-// ======================================================
-
-const validateQuantity = (
-    value: number
-): void => {
-
-    if (
-        !Number.isInteger(value) ||
-        value <= 0
-    ) {
-        throw new Error(
-            "Quantity must be a positive integer"
-        );
+const validateQuantity = (value: number): void => {
+    if (!Number.isInteger(value) || value <= 0) {
+        throw new Error("Quantity must be a positive integer");
     }
 };
 
@@ -111,12 +64,14 @@ export const createDamagedGoodsService = async (
     reason: string,
     unitCost: number,
     userId: number,
-    sessionId: number
+    sessionId: number,
+    storeId: number   
 ) => {
     validateId(inventoryId, "Valid inventory ID is required");
     validateQuantity(qty);
     validateId(userId, "Valid user ID is required");
     validateId(sessionId, "Valid session ID is required");
+    validateId(storeId, "Valid store ID is required");   // NEW
 
     if (!reason || reason.trim() === "") {
         throw new Error("Damage reason is required");
@@ -130,6 +85,11 @@ export const createDamagedGoodsService = async (
             where: { inventory_id: inventoryId, is_active: true }
         });
         if (!inventory) throw new Error("Active inventory record not found");
+
+        if (inventory.store_id !== storeId) {
+            throw new Error("STORE_MISMATCH");
+        }
+
         if (inventory.qty < qty) {
             throw new Error(`Insufficient stock. Available stock: ${inventory.qty}`);
         }
@@ -209,116 +169,76 @@ export const createDamagedGoodsService = async (
 // GET DAMAGE BY ID
 // ======================================================
 
-export const getDamagedGoodsByIdService =
-    async (
-        damageId: number
-    ) => {
+export const getDamagedGoodsByIdService = async (
+    damageId: number
+) => {
+    validateId(damageId, "Invalid damage ID");
 
-        validateId(
-            damageId,
-            "Invalid damage ID"
-        );
-
-
-        return await damageRepository.findOne({
-
-            where: {
-                damage_id:
-                    damageId,
-
-                is_active:
-                    true
-            },
-
-            relations: {
-                inventory: true
-            }
-        });
-    };
+    return await damageRepository.findOne({
+        where: { damage_id: damageId, is_active: true },
+        relations: { inventory: true }
+    });
+};
 
 
 // ======================================================
-// GET ALL ACTIVE DAMAGE RECORDS
+// GET ALL ACTIVE DAMAGE RECORDS (now scoped to one store)
 // ======================================================
 
-export const getAllDamagedGoodsService =
-    async () => {
+export const getAllDamagedGoodsService = async (
+    storeId: number   // NEW
+) => {
+    validateId(storeId, "Valid store ID is required");
 
-        return await damageRepository.find({
-
-            where: {
-                is_active:
-                    true
-            },
-
-            relations: {
-                inventory: true
-            },
-
-            order: {
-                damage_id:
-                    "DESC"
-            }
-        });
-    };
+    return await damageRepository
+        .createQueryBuilder("damage")
+        .leftJoinAndSelect("damage.inventory", "inventory")
+        .where("damage.is_active = :isActive", { isActive: true })
+        .andWhere("inventory.store_id = :storeId", { storeId })
+        .orderBy("damage.damage_id", "DESC")
+        .getMany();
+};
 
 
 // ======================================================
 // GET ALL DAMAGE HISTORY
 // ======================================================
 
-export const getAllDamagedGoodsHistoryService =
-    async () => {
-
-        return await damageRepository.find({
-
-            relations: {
-                inventory: true
-            },
-
-            order: {
-                damage_id:
-                    "DESC"
-            }
-        });
-    };
+export const getAllDamagedGoodsHistoryService = async () => {
+    return await damageRepository.find({
+        relations: { inventory: true },
+        order: { damage_id: "DESC" }
+    });
+};
 
 
 // ======================================================
-// GET DAMAGE BY INVENTORY
+// GET DAMAGE BY INVENTORY (now store-checked)
 // ======================================================
 
-export const getDamagedGoodsByInventoryService =
-    async (
-        inventoryId: number
-    ) => {
+export const getDamagedGoodsByInventoryService = async (
+    inventoryId: number,
+    storeId: number   // NEW
+) => {
+    validateId(inventoryId, "Invalid inventory ID");
+    validateId(storeId, "Valid store ID is required");
 
-        validateId(
-            inventoryId,
-            "Invalid inventory ID"
-        );
+    const inventory = await inventoryRepository.findOne({
+        where: { inventory_id: inventoryId }
+    });
+    if (!inventory) {
+        throw new Error("Active inventory record not found");
+    }
+    if (inventory.store_id !== storeId) {
+        throw new Error("STORE_MISMATCH");
+    }
 
-
-        return await damageRepository.find({
-
-            where: {
-                inventory_id:
-                    inventoryId,
-
-                is_active:
-                    true
-            },
-
-            relations: {
-                inventory: true
-            },
-
-            order: {
-                damage_id:
-                    "DESC"
-            }
-        });
-    };
+    return await damageRepository.find({
+        where: { inventory_id: inventoryId, is_active: true },
+        relations: { inventory: true },
+        order: { damage_id: "DESC" }
+    });
+};
 
 
 // ======================================================
@@ -331,12 +251,14 @@ export const updateDamagedGoodsService = async (
     reason: string,
     unitCost: number,
     userId: number,
-    sessionId: number
+    sessionId: number,
+    storeId: number   
 ) => {
     validateId(damageId, "Invalid damage ID");
     validateQuantity(qty);
     validateId(userId, "Valid user ID is required");
     validateId(sessionId, "Valid session ID is required");
+    validateId(storeId, "Valid store ID is required");   // NEW
 
     if (!reason || reason.trim() === "") throw new Error("Damage reason is required");
     if (typeof unitCost !== "number" || unitCost < 0) throw new Error("Valid unit cost is required");
@@ -352,6 +274,10 @@ export const updateDamagedGoodsService = async (
         });
         if (!inventory) throw new Error("Active inventory record not found");
 
+        if (inventory.store_id !== storeId) {
+            throw new Error("STORE_MISMATCH");
+        }
+
         const quantityDifference = qty - damage.qty;
         if (quantityDifference > 0 && inventory.qty < quantityDifference) {
             throw new Error(`Insufficient stock. Available stock: ${inventory.qty}`);
@@ -359,7 +285,6 @@ export const updateDamagedGoodsService = async (
 
         const now = new Date();
 
-        // UPDATE INVENTORY
         inventory.qty -= quantityDifference;
         inventory.updated_at = now;
         inventory.updated_by = userId;
@@ -374,7 +299,6 @@ export const updateDamagedGoodsService = async (
             sessionId
         });
 
-        // UPDATE DAMAGE
         damage.qty = qty;
         damage.reason = reason.trim();
         damage.unit_cost = unitCost;
@@ -392,7 +316,6 @@ export const updateDamagedGoodsService = async (
             sessionId
         });
 
-        // CREATE STOCK MOVEMENT (DAMED)
         const movementType = await getMovementType(manager, "DAMAGE");
         const referenceType = await getReferenceType(manager, "DAMED");
         const stockMovement = manager.create(StockMovement, {
@@ -424,7 +347,6 @@ export const updateDamagedGoodsService = async (
 };
 
 
-
 // ======================================================
 // DEACTIVATE DAMAGE RECORD
 // ======================================================
@@ -432,11 +354,13 @@ export const updateDamagedGoodsService = async (
 export const deactivateDamagedGoodsService = async (
     damageId: number,
     userId: number,
-    sessionId: number
+    sessionId: number,
+    storeId: number  
 ) => {
     validateId(damageId, "Invalid damage ID");
     validateId(userId, "Valid user ID is required");
     validateId(sessionId, "Valid session ID is required");
+    validateId(storeId, "Valid store ID is required");   // NEW
 
     return await AppDataSource.manager.transaction(async (manager) => {
         const damage = await manager.findOne(DamagedGoods, {
@@ -449,9 +373,13 @@ export const deactivateDamagedGoodsService = async (
         });
         if (!inventory) throw new Error("Active inventory record not found");
 
+        // NEW: ownership check
+        if (inventory.store_id !== storeId) {
+            throw new Error("STORE_MISMATCH");
+        }
+
         const now = new Date();
 
-        // RESTORE INVENTORY
         inventory.qty += damage.qty;
         inventory.updated_at = now;
         inventory.updated_by = userId;
@@ -466,7 +394,6 @@ export const deactivateDamagedGoodsService = async (
             sessionId
         });
 
-        // DEACTIVATE DAMAGE
         damage.is_active = false;
         damage.updated_at = now;
         damage.updated_by = userId;
@@ -481,7 +408,6 @@ export const deactivateDamagedGoodsService = async (
             sessionId
         });
 
-        // CREATE STOCK MOVEMENT (DAMD)
         const movementType = await getMovementType(manager, "DAMAGE");
         const referenceType = await getReferenceType(manager, "DAMD");
         const stockMovement = manager.create(StockMovement, {
@@ -489,7 +415,7 @@ export const deactivateDamagedGoodsService = async (
             movement_type_id: movementType.movement_type_id,
             reference_type_id: referenceType.reference_type_id,
             referenceType,
-            quantity_change: damage.qty, // restoring stock
+            quantity_change: damage.qty,
             reference_id: damage.damage_id,
             is_active: true,
             created_at: now,
@@ -513,73 +439,29 @@ export const deactivateDamagedGoodsService = async (
 };
 
 
-
 // ======================================================
 // GET DAMAGE RECORDS BY DATE RANGE
 // ======================================================
 
-export const getDamagedGoodsByDateRangeService =
-    async (
-        fromDate: Date,
-        toDate: Date
-    ) => {
+export const getDamagedGoodsByDateRangeService = async (
+    fromDate: Date,
+    toDate: Date
+) => {
+    if (!(fromDate instanceof Date) || isNaN(fromDate.getTime())) {
+        throw new Error("Invalid from date");
+    }
+    if (!(toDate instanceof Date) || isNaN(toDate.getTime())) {
+        throw new Error("Invalid to date");
+    }
+    if (fromDate > toDate) {
+        throw new Error("From date cannot be greater than to date");
+    }
 
-        if (
-            !(fromDate instanceof Date) ||
-            isNaN(fromDate.getTime())
-        ) {
-            throw new Error(
-                "Invalid from date"
-            );
-        }
-
-
-        if (
-            !(toDate instanceof Date) ||
-            isNaN(toDate.getTime())
-        ) {
-            throw new Error(
-                "Invalid to date"
-            );
-        }
-
-
-        if (fromDate > toDate) {
-            throw new Error(
-                "From date cannot be greater than to date"
-            );
-        }
-
-
-        return await damageRepository
-            .createQueryBuilder("damage")
-
-            .leftJoinAndSelect(
-                "damage.inventory",
-                "inventory"
-            )
-
-            .where(
-                "damage.created_at BETWEEN :fromDate AND :toDate",
-                {
-                    fromDate,
-                    toDate
-                }
-            )
-
-            .andWhere(
-                "damage.is_active = :isActive",
-                {
-                    isActive:
-                        true
-                }
-            )
-
-            .orderBy(
-                "damage.created_at",
-                "DESC"
-            )
-
-            .getMany();
-    };
-
+    return await damageRepository
+        .createQueryBuilder("damage")
+        .leftJoinAndSelect("damage.inventory", "inventory")
+        .where("damage.created_at BETWEEN :fromDate AND :toDate", { fromDate, toDate })
+        .andWhere("damage.is_active = :isActive", { isActive: true })
+        .orderBy("damage.created_at", "DESC")
+        .getMany();
+};

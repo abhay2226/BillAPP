@@ -219,9 +219,6 @@ async function validateAndPriceCartItems(
 
 // ======================================================
 // CREATE BILL ITEM ROWS
-// + REDUCE INVENTORY
-// + STOCK MOVEMENT
-// + AUDITS
 // ======================================================
 
 async function createBillItemRows(
@@ -386,8 +383,20 @@ async function createBillItemRows(
 // ======================================================
 
 export async function getBillItemsForBill(
-  billId: number
+  billId: number,
+  callerStoreId: number 
 ) {
+
+  const parentBill = await billRepo.findOne({
+        where: { bill_id: billId }
+    });
+
+  if (!parentBill) {
+      throw new Error("Bill not found.");
+  }
+  if (parentBill.store_id !== callerStoreId) {
+      throw new Error("STORE_MISMATCH");
+  }
 
   const items =
     await billItemRepo.find({
@@ -434,75 +443,44 @@ export async function getBillItemsForBill(
 // ======================================================
 // CREATE BILL
 // ======================================================
-
 export const createBillService = async (
-  input: CreateBillInput,
-  userId: number,
-  sessionId: number
+    input: CreateBillInput,
+    userId: number,
+    sessionId: number,
+    callerStoreId: number   // NEW
 ) => {
-
-  if (
-    !input.items ||
-    input.items.length === 0
-  ) {
-    throw new Error(
-      "A bill needs at least one item."
-    );
-  }
-
-
-  const seenInventoryIds =
-    new Set<number>();
-
-  for (const item of input.items) {
-
-    if (
-      !Number.isInteger(
-        item.inventory_id
-      ) ||
-      item.inventory_id <= 0
-    ) {
-      throw new Error(
-        "Every item needs a valid inventory_id."
-      );
+    if (!input.items || input.items.length === 0) {
+        throw new Error("A bill needs at least one item.");
     }
 
-    if (
-      !Number.isInteger(item.qty) ||
-      item.qty <= 0
-    ) {
-      throw new Error(
-        "Every item's qty must be a positive integer."
-      );
+    // NEW: reject before touching the DB at all if the body is trying to
+    // bill against a store the caller doesn't belong to.
+    if (input.store_id !== callerStoreId) {
+        throw new Error("STORE_MISMATCH");
     }
 
-    if (
-      seenInventoryIds.has(
-        item.inventory_id
-      )
-    ) {
-      throw new Error(
-        `inventory_id ${item.inventory_id} appears more than once — merge quantities into a single line before submitting.`
-      );
+    const seenInventoryIds = new Set<number>();
+
+    for (const item of input.items) {
+        if (!Number.isInteger(item.inventory_id) || item.inventory_id <= 0) {
+            throw new Error("Every item needs a valid inventory_id.");
+        }
+        if (!Number.isInteger(item.qty) || item.qty <= 0) {
+            throw new Error("Every item's qty must be a positive integer.");
+        }
+        if (seenInventoryIds.has(item.inventory_id)) {
+            throw new Error(
+                `inventory_id ${item.inventory_id} appears more than once — merge quantities into a single line before submitting.`
+            );
+        }
+        seenInventoryIds.add(item.inventory_id);
     }
 
-    seenInventoryIds.add(
-      item.inventory_id
-    );
-  }
-
-
-  if (
-    input.tax_total !== undefined &&
-    input.tax_total < 0
-  ) {
-    throw new Error(
-      "tax_total cannot be negative."
-    );
-  }
-
-
-  return AppDataSource.transaction(
+    if (input.tax_total !== undefined && input.tax_total < 0) {
+        throw new Error("tax_total cannot be negative.");
+    }
+    
+    return AppDataSource.transaction(
     async (manager) => {
 
       // ==================================================
@@ -794,68 +772,36 @@ export const createBillService = async (
 // ======================================================
 
 export const deleteBillService = async (
-  bill_id: number,
-  userId: number,
-  sessionId: number
+    bill_id: number,
+    userId: number,
+    sessionId: number,
+    callerStoreId: number   
 ) => {
+    return AppDataSource.transaction(async (manager) => {
+        const bill = await manager.findOne(Bill, {
+            where: { bill_id },
+            relations: ["billItems"]
+        });
 
-  return AppDataSource.transaction(
-    async (manager) => {
+        if (!bill) {
+            throw new Error("Bill not found.");
+        }
 
-      // ==================================================
-      // FIND BILL
-      // ==================================================
+        if (bill.store_id !== callerStoreId) {
+            throw new Error("STORE_MISMATCH");
+        }
 
-      const bill =
-        await manager.findOne(
-          Bill,
-          {
-            where: {
-              bill_id
-            },
-            relations: [
-              "billItems"
-            ]
-          }
-        );
+        if (bill.status === "VOID") {
+            throw new Error("This bill has already been cancelled.");
+        }
+        if (bill.status !== "COMPLETED") {
+            throw new Error(`Bill in status '${bill.status}' cannot be cancelled.`);
+        }
 
-      if (!bill) {
-        throw new Error(
-          "Bill not found."
-        );
-      }
-
-      if (bill.status === "VOID") {
-        throw new Error(
-          "This bill has already been cancelled."
-        );
-      }
-
-      if (
-        bill.status !== "COMPLETED"
-      ) {
-        throw new Error(
-          `Bill in status '${bill.status}' cannot be cancelled.`
-        );
-      }
-
-
-      // ==================================================
-      // 10 MINUTE VALIDATION
-      // ==================================================
-
-      const ageMs =
-        Date.now() -
-        bill.created_at.getTime();
-
-      if (
-        ageMs > TEN_MINUTES_MS
-      ) {
-        throw new Error(
-          "Bills can only be cancelled within 10 minutes of creation."
-        );
-      }
-
+        const ageMs = Date.now() - bill.created_at.getTime();
+        if (ageMs > TEN_MINUTES_MS) {
+            throw new Error("Bills can only be cancelled within 10 minutes of creation.");
+        }
 
       // ==================================================
       // MOVEMENT TYPE

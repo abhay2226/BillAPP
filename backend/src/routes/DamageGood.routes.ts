@@ -11,7 +11,6 @@ import {
 
 import { authenticate } from "../middleware/Authenticate.js";
 import { authorize } from "../middleware/Authorize.js";
-import { requireStoreAccess } from "../middleware/requireStoreAccess.js";
 
 
 const DamageGoodsRouter = Router();
@@ -25,15 +24,13 @@ DamageGoodsRouter.post(
 
 DamageGoodsRouter.get(
     "/",
-    authorize("OWNER",  "STAFF"),
-    requireStoreAccess("params", "storeId"),
+    authorize("OWNER", "STAFF"),
     getAllDamagedGoods
 );
 
 DamageGoodsRouter.get(
     "/inventory/:inventoryId",
     authorize("OWNER", "STAFF"),
-    requireStoreAccess("params", "storeId"),
     getDamagedGoodsByInventory
 );
 
@@ -45,15 +42,13 @@ DamageGoodsRouter.get(
 
 DamageGoodsRouter.put(
     "/:id",
-    authorize("OWNER","STAFF"),
-    requireStoreAccess("params", "storeId"),
+    authorize("OWNER", "STAFF"),
     updateDamagedGoods
 );
 
 DamageGoodsRouter.patch(
     "/deactivate/:id",
-    authorize("OWNER",  "STAFF"),
-    requireStoreAccess("params", "storeId"),
+    authorize("OWNER", "STAFF"),
     deactivateDamagedGoods
 );
 

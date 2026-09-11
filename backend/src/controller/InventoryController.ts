@@ -205,7 +205,9 @@ export const createInventory = async (
                 selling_price: sellingPrice,
                 created_by: req.auth.userId,
                 session_id: req.auth.sessionId
-            });
+            },
+            req.auth.storeId
+        );
 
         res.status(201).json({
             success: true,
@@ -348,6 +350,14 @@ export const getInventoryById = async (
             return;
         }
 
+        if (data.store_id !== req.auth.storeId) {
+            res.status(403).json({
+                success: false,
+                message: "You cannot access inventory from another store."
+            });
+            return;
+        }
+
         res.status(200).json({
             success: true,
             message:
@@ -441,8 +451,11 @@ export const updateInventoryPricing = async (
                 inventoryId,
                 costPrice,
                 sellingPrice,
-                req.auth.userId
+                req.auth.userId,
+                req.auth.storeId 
             );
+        
+        
 
         if (!data) {
             res.status(404).json({
@@ -460,6 +473,10 @@ export const updateInventoryPricing = async (
             data
         });
     } catch (error) {
+        if (error instanceof Error && error.message === "STORE_MISMATCH") {
+            res.status(403).json({ success: false, message: "You cannot update pricing for another store's inventory." });
+            return;
+        }
         handleError(
             error,
             res,
@@ -605,7 +622,8 @@ export const updateInventoryQuantity = async (
                 movementTypeId,
                 referenceTypeCode,
                 referenceId,
-                req.auth.userId
+                req.auth.userId,
+                req.auth.storeId
             );
 
         if (!data) {
@@ -624,6 +642,11 @@ export const updateInventoryQuantity = async (
             data
         });
     } catch (error) {
+
+        if (error instanceof Error && error.message === "STORE_MISMATCH") {
+            res.status(403).json({ success: false, message: "You cannot update quantity for another store's inventory." });
+            return;
+        }
         handleError(
             error,
             res,
@@ -655,7 +678,8 @@ export const deactivateInventory = async (
         const data =
             await deactivateInventoryService(
                 inventoryId,
-                req.auth.userId
+                req.auth.userId,
+                req.auth.storeId 
             );
 
         if (!data) {
@@ -674,6 +698,11 @@ export const deactivateInventory = async (
             data
         });
     } catch (error) {
+
+        if (error instanceof Error && error.message === "STORE_MISMATCH") {
+            res.status(403).json({ success: false, message: "You cannot deactivate another store's inventory." });
+            return;
+        }
         handleError(
             error,
             res,
