@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import * as authService from "../../pages/Login/authService";
+import * as userService from "../../services/userService";
 
 const AuthContext = createContext(null);
 
@@ -110,6 +111,36 @@ export function AuthProvider({ children }) {
   );
 
   /**
+   * UPDATE PROFILE
+   */
+  const updateProfile = useCallback(
+    async ({ firstname, lastname, email }) => {
+      if (!user) {
+        throw new Error("Not logged in.");
+      }
+
+      const updated = await userService.updateUser(user.userId, {
+        firstname,
+        lastname,
+        email,
+      });
+
+      const mergedUser = {
+        ...user,
+        firstname: updated.firstname,
+        lastname: updated.lastname,
+        email: updated.email,
+      };
+
+      setUser(mergedUser);
+      localStorage.setItem("user", JSON.stringify(mergedUser));
+
+      return mergedUser;
+    },
+    [user]
+  );
+
+  /**
    * LOGOUT
    */
   const logout = useCallback(async () => {
@@ -139,6 +170,7 @@ export function AuthProvider({ children }) {
         login,
         signup,
         logout,
+        updateProfile,
         isAuthenticated: Boolean(token && user),
       }}
     >

@@ -8,6 +8,11 @@ import micIcon from "../../assets/icons/mic.png";
 
 import "./Voicebilling.css";
 
+import * as inventoryService from "../../services/inventoryService";
+import * as discountService from "../../services/discountService";
+import * as billService from "../../services/billService";
+import * as customerService from "../../services/customerService";
+
 
 // ============================================================
 // CONSTANTS
@@ -15,7 +20,9 @@ import "./Voicebilling.css";
 
 const SILENCE_TIMEOUT = 2500;
 
-const INVENTORY_STORAGE_KEY = "shopkeeperInventoryData";
+const WALKIN_CUSTOMER_PHONE = "0000000000";
+
+const GST_RATE = 18;
 
 
 // ============================================================
@@ -49,23 +56,27 @@ const Billing = () => {
 
   const [editingItemId, setEditingItemId] = useState(null);
 
-  const [itemName, setItemName] = useState("");
   const [itemQuantity, setItemQuantity] = useState(1);
-  const [itemType, setItemType] = useState("");
-  const [itemBrand, setItemBrand] = useState("");
-  const [itemPrice, setItemPrice] = useState("");
 
   const [showItemPopup, setShowItemPopup] = useState(false);
 
 
   // ==========================================================
-  // INVENTORY SEARCH
+  // CUSTOMER
+  // ==========================================================
+
+  const [customerPhone, setCustomerPhone] = useState("");
+
+
+  // ==========================================================
+  // INVENTORY (loaded from backend)
   // ==========================================================
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [inventoryProducts, setInventoryProducts] = useState([]);
-  const [inventoryStock, setInventoryStock] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [isLoadingInventory, setIsLoadingInventory] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
 
   // ==========================================================
@@ -73,279 +84,78 @@ const Billing = () => {
   // ==========================================================
 
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [isSubmittingBill, setIsSubmittingBill] = useState(false);
 
   const [billNumber, setBillNumber] = useState("");
   const [billDate, setBillDate] = useState("");
   const [successTotalAmount, setSuccessTotalAmount] = useState(0);
 
-  const todayBillCountRef = useRef(0);
-
 
   // ==========================================================
-  // DISCOUNTS
+  // DISCOUNTS (loaded from backend)
   // ==========================================================
 
-  const availableDiscounts = [
-    {
-      id: "none",
-      label: "No discount",
-      type: null,
-      value: 0,
-      minBill: 0,
-      maxDiscount: 0,
-    },
-    {
-      id: "festival-offer",
-      label: "Festival Offer — 10% (max ₹200)",
-      type: "PERCENTAGE",
-      value: 10,
-      minBill: 500,
-      maxDiscount: 200,
-    },
-    {
-      id: "new-year-offer",
-      label: "New Year Offer — Flat ₹100",
-      type: "FLAT",
-      value: 100,
-      minBill: 1000,
-      maxDiscount: 100,
-    },
-  ];
-
+  const [availableDiscounts, setAvailableDiscounts] = useState([]);
   const [selectedDiscountId, setSelectedDiscountId] = useState("none");
 
 
   // ==========================================================
-  // LOAD INVENTORY DATA
+  // LOAD INVENTORY + DISCOUNTS FROM BACKEND
   // ==========================================================
 
-  const loadInventoryData = () => {
+  const loadInventoryData = async () => {
+    setIsLoadingInventory(true);
+    setLoadError("");
+
     try {
-      const storedData = localStorage.getItem(INVENTORY_STORAGE_KEY);
-
-      if (!storedData) {
-        setInventoryProducts([]);
-        setInventoryStock([]);
-        return;
-      }
-
-      const parsedData = JSON.parse(storedData);
-
-      setInventoryProducts(
-        Array.isArray(parsedData.products)
-          ? parsedData.products
-          : []
-      );
-
-      setInventoryStock(
-        Array.isArray(parsedData.inventory)
-          ? parsedData.inventory
-          : []
-      );
+      const inventoryData = await inventoryService.getInventory();
+      setInventory(inventoryData);
     } catch (error) {
       console.error("Unable to load inventory data:", error);
+      setLoadError(error.message || "Unable to load inventory.");
+      setInventory([]);
+    } finally {
+      setIsLoadingInventory(false);
+    }
+  };
 
-      setInventoryProducts([]);
-      setInventoryStock([]);
+  const loadDiscounts = async () => {
+    try {
+      const discounts = await discountService.getActiveDiscounts();
+      setAvailableDiscounts(discounts);
+    } catch (error) {
+      console.error("Unable to load discounts:", error);
+      setAvailableDiscounts([]);
     }
   };
 
 
   // ==========================================================
-  // LOAD INVENTORY ON PAGE LOAD
+  // LOAD DATA ON PAGE LOAD
   // ==========================================================
 
   useEffect(() => {
     loadInventoryData();
-
-    const handleInventoryUpdated = () => {
-      loadInventoryData();
-    };
-
-    const handleStorageChange = (event) => {
-      if (event.key === INVENTORY_STORAGE_KEY) {
-        loadInventoryData();
-      }
-    };
-
-    window.addEventListener(
-      "inventoryUpdated",
-      handleInventoryUpdated
-    );
-
-    window.addEventListener(
-      "storage",
-      handleStorageChange
-    );
-
-    return () => {
-      window.removeEventListener(
-        "inventoryUpdated",
-        handleInventoryUpdated
-      );
-
-      window.removeEventListener(
-        "storage",
-        handleStorageChange
-      );
-    };
+    loadDiscounts();
   }, []);
 
 
   // ==========================================================
-  // NORMALIZE PRODUCT NAME
-  // ==========================================================
-
-  const normalizeName = (value) => {
-    return String(value ?? "")
-      .trim()
-      .toLowerCase();
-  };
-
-
-  // ==========================================================
-  // GET PRODUCT NAME
-  // ==========================================================
-
-  const getProductName = (product) => {
-    return (
-      product.product ??
-      product.productName ??
-      product.name ??
-      ""
-    );
-  };
-
-
-  // ==========================================================
-  // GET PRODUCT ID
-  // ==========================================================
-
-  const getProductId = (product) => {
-    return (
-      product.productId ??
-      product.product_id ??
-      product.id ??
-      null
-    );
-  };
-
-
-  // ==========================================================
-  // GET PRODUCT TYPE
-  // ==========================================================
-
-  const getProductType = (product) => {
-    return (
-      product.type ??
-      product.productType ??
-      ""
-    );
-  };
-
-
-  // ==========================================================
-  // GET PRODUCT BRAND
-  // ==========================================================
-
-  const getProductBrand = (product) => {
-    return (
-      product.brand ??
-      product.productBrand ??
-      ""
-    );
-  };
-
-
-  // ==========================================================
-  // MERGE PRODUCT TAB + INVENTORY TAB
+  // SEARCHABLE INVENTORY PRODUCTS
   // ==========================================================
 
   const searchableInventoryProducts = useMemo(() => {
-    const results = [];
-
-    inventoryStock.forEach((inventoryItem) => {
-      const inventoryProductName = getProductName(inventoryItem);
-
-      let product = null;
-
-      const inventoryProductId =
-        inventoryItem.productId ??
-        inventoryItem.product_id ??
-        inventoryItem.id ??
-        null;
-
-      if (inventoryProductId !== null) {
-        product = inventoryProducts.find(
-          (productItem) => {
-            const productId = getProductId(productItem);
-
-            return (
-              productId !== null &&
-              String(productId) === String(inventoryProductId)
-            );
-          }
-        );
-      }
-
-      if (!product && inventoryProductName) {
-        product = inventoryProducts.find(
-          (productItem) =>
-            normalizeName(getProductName(productItem)) ===
-            normalizeName(inventoryProductName)
-        );
-      }
-
-      const name =
-        getProductName(product || {}) ||
-        inventoryProductName;
-
-      const type =
-        getProductType(product || {}) ||
-        getProductType(inventoryItem);
-
-      const brand =
-        getProductBrand(product || {}) ||
-        getProductBrand(inventoryItem);
-
-      const sellingPrice = Number(
-        inventoryItem.sellingPrice ??
-        inventoryItem.price ??
-        0
-      );
-
-      const quantity = Number(
-        inventoryItem.quantity ??
-        inventoryItem.qty ??
-        0
-      );
-
-      const stockStatus =
-        inventoryItem.stockStatus ??
-        (quantity > 0 ? "Available" : "Out of Stock");
-
-      results.push({
-        inventoryId:
-          inventoryItem.id ??
-          inventoryItem.inventoryId ??
-          inventoryItem.inventory_id ??
-          null,
-
-        productId:
-          getProductId(product || {}) ??
-          inventoryProductId,
-
-        name,
-        type,
-        brand,
-        sellingPrice,
-        quantity,
-        stockStatus,
-      });
-    });
-
-    return results;
-  }, [inventoryProducts, inventoryStock]);
+    return inventory.map((inventoryItem) => ({
+      inventoryId: inventoryItem.inventory_id,
+      productId: inventoryItem.product_id,
+      name: inventoryItem.product?.product_name || `Product #${inventoryItem.product_id}`,
+      type: inventoryItem.product?.type?.type_name || "",
+      brand: inventoryItem.product?.brand?.brand_name || "",
+      sellingPrice: Number(inventoryItem.selling_price),
+      quantity: Number(inventoryItem.qty),
+      stockStatus: inventoryItem.qty > 0 ? "Available" : "Out of Stock",
+    }));
+  }, [inventory]);
 
 
   // ==========================================================
@@ -376,6 +186,8 @@ const Billing = () => {
 
   // ==========================================================
   // BILL CALCULATIONS
+  // (mirrors backend: discount applies to pre-tax subtotal,
+  // tax is added on top afterwards)
   // ==========================================================
 
   const subtotal = useMemo(() => {
@@ -387,67 +199,56 @@ const Billing = () => {
 
 
   const gst = useMemo(() => {
-    return subtotal * 18 / 100;
+    return subtotal * GST_RATE / 100;
   }, [subtotal]);
 
 
-  const subtotalWithGST = useMemo(() => {
-    return subtotal + gst;
-  }, [subtotal, gst]);
-
-
   const selectedDiscount = useMemo(() => {
+    if (selectedDiscountId === "none") {
+      return null;
+    }
+
     return (
       availableDiscounts.find(
         (discount) =>
-          discount.id === selectedDiscountId
-      ) || availableDiscounts[0]
+          String(discount.discount_id) === String(selectedDiscountId)
+      ) || null
     );
-  }, [selectedDiscountId]);
+  }, [selectedDiscountId, availableDiscounts]);
 
 
   const discountAmount = useMemo(() => {
-    if (
-      selectedDiscount.id === "none" ||
-      subtotalWithGST < selectedDiscount.minBill
-    ) {
+    if (!selectedDiscount) {
       return 0;
     }
 
-    if (selectedDiscount.type === "PERCENTAGE") {
-      const calculatedDiscount =
-        subtotalWithGST *
-        selectedDiscount.value /
-        100;
+    const minBill = Number(selectedDiscount.min_bill_amount || 0);
 
-      return Math.min(
-        calculatedDiscount,
-        selectedDiscount.maxDiscount
-      );
+    if (subtotal < minBill) {
+      return 0;
     }
 
-    if (selectedDiscount.type === "FLAT") {
-      return Math.min(
-        selectedDiscount.value,
-        subtotalWithGST
-      );
-    }
+    const isPercentage = selectedDiscount.discountType?.code === "PERCENT";
 
-    return 0;
-  }, [
-    selectedDiscount,
-    subtotalWithGST,
-  ]);
+    const rawDiscount = isPercentage
+      ? subtotal * Number(selectedDiscount.discount_value) / 100
+      : Number(selectedDiscount.discount_value);
+
+    const maxDiscount = Number(selectedDiscount.max_discount_amount || 0);
+
+    return Math.min(rawDiscount, maxDiscount, subtotal);
+  }, [selectedDiscount, subtotal]);
 
 
   const grandTotal = useMemo(() => {
     return Math.max(
       0,
-      subtotalWithGST - discountAmount
+      subtotal - discountAmount + gst
     );
   }, [
-    subtotalWithGST,
+    subtotal,
     discountAmount,
+    gst,
   ]);
 
 
@@ -591,6 +392,7 @@ const Billing = () => {
 
       if (output) {
         setVoiceOutput(output);
+        setSearchTerm(output);
         resetSilenceTimer();
       }
     };
@@ -700,23 +502,12 @@ const Billing = () => {
       return;
     }
 
-    const productName =
-      inventoryProduct.name.trim();
-
     setItems((previousItems) => {
       const existingItem =
         previousItems.find(
           (item) =>
-            (
-              item.inventoryId !== null &&
-              inventoryProduct.inventoryId !== null &&
-              String(item.inventoryId) ===
-                String(inventoryProduct.inventoryId)
-            ) ||
-            (
-              normalizeName(item.name) ===
-              normalizeName(productName)
-            )
+            String(item.inventoryId) ===
+            String(inventoryProduct.inventoryId)
         );
 
       if (existingItem) {
@@ -763,7 +554,7 @@ const Billing = () => {
         productId:
           inventoryProduct.productId,
 
-        name: productName,
+        name: inventoryProduct.name,
 
         quantity: 1,
 
@@ -776,6 +567,8 @@ const Billing = () => {
         price,
 
         total: price,
+
+        maxQuantity: availableQuantity,
       };
 
       return [
@@ -789,93 +582,41 @@ const Billing = () => {
 
 
   // ==========================================================
-  // ADD / EDIT BILL ITEM
+  // EDIT BILL ITEM (quantity only — price/name come from inventory)
   // ==========================================================
 
   const handleItemSubmit = () => {
-    const name = itemName.trim();
     const quantity = Number(itemQuantity);
-    const price = Number(itemPrice);
-
-    if (!name) {
-      alert("Please enter item name.");
-      return;
-    }
 
     if (
       itemQuantity === "" ||
       !Number.isFinite(quantity) ||
       quantity < 1
     ) {
-      alert(
-        "Quantity must be at least 1."
-      );
-
+      alert("Quantity must be at least 1.");
       return;
     }
 
-    if (
-      itemPrice === "" ||
-      !Number.isFinite(price) ||
-      price < 0
-    ) {
-      alert(
-        "Price cannot be negative."
-      );
+    setItems((previousItems) =>
+      previousItems.map((item) => {
+        if (item.id !== editingItemId) {
+          return item;
+        }
 
-      return;
-    }
+        const maxQuantity = Number(item.maxQuantity ?? Infinity);
 
-    if (editingItemId !== null) {
-      setItems((previousItems) =>
-        previousItems.map((item) => {
-          if (
-            item.id !== editingItemId
-          ) {
-            return item;
-          }
+        if (quantity > maxQuantity) {
+          alert(`Only ${maxQuantity} unit(s) available in stock.`);
+          return item;
+        }
 
-          return {
-            ...item,
-            name,
-            quantity,
-            type: itemType.trim(),
-            brand: itemBrand.trim(),
-            price,
-            total:
-              quantity * price,
-          };
-        })
-      );
-    } else {
-      const newItem = {
-        id:
-          `${Date.now()}-${Math.random()
-            .toString(16)
-            .slice(2)}`,
-
-        inventoryId: null,
-        productId: null,
-
-        name,
-
-        quantity,
-
-        type: itemType.trim(),
-
-        brand: itemBrand.trim(),
-
-        price,
-
-        total:
-          quantity * price,
-      };
-
-      setItems((previousItems) => [
-        ...previousItems,
-        newItem,
-      ]);
-    }
+        return {
+          ...item,
+          quantity,
+          total: quantity * Number(item.price || 0),
+        };
+      })
+    );
 
     closeItemPopup();
   };
@@ -900,13 +641,7 @@ const Billing = () => {
 
   const editItem = (item) => {
     setEditingItemId(item.id);
-
-    setItemName(item.name);
     setItemQuantity(item.quantity);
-    setItemType(item.type || "");
-    setItemBrand(item.brand || "");
-    setItemPrice(item.price);
-
     setShowItemPopup(true);
   };
 
@@ -917,22 +652,19 @@ const Billing = () => {
 
   const closeItemPopup = () => {
     setShowItemPopup(false);
-
     setEditingItemId(null);
-
-    setItemName("");
     setItemQuantity(1);
-    setItemType("");
-    setItemBrand("");
-    setItemPrice("");
   };
+
+
+  const editingItem = items.find((item) => item.id === editingItemId);
 
 
   // ==========================================================
   // GENERATE BILL
   // ==========================================================
 
-  const generateBill = () => {
+  const generateBill = async () => {
     if (items.length === 0) {
       alert(
         "Please add at least one item before generating the bill."
@@ -941,42 +673,49 @@ const Billing = () => {
       return;
     }
 
-    const now = new Date();
+    if (items.some((item) => !item.inventoryId)) {
+      alert(
+        "Some items are not linked to inventory and cannot be billed."
+      );
 
-    const year =
-      now.getFullYear();
+      return;
+    }
 
-    const month =
-      String(
-        now.getMonth() + 1
-      ).padStart(2, "0");
+    setIsSubmittingBill(true);
 
-    const day =
-      String(
-        now.getDate()
-      ).padStart(2, "0");
+    try {
+      const phone = customerPhone.trim() || WALKIN_CUSTOMER_PHONE;
 
-    const generatedBillNumber =
-      `${year}${month}${day}-` +
-      `${String(
-        todayBillCountRef.current + 1
-      ).padStart(4, "0")}`;
+      const customer = await customerService.findOrCreateCustomer(phone);
 
-    todayBillCountRef.current += 1;
+      const billItems = items.map((item) => ({
+        inventory_id: item.inventoryId,
+        qty: item.quantity,
+      }));
 
-    setBillNumber(
-      generatedBillNumber
-    );
+      const taxTotal = Math.round(gst * 100) / 100;
 
-    setBillDate(
-      now.toLocaleString()
-    );
+      const bill = await billService.createBill({
+        customer_id: customer.customer_id,
+        items: billItems,
+        discount_id: selectedDiscount ? selectedDiscount.discount_id : null,
+        tax_total: taxTotal,
+      });
 
-    setSuccessTotalAmount(
-      grandTotal
-    );
+      setBillNumber(bill.invoice_number);
+      setBillDate(new Date(bill.created_at).toLocaleString());
+      setSuccessTotalAmount(Number(bill.grand_total));
 
-    setShowSuccessScreen(true);
+      setShowSuccessScreen(true);
+
+      // Stock has changed on the server — refresh local inventory.
+      loadInventoryData();
+    } catch (error) {
+      console.error("Failed to generate bill:", error);
+      alert(error.message || "Failed to generate bill.");
+    } finally {
+      setIsSubmittingBill(false);
+    }
   };
 
 
@@ -1022,6 +761,8 @@ const Billing = () => {
 
     setSelectedDiscountId("none");
 
+    setCustomerPhone("");
+
     setShowSuccessScreen(false);
 
     setBillNumber("");
@@ -1041,7 +782,7 @@ const Billing = () => {
       <BillSuccess
         billNumber={billNumber}
         billDate={billDate}
-        totalAmount={successTotalAmount}
+        successTotalAmount={`₹${successTotalAmount.toFixed(2)}`}
         onNewBill={createNewBill}
         onShare={shareReceipt}
         onPrint={printBill}
@@ -1058,6 +799,12 @@ const Billing = () => {
     <main className="main-content">
 
       <div className="voice-billing-view">
+
+        {loadError && (
+          <div className="bill-product-search-empty">
+            {loadError}
+          </div>
+        )}
 
         {/* ==================================================
             VOICE SECTION
@@ -1145,13 +892,9 @@ const Billing = () => {
 
               <div className="inventory-status-item">
                 <strong>
-                  Matched with inventory
-                </strong>
-              </div>
-
-              <div className="inventory-status-item">
-                <strong>
-                  Item not found
+                  {searchedInventoryProducts.length > 0
+                    ? "Matched with inventory"
+                    : "Item not found"}
                 </strong>
               </div>
 
@@ -1170,8 +913,13 @@ const Billing = () => {
           <input
             type="text"
             className="bill-search-input"
-            placeholder="Search bill items..."
+            placeholder={
+              isLoadingInventory
+                ? "Loading inventory..."
+                : "Search bill items..."
+            }
             value={searchTerm}
+            disabled={isLoadingInventory}
             onChange={(event) =>
               setSearchTerm(
                 event.target.value
@@ -1192,11 +940,7 @@ const Billing = () => {
                   (product) => (
                     <div
                       className="bill-product-search-card"
-                      key={
-                        product.inventoryId ??
-                        product.productId ??
-                        product.name
-                      }
+                      key={product.inventoryId}
                     >
 
                       <div className="bill-product-search-info">
@@ -1288,6 +1032,28 @@ const Billing = () => {
               Bill Items
             </h2>
 
+          </div>
+
+
+          {/* ==================================================
+              CUSTOMER
+          ================================================== */}
+
+          <div className="popup-field">
+            <label htmlFor="customer-phone">
+              Customer Phone (optional)
+            </label>
+
+            <input
+              id="customer-phone"
+              type="text"
+              inputMode="numeric"
+              placeholder="Walk-in customer"
+              value={customerPhone}
+              onChange={(event) =>
+                setCustomerPhone(event.target.value)
+              }
+            />
           </div>
 
 
@@ -1543,12 +1309,12 @@ const Billing = () => {
             <div className="bill-summary-row">
 
               <span>
-                GST (18%)
+                Discount
               </span>
 
               <strong>
                 ₹
-                {gst.toFixed(2)}
+                {discountAmount.toFixed(2)}
               </strong>
 
             </div>
@@ -1557,12 +1323,12 @@ const Billing = () => {
             <div className="bill-summary-row">
 
               <span>
-                Discount
+                GST ({GST_RATE}%)
               </span>
 
               <strong>
                 ₹
-                {discountAmount.toFixed(2)}
+                {gst.toFixed(2)}
               </strong>
 
             </div>
@@ -1584,13 +1350,17 @@ const Billing = () => {
                 }
               >
 
+                <option value="none">
+                  No discount
+                </option>
+
                 {availableDiscounts.map(
                   (discount) => (
                     <option
-                      key={discount.id}
-                      value={discount.id}
+                      key={discount.discount_id}
+                      value={discount.discount_id}
                     >
-                      {discount.label}
+                      {discount.discount_name}
                     </option>
                   )
                 )}
@@ -1626,8 +1396,9 @@ const Billing = () => {
               type="button"
               className="generate-bill-button"
               onClick={generateBill}
+              disabled={isSubmittingBill}
             >
-              Generate Bill
+              {isSubmittingBill ? "Generating..." : "Generate Bill"}
             </button>
 
           </div>
@@ -1641,7 +1412,7 @@ const Billing = () => {
           EDIT ITEM POPUP
       ====================================================== */}
 
-      {showItemPopup && (
+      {showItemPopup && editingItem && (
         <div className="billing-popup-overlay">
 
           <div className="pop-up">
@@ -1654,23 +1425,9 @@ const Billing = () => {
             <div className="popup-form">
 
               <div className="popup-field">
-
-                <label>
-                  Name
-                </label>
-
-                <input
-                  type="text"
-                  value={itemName}
-                  onChange={(event) =>
-                    setItemName(
-                      event.target.value
-                    )
-                  }
-                />
-
+                <label>Name</label>
+                <input type="text" value={editingItem.name} disabled />
               </div>
-
 
               <div className="popup-field">
 
@@ -1681,6 +1438,7 @@ const Billing = () => {
                 <input
                   type="number"
                   min="1"
+                  max={editingItem.maxQuantity}
                   value={itemQuantity}
                   onChange={(event) =>
                     setItemQuantity(
@@ -1691,63 +1449,13 @@ const Billing = () => {
 
               </div>
 
-
               <div className="popup-field">
-
-                <label>
-                  Type
-                </label>
-
-                <input
-                  type="text"
-                  value={itemType}
-                  onChange={(event) =>
-                    setItemType(
-                      event.target.value
-                    )
-                  }
-                />
-
-              </div>
-
-
-              <div className="popup-field">
-
-                <label>
-                  Brand
-                </label>
-
-                <input
-                  type="text"
-                  value={itemBrand}
-                  onChange={(event) =>
-                    setItemBrand(
-                      event.target.value
-                    )
-                  }
-                />
-
-              </div>
-
-
-              <div className="popup-field">
-
-                <label>
-                  Price
-                </label>
-
+                <label>Price</label>
                 <input
                   type="number"
-                  min="0"
-                  step="0.01"
-                  value={itemPrice}
-                  onChange={(event) =>
-                    setItemPrice(
-                      event.target.value
-                    )
-                  }
+                  value={editingItem.price}
+                  disabled
                 />
-
               </div>
 
             </div>
