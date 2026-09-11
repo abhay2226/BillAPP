@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{base_url}}/inventory"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"product_id\": 1,\r
+
+    \  \"store_id\": 1,\r
+
+    \  \"qty\": 0,\r
+
+    \  \"cost_price\": 20,\r
+
+    \  \"selling_price\": 25\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 1788938764735
