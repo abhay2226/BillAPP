@@ -81,9 +81,6 @@ export const createInventoryService = async (
             where: {
                 store_id: storeId,
                 product_id: productId
-            },
-            lock: {
-                mode: "pessimistic_write"
             }
         });
 
