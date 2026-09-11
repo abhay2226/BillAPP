@@ -11,14 +11,18 @@ import boxIcon from "../../assets/icons/box.png";
 import micIcon from "../../assets/icons/mic.png";
 import chevronIcon from "../../assets/icons/chevron.png";
 
+import * as billService from "../../services/billService";
+import * as inventoryService from "../../services/inventoryService";
+
+const LOW_STOCK_THRESHOLD = 5;
+
 export default function Dashboard() {
   const navigate = useNavigate();
 
   const [currentDate, setCurrentDate] = useState("");
   const [sales, setSales] = useState("₹0.00");
   const [lowStockCount, setLowStockCount] = useState(0);
-
-  
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const options = {
@@ -35,9 +39,36 @@ export default function Dashboard() {
 
     setCurrentDate(today);
 
-    // Temporary dashboard values
-    setSales("₹12,450.00");
-    setLowStockCount(5);
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+
+      try {
+        const todayIso = new Date().toISOString().slice(0, 10);
+
+        const [bills, inventory] = await Promise.all([
+          billService.getBillHistory({ date: todayIso }),
+          inventoryService.getInventory(),
+        ]);
+
+        const todaysSales = bills
+          .filter((bill) => bill.status !== "VOID")
+          .reduce((sum, bill) => sum + Number(bill.grand_total || 0), 0);
+
+        setSales(`₹${todaysSales.toFixed(2)}`);
+
+        const lowStock = inventory.filter(
+          (item) => item.qty > 0 && item.qty <= LOW_STOCK_THRESHOLD
+        ).length;
+
+        setLowStockCount(lowStock);
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDashboardData();
   }, []);
 
   return (
@@ -85,7 +116,7 @@ export default function Dashboard() {
               </p>
 
               <p className="stat-value">
-                {sales}
+                {isLoading ? "…" : sales}
               </p>
 
             </div>
@@ -99,7 +130,7 @@ export default function Dashboard() {
               <div className="stat-value-container">
 
                 <p className="stat-value low-stock-number">
-                  {lowStockCount}
+                  {isLoading ? "…" : lowStockCount}
                 </p>
 
                 <p className="stat-items-label">
@@ -209,8 +240,8 @@ export default function Dashboard() {
 
           </button>
 
-          
-          
+
+
       </div>
 
       {/* ================= MOBILE BOTTOM NAV ================= */}

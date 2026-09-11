@@ -1,16 +1,16 @@
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 
 import "./BillHistory.css";
 
 import searchIcon from "../../assets/icons/search.png";
 import receiptIcon from "../../assets/icons/box.png";
 
-const PAYMENT_BADGE_CLASS = {
-  Cash: "bill-badge-success",
-  Card: "bill-badge-accent",
-  UPI: "bill-badge-warning",
+import * as billService from "../../services/billService";
+
+const STATUS_BADGE_CLASS = {
+  COMPLETED: "bill-badge-success",
+  VOID: "bill-badge-warning",
 };
 
 const formatCurrency = (value) => {
@@ -37,43 +37,41 @@ const formatBillTimeOnly = (isoString) => {
 };
 
 export default function BillHistory() {
-  const navigate = useNavigate();
-
   const [bills, setBills] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("date-desc");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  const [expandedBillId, setExpandedBillId] = useState(null);
+  const [billItemsById, setBillItemsById] = useState({});
+  const [loadingItemsForBillId, setLoadingItemsForBillId] = useState(null);
+
+  const loadBills = async () => {
+    setIsLoading(true);
+    setLoadError("");
+
+    try {
+      const data = await billService.getBillHistory();
+      setBills(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to load bill history:", error);
+      setLoadError(error.message || "Failed to load bill history.");
+      setBills([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadBills = () => {
-      try {
-        const storedBills = JSON.parse(
-          localStorage.getItem("generatedBills") || "[]"
-        );
-
-        setBills(Array.isArray(storedBills) ? storedBills : []);
-      } catch (error) {
-        console.error("Failed to load bill history:", error);
-        setBills([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadBills();
 
-    const handleStorageChange = () => {
-      loadBills();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
     window.addEventListener("focus", loadBills);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("focus", loadBills);
     };
   }, []);
@@ -86,10 +84,10 @@ export default function BillHistory() {
     if (search) {
       result = result.filter((bill) => {
         return (
-          String(bill.billNumber || bill.id || "")
+          String(bill.invoice_number || bill.bill_id || "")
             .toLowerCase()
             .includes(search) ||
-          String(bill.customerName || "")
+          String(bill.customer?.phone_no || "")
             .toLowerCase()
             .includes(search)
         );
@@ -100,7 +98,7 @@ export default function BillHistory() {
       const fromTime = new Date(dateFrom).setHours(0, 0, 0, 0);
 
       result = result.filter((bill) => {
-        return new Date(bill.date).getTime() >= fromTime;
+        return new Date(bill.created_at).getTime() >= fromTime;
       });
     }
 
@@ -108,25 +106,23 @@ export default function BillHistory() {
       const toTime = new Date(dateTo).setHours(23, 59, 59, 999);
 
       result = result.filter((bill) => {
-        return new Date(bill.date).getTime() <= toTime;
+        return new Date(bill.created_at).getTime() <= toTime;
       });
     }
 
     result.sort((a, b) => {
       switch (sortOption) {
         case "date-asc":
-          return new Date(a.date) - new Date(b.date);
+          return new Date(a.created_at) - new Date(b.created_at);
 
         case "date-desc":
-          return new Date(b.date) - new Date(a.date);
+          return new Date(b.created_at) - new Date(a.created_at);
 
         case "amount-asc":
-          return Number(a.amount || a.grandTotal || 0) -
-            Number(b.amount || b.grandTotal || 0);
+          return Number(a.grand_total || 0) - Number(b.grand_total || 0);
 
         case "amount-desc":
-          return Number(b.amount || b.grandTotal || 0) -
-            Number(a.amount || a.grandTotal || 0);
+          return Number(b.grand_total || 0) - Number(a.grand_total || 0);
 
         default:
           return 0;
@@ -154,15 +150,40 @@ export default function BillHistory() {
     dateFrom !== "" ||
     dateTo !== "";
 
-  const viewBill = (billId) => {
-    navigate(`/billing/history/${billId}`);
+  const viewBill = async (bill) => {
+    const billId = bill.bill_id;
+
+    if (expandedBillId === billId) {
+      setExpandedBillId(null);
+      return;
+    }
+
+    setExpandedBillId(billId);
+
+    if (!billItemsById[billId]) {
+      setLoadingItemsForBillId(billId);
+
+      try {
+        const items = await billService.getBillItems(billId);
+
+        setBillItemsById((previous) => ({
+          ...previous,
+          [billId]: items,
+        }));
+      } catch (error) {
+        console.error("Failed to load bill items:", error);
+        alert(error.message || "Failed to load bill items.");
+      } finally {
+        setLoadingItemsForBillId(null);
+      }
+    }
   };
 
   const printBill = (event, billId) => {
     event.stopPropagation();
 
     const bill = bills.find(
-      (item) => String(item.id) === String(billId)
+      (item) => item.bill_id === billId
     );
 
     if (!bill) {
@@ -198,7 +219,7 @@ export default function BillHistory() {
             <input
               type="text"
               className="bill-history-search-input"
-              placeholder="Search by bill number or customer"
+              placeholder="Search by bill number or customer phone"
               value={searchTerm}
               onChange={(event) =>
                 setSearchTerm(event.target.value)
@@ -262,6 +283,12 @@ export default function BillHistory() {
 
           </div>
 
+          {loadError && (
+            <div className="bill-history-empty">
+              {loadError}
+            </div>
+          )}
+
           <div className="bill-history-grid">
 
             {isLoading ? (
@@ -277,42 +304,23 @@ export default function BillHistory() {
             ) : (
               visibleBills.map((bill) => {
 
-                const billId =
-                  bill.billNumber || bill.id;
+                const billId = bill.bill_id;
 
-                const amount =
-                  Number(
-                    bill.amount ??
-                    bill.grandTotal ??
-                    0
-                  );
-
-                const itemCount =
-                  Number(
-                    bill.itemCount ??
-                    (bill.items || []).reduce(
-                      (total, item) =>
-                        total + Number(item.quantity || 0),
-                      0
-                    )
-                  );
+                const amount = Number(bill.grand_total ?? 0);
 
                 const customerName =
-                  bill.customerName ||
+                  bill.customer?.phone_no ||
                   "Walk-in Customer";
 
-                const paymentMode =
-                  bill.paymentMode ||
-                  "Cash";
+                const status = bill.status || "COMPLETED";
 
-                const storeName =
-                  bill.storeName ||
-                  "Store 1";
+                const isExpanded = expandedBillId === billId;
+                const items = billItemsById[billId];
 
                 return (
                   <div
                     className="bill-history-card"
-                    key={bill.id || bill.billNumber}
+                    key={billId}
                   >
 
                     <div className="bill-history-card-top">
@@ -326,18 +334,18 @@ export default function BillHistory() {
                         />
 
                         <span className="bill-history-card-id">
-                          #{billId}
+                          #{bill.invoice_number}
                         </span>
 
                       </div>
 
                       <span
                         className={`bill-history-badge ${
-                          PAYMENT_BADGE_CLASS[paymentMode] ||
+                          STATUS_BADGE_CLASS[status] ||
                           "bill-badge-accent"
                         }`}
                       >
-                        {paymentMode}
+                        {status}
                       </span>
 
                     </div>
@@ -353,30 +361,56 @@ export default function BillHistory() {
                     <div className="bill-history-card-details">
 
                       <div className="bill-history-card-detail-row">
-                        <span>Items</span>
-                        <span>{itemCount}</span>
+                        <span>Subtotal</span>
+                        <span>{formatCurrency(bill.subtotal)}</span>
+                      </div>
+
+                      <div className="bill-history-card-detail-row">
+                        <span>Discount</span>
+                        <span>{formatCurrency(bill.bill_discount_total)}</span>
                       </div>
 
                       <div className="bill-history-card-detail-row">
                         <span>Date</span>
                         <span>
-                          {formatBillDateOnly(bill.date)}
+                          {formatBillDateOnly(bill.created_at)}
                         </span>
                       </div>
 
                       <div className="bill-history-card-detail-row">
                         <span>Time</span>
                         <span>
-                          {formatBillTimeOnly(bill.date)}
+                          {formatBillTimeOnly(bill.created_at)}
                         </span>
                       </div>
 
-                      <div className="bill-history-card-detail-row">
-                        <span>Store</span>
-                        <span>{storeName}</span>
-                      </div>
-
                     </div>
+
+                    {isExpanded && (
+                      <div className="bill-history-card-details">
+                        {loadingItemsForBillId === billId ? (
+                          <div className="bill-history-card-detail-row">
+                            <span>Loading items...</span>
+                          </div>
+                        ) : (items || []).length === 0 ? (
+                          <div className="bill-history-card-detail-row">
+                            <span>No items found.</span>
+                          </div>
+                        ) : (
+                          (items || []).map((item) => (
+                            <div
+                              className="bill-history-card-detail-row"
+                              key={item.billItemId}
+                            >
+                              <span>
+                                {item.productName} × {item.qty}
+                              </span>
+                              <span>{formatCurrency(item.lineTotal)}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
 
                     <div className="bill-history-card-actions">
 
@@ -384,10 +418,10 @@ export default function BillHistory() {
                         type="button"
                         className="bill-history-card-button"
                         onClick={() =>
-                          viewBill(billId)
+                          viewBill(bill)
                         }
                       >
-                        View
+                        {isExpanded ? "Hide" : "View"}
                       </button>
 
                       <button

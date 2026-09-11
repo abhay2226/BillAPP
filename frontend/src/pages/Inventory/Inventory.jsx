@@ -11,6 +11,13 @@ import moreIcon from "../../assets/icons/more.png";
 
 import "./Inventory.css";
 
+import * as productService from "../../services/productService";
+import * as inventoryService from "../../services/inventoryService";
+import * as damageGoodsService from "../../services/damageGoodsService";
+import * as masterDataService from "../../services/masterDataService";
+
+const LOW_STOCK_THRESHOLD = 5;
+
 function Inventory() {
   const [activeTab, setActiveTab] = useState("product");
 
@@ -18,9 +25,17 @@ function Inventory() {
   const [inventory, setInventory] = useState([]);
   const [damageGoods, setDamageGoods] = useState([]);
 
+  const [productTypes, setProductTypes] = useState([]);
+  const [productBrands, setProductBrands] = useState([]);
+  const [units, setUnits] = useState([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const [searchValue, setSearchValue] = useState("");
 
   const [showPopup, setShowPopup] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [editingProductId, setEditingProductId] = useState(null);
   const [editingInventoryId, setEditingInventoryId] = useState(null);
@@ -34,24 +49,12 @@ function Inventory() {
 
   /*
   ============================================================
-  DROPDOWN MASTER VALUES
-  ============================================================
-  */
-
-  const [productNames, setProductNames] = useState([]);
-  const [productTypes, setProductTypes] = useState([]);
-  const [productBrands, setProductBrands] = useState([]);
-  const [units, setUnits] = useState([]);
-
-  /*
-  ============================================================
-  ADD NEW DROPDOWN STATES
+  ADD NEW DROPDOWN STATES (product tab only)
   ============================================================
   */
 
   const [addingNewType, setAddingNewType] = useState(false);
   const [addingNewBrand, setAddingNewBrand] = useState(false);
-  const [addingNewUnit, setAddingNewUnit] = useState(false);
 
   /*
   ============================================================
@@ -59,21 +62,132 @@ function Inventory() {
   ============================================================
   */
 
-  const [formData, setFormData] = useState({
-    product: "",
-    type: "",
-    brand: "",
-    unit: "",
-    cost: "",
+  const emptyForm = {
+    // product tab
+    productName: "",
+    typeId: "",
+    typeName: "",
+    brandId: "",
+    brandName: "",
+    unitId: "",
+    unitQuantity: "",
+
+    // inventory tab
+    productId: "",
+    costPrice: "",
     sellingPrice: "",
-    weight: "",
-    quantity: "",
+    qty: "",
+
+    // damage tab
+    inventoryId: "",
+    damageQty: "",
     reason: "",
     unitCost: "",
-    lossValue: "",
-    stockStatus: "Available",
-    status: "Available",
-  });
+  };
+
+  const [formData, setFormData] = useState(emptyForm);
+
+  /*
+  ============================================================
+  LOAD ALL DATA
+  ============================================================
+  */
+
+  const loadAll = async () => {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const [
+        productsData,
+        inventoryData,
+        damageData,
+        typesData,
+        brandsData,
+        unitsData,
+      ] = await Promise.all([
+        productService.getProducts(),
+        inventoryService.getInventory(),
+        damageGoodsService.getDamagedGoods(),
+        masterDataService.getProductTypes(),
+        masterDataService.getProductBrands(),
+        masterDataService.getUnits(),
+      ]);
+
+      setProducts(productsData);
+      setInventory(inventoryData);
+      setDamageGoods(damageData);
+      setProductTypes(typesData);
+      setProductBrands(brandsData);
+      setUnits(unitsData);
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(error.message || "Failed to load inventory data.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /*
+  ============================================================
+  HELPERS: CROSS-REFERENCE PRODUCT <-> INVENTORY
+  ============================================================
+  */
+
+  const inventoryByProductId = useMemo(() => {
+    const map = new Map();
+
+    inventory.forEach((item) => {
+      map.set(item.product_id, item);
+    });
+
+    return map;
+  }, [inventory]);
+
+  const inventoryById = useMemo(() => {
+    const map = new Map();
+
+    inventory.forEach((item) => {
+      map.set(item.inventory_id, item);
+    });
+
+    return map;
+  }, [inventory]);
+
+  const getProductStatus = (product) => {
+    const inventoryRecord = inventoryByProductId.get(product.product_id);
+
+    if (!inventoryRecord) {
+      return "Not Stocked";
+    }
+
+    if (inventoryRecord.qty <= 0) {
+      return "Out of Stock";
+    }
+
+    if (inventoryRecord.qty <= LOW_STOCK_THRESHOLD) {
+      return "Low Stock";
+    }
+
+    return "Available";
+  };
+
+  const getInventoryStatus = (item) => {
+    if (item.qty <= 0) {
+      return "Out of Stock";
+    }
+
+    if (item.qty <= LOW_STOCK_THRESHOLD) {
+      return "Low Stock";
+    }
+
+    return "Available";
+  };
 
   /*
   ============================================================
@@ -82,35 +196,9 @@ function Inventory() {
   */
 
   const resetForm = () => {
-    setFormData({
-      product: "",
-      type: "",
-      brand: "",
-      unit: "",
-      cost: "",
-      sellingPrice: "",
-      weight: "",
-      quantity: "",
-      reason: "",
-      unitCost: "",
-      lossValue: "",
-      stockStatus: "Available",
-      status: "Available",
-    });
-
+    setFormData(emptyForm);
     setAddingNewType(false);
     setAddingNewBrand(false);
-    setAddingNewUnit(false);
-  };
-
-  /*
-  ============================================================
-  BACK
-  ============================================================
-  */
-
-  const goBack = () => {
-    window.history.back();
   };
 
   /*
@@ -128,32 +216,12 @@ function Inventory() {
     }));
   };
 
-  /*
-  ============================================================
-  DROPDOWN CHANGE
-  ============================================================
-  */
-
-  const handleProductChange = (event) => {
-    const value = event.target.value;
-
-    setFormData((previous) => ({
-      ...previous,
-      product: value,
-    }));
-  };
-
   const handleTypeChange = (event) => {
     const value = event.target.value;
 
     if (value === "__ADD_NEW__") {
       setAddingNewType(true);
-
-      setFormData((previous) => ({
-        ...previous,
-        type: "",
-      }));
-
+      setFormData((previous) => ({ ...previous, typeId: "", typeName: "" }));
       return;
     }
 
@@ -161,7 +229,8 @@ function Inventory() {
 
     setFormData((previous) => ({
       ...previous,
-      type: value,
+      typeId: value,
+      typeName: "",
     }));
   };
 
@@ -170,12 +239,7 @@ function Inventory() {
 
     if (value === "__ADD_NEW__") {
       setAddingNewBrand(true);
-
-      setFormData((previous) => ({
-        ...previous,
-        brand: "",
-      }));
-
+      setFormData((previous) => ({ ...previous, brandId: "", brandName: "" }));
       return;
     }
 
@@ -183,98 +247,14 @@ function Inventory() {
 
     setFormData((previous) => ({
       ...previous,
-      brand: value,
-    }));
-  };
-
-  const handleUnitChange = (event) => {
-    const value = event.target.value;
-
-    if (value === "__ADD_NEW__") {
-      setAddingNewUnit(true);
-
-      setFormData((previous) => ({
-        ...previous,
-        unit: "",
-      }));
-
-      return;
-    }
-
-    setAddingNewUnit(false);
-
-    setFormData((previous) => ({
-      ...previous,
-      unit: value,
+      brandId: value,
+      brandName: "",
     }));
   };
 
   /*
   ============================================================
-  ADD NEW VALUE TO DROPDOWN
-  ============================================================
-  */
-
-  const saveNewType = () => {
-    const value = formData.type.trim();
-
-    if (value === "") {
-      alert("Please enter type.");
-      return false;
-    }
-
-    const exists = productTypes.some(
-      (item) => item.toLowerCase() === value.toLowerCase(),
-    );
-
-    if (!exists) {
-      setProductTypes((previous) => [...previous, value]);
-    }
-
-    return value;
-  };
-
-  const saveNewBrand = () => {
-    const value = formData.brand.trim();
-
-    if (value === "") {
-      alert("Please enter brand.");
-      return false;
-    }
-
-    const exists = productBrands.some(
-      (item) => item.toLowerCase() === value.toLowerCase(),
-    );
-
-    if (!exists) {
-      setProductBrands((previous) => [...previous, value]);
-    }
-
-    return value;
-  };
-
-  const saveNewUnit = () => {
-    const value = formData.unit.trim();
-
-    if (value === "") {
-      alert("Please enter unit.");
-      return false;
-    }
-
-    const exists = units.some(
-      (item) => item.toLowerCase() === value.toLowerCase(),
-    );
-
-    if (!exists) {
-      setUnits((previous) => [...previous, value]);
-    }
-
-    return value;
-  };
-
-  /*
-  ============================================================
-  OPEN POPUP
+  OPEN / CLOSE POPUP
   ============================================================
   */
 
@@ -290,12 +270,6 @@ function Inventory() {
     setShowPopup(true);
   };
 
-  /*
-  ============================================================
-  CLOSE POPUP
-  ============================================================
-  */
-
   const closePopup = () => {
     setShowPopup(false);
 
@@ -310,356 +284,109 @@ function Inventory() {
 
   /*
   ============================================================
-  ADD PRODUCT
+  PRODUCT: ADD / EDIT / DELETE
   ============================================================
   */
 
-  const addProduct = () => {
-    let product = formData.product.trim();
-    let productType = formData.type.trim();
-    let productBrand = formData.brand.trim();
-    let productUnit = formData.unit.trim();
+  const submitProduct = async () => {
+    const productName = formData.productName.trim();
+    const unitQuantity = Number(formData.unitQuantity);
 
-    const productWeight = formData.weight.trim();
-    const productQuantity = Number(formData.quantity);
+    if (!productName || formData.unitQuantity === "" || !formData.unitId) {
+      alert("Please fill all fields.");
+      return;
+    }
 
-    /*
-    SAVE NEW DROPDOWN VALUES
-    */
+    if (!addingNewType && !formData.typeId) {
+      alert("Please select or add a product type.");
+      return;
+    }
+
+    if (!addingNewBrand && !formData.brandId) {
+      alert("Please select or add a brand.");
+      return;
+    }
+
+    if (addingNewType && !formData.typeName.trim()) {
+      alert("Please enter the new type name.");
+      return;
+    }
+
+    if (addingNewBrand && !formData.brandName.trim()) {
+      alert("Please enter the new brand name.");
+      return;
+    }
+
+    if (!Number.isFinite(unitQuantity) || unitQuantity <= 0) {
+      alert("Unit quantity must be greater than 0.");
+      return;
+    }
+
+    const payload = {
+      product_name: productName,
+      unit_id: Number(formData.unitId),
+      unit_quantity: unitQuantity,
+    };
 
     if (addingNewType) {
-      const result = saveNewType();
-
-      if (result === false) {
-        return;
-      }
-
-      productType = result;
+      payload.typeName = formData.typeName.trim();
+    } else {
+      payload.type_id = Number(formData.typeId);
     }
 
     if (addingNewBrand) {
-      const result = saveNewBrand();
-
-      if (result === false) {
-        return;
-      }
-
-      productBrand = result;
-    }
-
-    if (addingNewUnit) {
-      const result = saveNewUnit();
-
-      if (result === false) {
-        return;
-      }
-
-      productUnit = result;
-    }
-
-    if (
-      product === "" ||
-      productWeight === "" ||
-      formData.quantity === "" ||
-      productType === "" ||
-      productBrand === "" ||
-      productUnit === ""
-    ) {
-      alert("Please fill all fields.");
-      return;
-    }
-
-    if (productQuantity < 0) {
-      alert("Quantity cannot be negative.");
-      return;
-    }
-
-    /*
-    ============================================================
-    EDIT PRODUCT
-    ============================================================
-    */
-
-    if (editingProductId !== null) {
-      setProducts((previousProducts) =>
-        previousProducts.map((item) => {
-          if (item.id === editingProductId) {
-            return {
-              ...item,
-              product,
-              weight: productWeight,
-              quantity: productQuantity,
-              type: productType,
-              brand: productBrand,
-              unit: productUnit,
-            };
-          }
-
-          return item;
-        }),
-      );
-    }
-
-    /*
-    ============================================================
-    ADD PRODUCT
-    ============================================================
-    */
-
-    else {
-      const newProduct = {
-        id: Date.now(),
-        product,
-        weight: productWeight,
-        quantity: productQuantity,
-        status: "Available",
-        type: productType,
-        brand: productBrand,
-        unit: productUnit,
-      };
-
-      setProducts((previousProducts) => [
-        ...previousProducts,
-        newProduct,
-      ]);
-    }
-
-    /*
-    ENSURE VALUES ARE IN DROPDOWNS
-    */
-
-    if (
-      !productNames.some(
-        (item) => item.toLowerCase() === product.toLowerCase(),
-      )
-    ) {
-      setProductNames((previous) => [...previous, product]);
-    }
-
-    if (
-      !productTypes.some(
-        (item) => item.toLowerCase() === productType.toLowerCase(),
-      )
-    ) {
-      setProductTypes((previous) => [
-        ...previous,
-        productType,
-      ]);
-    }
-
-    if (
-      !productBrands.some(
-        (item) => item.toLowerCase() === productBrand.toLowerCase(),
-      )
-    ) {
-      setProductBrands((previous) => [
-        ...previous,
-        productBrand,
-      ]);
-    }
-
-    if (
-      !units.some(
-        (item) => item.toLowerCase() === productUnit.toLowerCase(),
-      )
-    ) {
-      setUnits((previous) => [...previous, productUnit]);
-    }
-
-    closePopup();
-  };
-
-  /*
-  ============================================================
-  ADD INVENTORY
-  ============================================================
-  */
-
-  const addInventory = () => {
-    const product = formData.product.trim();
-    const cost = Number(formData.cost);
-    const sellingPrice = Number(formData.sellingPrice);
-    const weight = formData.weight.trim();
-    const quantity = Number(formData.quantity);
-
-    if (
-      product === "" ||
-      formData.cost === "" ||
-      formData.sellingPrice === "" ||
-      weight === "" ||
-      formData.quantity === ""
-    ) {
-      alert("Please fill all fields.");
-      return;
-    }
-
-    if (
-      cost < 0 ||
-      sellingPrice < 0 ||
-      quantity < 0
-    ) {
-      alert("Values cannot be negative.");
-      return;
-    }
-
-    /*
-    ============================================================
-    EDIT INVENTORY
-    ============================================================
-    */
-
-    if (editingInventoryId !== null) {
-      setInventory((previousInventory) =>
-        previousInventory.map((item) => {
-          if (item.id === editingInventoryId) {
-            return {
-              ...item,
-              product,
-              cost,
-              sellingPrice,
-              weight,
-              quantity,
-            };
-          }
-
-          return item;
-        }),
-      );
-    }
-
-    /*
-    ============================================================
-    ADD INVENTORY
-    ============================================================
-    */
-
-    else {
-      const newInventory = {
-        id: Date.now(),
-        product,
-        cost,
-        sellingPrice,
-        weight,
-        quantity,
-        stockStatus: "Available",
-      };
-
-      setInventory((previousInventory) => [
-        ...previousInventory,
-        newInventory,
-      ]);
-    }
-
-    closePopup();
-  };
-
-  /*
-  ============================================================
-  ADD DAMAGE GOOD
-  ============================================================
-  */
-
-  const addDamageGood = () => {
-    const product = formData.product.trim();
-    const quantity = Number(formData.quantity);
-    const reason = formData.reason.trim();
-    const unitCost = Number(formData.unitCost);
-
-    if (
-      product === "" ||
-      formData.quantity === "" ||
-      reason === "" ||
-      formData.unitCost === ""
-    ) {
-      alert("Please fill all fields.");
-      return;
-    }
-
-    if (quantity < 0 || unitCost < 0) {
-      alert("Values cannot be negative.");
-      return;
-    }
-
-    const lossValue = quantity * unitCost;
-
-    if (editingDamageId !== null) {
-      setDamageGoods((previousDamageGoods) =>
-        previousDamageGoods.map((item) => {
-          if (item.id === editingDamageId) {
-            return {
-              ...item,
-              product,
-              quantity,
-              reason,
-              unitCost,
-              lossValue,
-            };
-          }
-
-          return item;
-        }),
-      );
+      payload.brandName = formData.brandName.trim();
     } else {
-      const newDamageGood = {
-        id: Date.now(),
-        product,
-        quantity,
-        reason,
-        unitCost,
-        lossValue,
-      };
-
-      setDamageGoods((previousDamageGoods) => [
-        ...previousDamageGoods,
-        newDamageGood,
-      ]);
+      payload.brand_id = Number(formData.brandId);
     }
 
-    closePopup();
+    setIsSubmitting(true);
+
+    try {
+      if (editingProductId !== null) {
+        await productService.updateProduct(editingProductId, payload);
+      } else {
+        await productService.createProduct(payload);
+      }
+
+      await loadAll();
+      closePopup();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to save product.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  /*
-  ============================================================
-  DELETE PRODUCT
-  ============================================================
-  */
+  const deleteRow = async (id) => {
+    if (!window.confirm("Deactivate this product?")) {
+      return;
+    }
 
-  const deleteRow = (id) => {
-    setProducts((previousProducts) =>
-      previousProducts.filter(
-        (product) => product.id !== id,
-      ),
-    );
+    try {
+      await productService.deleteProduct(id);
+      await loadAll();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to delete product.");
+    }
   };
-
-  /*
-  ============================================================
-  EDIT PRODUCT
-  ============================================================
-  */
 
   const editRow = (product) => {
     setFormData({
-      product: product.product,
-      type: product.type,
-      brand: product.brand,
-      unit: product.unit,
-      cost: "",
-      sellingPrice: "",
-      weight: product.weight,
-      quantity: product.quantity,
-      reason: "",
-      unitCost: "",
-      lossValue: "",
-      stockStatus: "Available",
-      status: product.status || "Available",
+      ...emptyForm,
+      productName: product.product_name,
+      typeId: product.type_id,
+      brandId: product.brand_id,
+      unitId: product.unit_id,
+      unitQuantity: product.unit_quantity,
     });
 
     setAddingNewType(false);
     setAddingNewBrand(false);
-    setAddingNewUnit(false);
 
-    setEditingProductId(product.id);
+    setEditingProductId(product.product_id);
     setEditingInventoryId(null);
     setEditingDamageId(null);
 
@@ -668,34 +395,29 @@ function Inventory() {
 
   /*
   ============================================================
-  ADD PRODUCT TO INVENTORY
+  ADD PRODUCT TO INVENTORY (from product row action menu)
   ============================================================
   */
 
   const addProductToInventory = (product) => {
     setProductActionMenuId(null);
 
+    const existingInventory = inventoryByProductId.get(product.product_id);
+
+    if (existingInventory) {
+      alert("This product already has an inventory record. Edit it from the Inventory tab.");
+      return;
+    }
+
     setActiveTab("inventory");
 
     setFormData({
-      product: product.product,
-      type: "",
-      brand: "",
-      unit: "",
-      cost: "",
-      sellingPrice: "",
-      weight: product.weight,
-      quantity: "",
-      reason: "",
-      unitCost: "",
-      lossValue: "",
-      stockStatus: "Available",
-      status: "Available",
+      ...emptyForm,
+      productId: product.product_id,
     });
 
     setAddingNewType(false);
     setAddingNewBrand(false);
-    setAddingNewUnit(false);
 
     setEditingProductId(null);
     setEditingInventoryId(null);
@@ -706,34 +428,26 @@ function Inventory() {
 
   /*
   ============================================================
-  ADD PRODUCT TO DAMAGE
+  DAMAGE PRODUCT (from product row action menu)
   ============================================================
   */
 
   const addProductToDamage = (product) => {
     setProductActionMenuId(null);
 
+    const existingInventory = inventoryByProductId.get(product.product_id);
+
+    if (!existingInventory) {
+      alert("This product has no inventory record yet. Add it to inventory first.");
+      return;
+    }
+
     setActiveTab("damage");
 
     setFormData({
-      product: product.product,
-      type: "",
-      brand: "",
-      unit: "",
-      cost: "",
-      sellingPrice: "",
-      weight: "",
-      quantity: "",
-      reason: "",
-      unitCost: "",
-      lossValue: "",
-      stockStatus: "Available",
-      status: "Available",
+      ...emptyForm,
+      inventoryId: existingInventory.inventory_id,
     });
-
-    setAddingNewType(false);
-    setAddingNewBrand(false);
-    setAddingNewUnit(false);
 
     setEditingProductId(null);
     setEditingInventoryId(null);
@@ -744,32 +458,94 @@ function Inventory() {
 
   /*
   ============================================================
-  EDIT INVENTORY
+  INVENTORY: ADD / EDIT / DELETE
   ============================================================
   */
+
+  const submitInventory = async () => {
+    const costPrice = formData.costPrice === "" ? null : Number(formData.costPrice);
+    const sellingPrice = Number(formData.sellingPrice);
+
+    if (formData.sellingPrice === "") {
+      alert("Please enter the selling price.");
+      return;
+    }
+
+    if (costPrice !== null && (!Number.isFinite(costPrice) || costPrice < 0)) {
+      alert("Cost price cannot be negative.");
+      return;
+    }
+
+    if (!Number.isFinite(sellingPrice) || sellingPrice < 0) {
+      alert("Selling price cannot be negative.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (editingInventoryId !== null) {
+        await inventoryService.updateInventoryPricing(editingInventoryId, {
+          cost_price: costPrice,
+          selling_price: sellingPrice,
+        });
+      } else {
+        if (!formData.productId) {
+          alert("Please select a product.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const qty = formData.qty === "" ? 0 : Number(formData.qty);
+
+        if (!Number.isInteger(qty) || qty < 0) {
+          alert("Quantity must be a non-negative whole number.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        await inventoryService.createInventory({
+          product_id: Number(formData.productId),
+          qty,
+          cost_price: costPrice,
+          selling_price: sellingPrice,
+        });
+      }
+
+      await loadAll();
+      closePopup();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to save inventory.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const deleteInventoryRow = async (id) => {
+    if (!window.confirm("Deactivate this inventory record?")) {
+      return;
+    }
+
+    try {
+      await inventoryService.deactivateInventory(id);
+      await loadAll();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to delete inventory record.");
+    }
+  };
 
   const editInventoryRow = (item) => {
     setFormData({
-      product: item.product,
-      type: "",
-      brand: "",
-      unit: "",
-      cost: item.cost,
-      sellingPrice: item.sellingPrice,
-      weight: item.weight,
-      quantity: item.quantity,
-      reason: "",
-      unitCost: "",
-      lossValue: "",
-      stockStatus: item.stockStatus || "Available",
-      status: "Available",
+      ...emptyForm,
+      productId: item.product_id,
+      costPrice: item.cost_price ?? "",
+      sellingPrice: item.selling_price,
+      qty: item.qty,
     });
 
-    setAddingNewType(false);
-    setAddingNewBrand(false);
-    setAddingNewUnit(false);
-
-    setEditingInventoryId(item.id);
+    setEditingInventoryId(item.inventory_id);
     setEditingProductId(null);
     setEditingDamageId(null);
 
@@ -778,149 +554,196 @@ function Inventory() {
 
   /*
   ============================================================
-  EDIT DAMAGE
+  DAMAGE: ADD / EDIT / DELETE
   ============================================================
   */
 
+  const submitDamageGood = async () => {
+    const quantity = Number(formData.damageQty);
+    const reason = formData.reason.trim();
+    const unitCost = Number(formData.unitCost);
+
+    if (!formData.inventoryId) {
+      alert("Please select a product.");
+      return;
+    }
+
+    if (formData.damageQty === "" || !Number.isInteger(quantity) || quantity <= 0) {
+      alert("Quantity must be a positive whole number.");
+      return;
+    }
+
+    if (!reason) {
+      alert("Please enter a reason.");
+      return;
+    }
+
+    if (formData.unitCost === "" || !Number.isFinite(unitCost) || unitCost < 0) {
+      alert("Please enter a valid unit cost.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      if (editingDamageId !== null) {
+        await damageGoodsService.updateDamagedGoods(editingDamageId, {
+          qty: quantity,
+          reason,
+          unit_cost: unitCost,
+        });
+      } else {
+        await damageGoodsService.createDamagedGoods({
+          inventory_id: Number(formData.inventoryId),
+          qty: quantity,
+          reason,
+          unit_cost: unitCost,
+        });
+      }
+
+      await loadAll();
+      closePopup();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to save damage record.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const deleteDamageRow = async (id) => {
+    if (!window.confirm("Deactivate this damage record?")) {
+      return;
+    }
+
+    try {
+      await damageGoodsService.deactivateDamagedGoods(id);
+      await loadAll();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to delete damage record.");
+    }
+  };
+
   const editDamageRow = (item) => {
     setFormData({
-      product: item.product,
-      type: "",
-      brand: "",
-      unit: "",
-      cost: "",
-      sellingPrice: "",
-      weight: "",
-      quantity: item.quantity,
-      reason: item.reason,
-      unitCost: item.unitCost,
-      lossValue: item.lossValue,
-      stockStatus: "Available",
-      status: "Available",
+      ...emptyForm,
+      inventoryId: item.inventory_id,
+      damageQty: item.qty,
+      reason: item.reason || "",
+      unitCost: item.unit_cost,
     });
 
-    setAddingNewType(false);
-    setAddingNewBrand(false);
-    setAddingNewUnit(false);
-
-    setEditingDamageId(item.id);
+    setEditingDamageId(item.damage_id);
     setEditingProductId(null);
     setEditingInventoryId(null);
 
     setShowPopup(true);
   };
 
-  /*
-  ============================================================
-  DELETE INVENTORY
-  ============================================================
-  */
-
-  const deleteInventoryRow = (id) => {
-    setInventory((previousInventory) =>
-      previousInventory.filter(
-        (item) => item.id !== id,
-      ),
-    );
+  const handleSubmit = () => {
+    if (activeTab === "product") {
+      submitProduct();
+    } else if (activeTab === "inventory") {
+      submitInventory();
+    } else {
+      submitDamageGood();
+    }
   };
 
   /*
   ============================================================
-  DELETE DAMAGE
+  FILTER + DISPLAY ROWS
   ============================================================
   */
 
-  const deleteDamageRow = (id) => {
-    setDamageGoods((previousDamageGoods) =>
-      previousDamageGoods.filter(
-        (item) => item.id !== id,
-      ),
-    );
-  };
+  const displayProducts = useMemo(() => {
+    return products.map((product) => ({
+      id: product.product_id,
+      raw: product,
+      product: product.product_name,
+      type: product.type?.type_name || "",
+      brand: product.brand?.brand_name || "",
+      unit: product.uom?.unit_name || "",
+      weight: product.unit_quantity,
+      status: getProductStatus(product),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, inventoryByProductId]);
 
-  /*
-  ============================================================
-  FILTER PRODUCTS
-  ============================================================
-  */
+  const displayInventory = useMemo(() => {
+    return inventory.map((item) => ({
+      id: item.inventory_id,
+      raw: item,
+      product: item.product?.product_name || `Product #${item.product_id}`,
+      cost: item.cost_price ?? "-",
+      sellingPrice: item.selling_price,
+      quantity: item.qty,
+      stockStatus: getInventoryStatus(item),
+    }));
+  }, [inventory]);
+
+  const displayDamageGoods = useMemo(() => {
+    return damageGoods.map((item) => {
+      const inventoryRecord = inventoryById.get(item.inventory_id) || item.inventory;
+
+      return {
+        id: item.damage_id,
+        raw: item,
+        product:
+          inventoryRecord?.product?.product_name ||
+          `Inventory #${item.inventory_id}`,
+        quantity: item.qty,
+        reason: item.reason,
+        unitCost: item.unit_cost,
+        lossValue: item.loss_value,
+      };
+    });
+  }, [damageGoods, inventoryById]);
 
   const filteredProducts = useMemo(() => {
     const search = searchValue.toLowerCase().trim();
 
     if (search === "") {
-      return products;
+      return displayProducts;
     }
 
-    return products.filter(
+    return displayProducts.filter(
       (product) =>
-        product.product
-          .toLowerCase()
-          .includes(search) ||
-        product.type
-          .toLowerCase()
-          .includes(search) ||
-        product.brand
-          .toLowerCase()
-          .includes(search) ||
-        product.unit
-          .toLowerCase()
-          .includes(search),
+        product.product.toLowerCase().includes(search) ||
+        product.type.toLowerCase().includes(search) ||
+        product.brand.toLowerCase().includes(search) ||
+        product.unit.toLowerCase().includes(search),
     );
-  }, [products, searchValue]);
-
-  /*
-  ============================================================
-  FILTER INVENTORY
-  ============================================================
-  */
+  }, [displayProducts, searchValue]);
 
   const filteredInventory = useMemo(() => {
     const search = searchValue.toLowerCase().trim();
 
     if (search === "") {
-      return inventory;
+      return displayInventory;
     }
 
-    return inventory.filter(
+    return displayInventory.filter(
       (item) =>
-        item.product
-          .toLowerCase()
-          .includes(search) ||
-        item.stockStatus
-          .toLowerCase()
-          .includes(search),
+        item.product.toLowerCase().includes(search) ||
+        item.stockStatus.toLowerCase().includes(search),
     );
-  }, [inventory, searchValue]);
-
-  /*
-  ============================================================
-  FILTER DAMAGE
-  ============================================================
-  */
+  }, [displayInventory, searchValue]);
 
   const filteredDamageGoods = useMemo(() => {
     const search = searchValue.toLowerCase().trim();
 
     if (search === "") {
-      return damageGoods;
+      return displayDamageGoods;
     }
 
-    return damageGoods.filter(
+    return displayDamageGoods.filter(
       (item) =>
-        item.product
-          .toLowerCase()
-          .includes(search) ||
-        item.reason
-          .toLowerCase()
-          .includes(search),
+        item.product.toLowerCase().includes(search) ||
+        (item.reason || "").toLowerCase().includes(search),
     );
-  }, [damageGoods, searchValue]);
-
-  /*
-  ============================================================
-  ACTIVE DATA
-  ============================================================
-  */
+  }, [displayDamageGoods, searchValue]);
 
   const activeData =
     activeTab === "product"
@@ -941,9 +764,7 @@ function Inventory() {
 
   const totalProducts = activeData.length;
 
-  const totalPages = Math.ceil(
-    totalProducts / rowsPerPage,
-  );
+  const totalPages = Math.ceil(totalProducts / rowsPerPage);
 
   useEffect(() => {
     if (totalPages === 0) {
@@ -953,30 +774,20 @@ function Inventory() {
     }
   }, [currentPage, totalPages]);
 
-  const startIndex =
-    (currentPage - 1) * rowsPerPage;
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
 
-  const endIndex =
-    startIndex + rowsPerPage;
-
-  const currentProducts = activeData.slice(
-    startIndex,
-    endIndex,
-  );
+  const currentProducts = activeData.slice(startIndex, endIndex);
 
   const previousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(
-        (previous) => previous - 1,
-      );
+      setCurrentPage((previous) => previous - 1);
     }
   };
 
   const nextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(
-        (previous) => previous + 1,
-      );
+      setCurrentPage((previous) => previous + 1);
     }
   };
 
@@ -986,30 +797,17 @@ function Inventory() {
   ============================================================
   */
 
-  const itemsIn = products.filter(
-    (product) =>
-      product.status === "Available",
-  ).length;
-
-  const lowStock = products.filter(
-    (product) =>
-      product.status === "Low Stock",
-  ).length;
-
-  const outOfStock = products.filter(
-    (product) =>
-      product.status === "Out of Stock",
+  const itemsIn = displayProducts.filter((product) => product.status === "Available").length;
+  const lowStock = displayProducts.filter((product) => product.status === "Low Stock").length;
+  const outOfStock = displayProducts.filter(
+    (product) => product.status === "Out of Stock" || product.status === "Not Stocked",
   ).length;
 
   let paginationText = "Showing 0 of 0";
 
   if (totalProducts > 0) {
     const firstProduct = startIndex + 1;
-
-    const lastProduct = Math.min(
-      endIndex,
-      totalProducts,
-    );
+    const lastProduct = Math.min(endIndex, totalProducts);
 
     const label =
       activeTab === "product"
@@ -1018,9 +816,16 @@ function Inventory() {
           ? "inventory items"
           : "damage goods";
 
-    paginationText =
-      `Showing ${firstProduct}-${lastProduct} of ${totalProducts} ${label}`;
+    paginationText = `Showing ${firstProduct}-${lastProduct} of ${totalProducts} ${label}`;
   }
+
+  const statusIconFor = (status) => (status === "Available" ? tickIcon : removeIcon);
+
+  const statusIdFor = (status) => {
+    if (status === "Available") return "available";
+    if (status === "Low Stock") return "lowStock";
+    return "outOfStock";
+  };
 
   /*
   ============================================================
@@ -1028,10 +833,24 @@ function Inventory() {
   ============================================================
   */
 
+  if (isLoading) {
+    return (
+      <section className="main-container">
+        <div className="empty-bill-cell">Loading inventory...</div>
+      </section>
+    );
+  }
+
   return (
     <>
       <section className="main-container">
         <div>
+          {errorMessage && (
+            <div className="empty-bill-cell" style={{ color: "#c0392b" }}>
+              {errorMessage}
+            </div>
+          )}
+
           {/* ==================================================
               TABS
           ================================================== */}
@@ -1039,11 +858,7 @@ function Inventory() {
           <div className="inventory-tabs">
             <button
               type="button"
-              className={
-                activeTab === "product"
-                  ? "inventory-tab active"
-                  : "inventory-tab"
-              }
+              className={activeTab === "product" ? "inventory-tab active" : "inventory-tab"}
               onClick={() => {
                 setActiveTab("product");
                 setSearchValue("");
@@ -1055,11 +870,7 @@ function Inventory() {
 
             <button
               type="button"
-              className={
-                activeTab === "inventory"
-                  ? "inventory-tab active"
-                  : "inventory-tab"
-              }
+              className={activeTab === "inventory" ? "inventory-tab active" : "inventory-tab"}
               onClick={() => {
                 setActiveTab("inventory");
                 setSearchValue("");
@@ -1071,11 +882,7 @@ function Inventory() {
 
             <button
               type="button"
-              className={
-                activeTab === "damage"
-                  ? "inventory-tab active"
-                  : "inventory-tab"
-              }
+              className={activeTab === "damage" ? "inventory-tab active" : "inventory-tab"}
               onClick={() => {
                 setActiveTab("damage");
                 setSearchValue("");
@@ -1093,11 +900,7 @@ function Inventory() {
           <div className="search-inventory-cards">
             <div className="search-container">
               <div className="search-input-wrapper">
-                <img
-                  className="search-icon"
-                  src={searchIcon}
-                  alt="Search"
-                />
+                <img className="search-icon" src={searchIcon} alt="Search" />
 
                 <input
                   type="text"
@@ -1110,52 +913,25 @@ function Inventory() {
                         : "Search DamageGood"
                   }
                   value={searchValue}
-                  onChange={(event) =>
-                    setSearchValue(
-                      event.target.value,
-                    )
-                  }
+                  onChange={(event) => setSearchValue(event.target.value)}
                 />
               </div>
             </div>
 
             <div className="card_section">
               <div className="card_box">
-                <div className="card_box_header">
-                  Items IN
-                </div>
-
-                <div className="card_box_count">
-                  {String(itemsIn).padStart(
-                    2,
-                    "0",
-                  )}
-                </div>
+                <div className="card_box_header">Items IN</div>
+                <div className="card_box_count">{String(itemsIn).padStart(2, "0")}</div>
               </div>
 
               <div className="card_box">
-                <div className="card_box_header">
-                  Low Stock
-                </div>
-
-                <div className="card_box_count">
-                  {String(lowStock).padStart(
-                    2,
-                    "0",
-                  )}
-                </div>
+                <div className="card_box_header">Low Stock</div>
+                <div className="card_box_count">{String(lowStock).padStart(2, "0")}</div>
               </div>
 
               <div className="card_box">
-                <div className="card_box_header">
-                  Out of Stock
-                </div>
-
-                <div className="card_box_count">
-                  {String(
-                    outOfStock,
-                  ).padStart(2, "0")}
-                </div>
+                <div className="card_box_header">Out of Stock</div>
+                <div className="card_box_count">{String(outOfStock).padStart(2, "0")}</div>
               </div>
             </div>
           </div>
@@ -1166,31 +942,19 @@ function Inventory() {
 
           <div className="add-product-container">
             {activeTab === "product" && (
-              <button
-                className="add-product-button"
-                type="button"
-                onClick={openPopup}
-              >
-                Add Product to Inventory
+              <button className="add-product-button" type="button" onClick={openPopup}>
+                Add Product
               </button>
             )}
 
             {activeTab === "inventory" && (
-              <button
-                className="add-product-button"
-                type="button"
-                onClick={openPopup}
-              >
+              <button className="add-product-button" type="button" onClick={openPopup}>
                 Add Inventory
               </button>
             )}
 
             {activeTab === "damage" && (
-              <button
-                className="add-product-button"
-                type="button"
-                onClick={openPopup}
-              >
+              <button className="add-product-button" type="button" onClick={openPopup}>
                 Add Damage Good
               </button>
             )}
@@ -1221,156 +985,83 @@ function Inventory() {
                   <tbody>
                     {currentProducts.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan="7"
-                          className="empty-bill-cell"
-                        >
+                        <td colSpan="7" className="empty-bill-cell">
                           Add Items to Product
                         </td>
                       </tr>
                     ) : (
-                      currentProducts.map(
-                        (product) => (
-                          <tr
-                            key={
-                              product.id
-                            }
-                          >
-                            <td>
-                              <div className="item">
-                                <strong>
-                                  {
-                                    product.product
-                                  }
-                                </strong>
-                              </div>
-                            </td>
+                      currentProducts.map((product) => (
+                        <tr key={product.id}>
+                          <td>
+                            <div className="item">
+                              <strong>{product.product}</strong>
+                            </div>
+                          </td>
 
-                            <td className="meta-text">
-                              {product.type}
-                            </td>
+                          <td className="meta-text">{product.type}</td>
+                          <td className="meta-text">{product.brand}</td>
+                          <td className="meta-text">{product.unit}</td>
+                          <td className="meta-text">{product.weight}</td>
 
-                            <td className="meta-text">
-                              {product.brand}
-                            </td>
+                          <td className="status-cell" id={statusIdFor(product.status)}>
+                            <button className="status-btn" type="button" title={product.status}>
+                              <img src={statusIconFor(product.status)} alt={product.status} />
+                            </button>
+                          </td>
 
-                            <td className="meta-text">
-                              {product.unit}
-                            </td>
-
-                            <td className="meta-text">
-                              {product.weight}
-                            </td>
-
-                            <td
-                              className="status-cell"
-                              id={
-                                product.status ===
-                                "Available"
-                                  ? "available"
-                                  : product.status ===
-                                      "Low Stock"
-                                    ? "lowStock"
-                                    : "outOfStock"
+                          <td className="action-buttons">
+                            <button
+                              className="icon-btn"
+                              type="button"
+                              onClick={() =>
+                                setProductActionMenuId(
+                                  productActionMenuId === product.id ? null : product.id,
+                                )
                               }
                             >
-                              <button
-                                className="status-btn"
-                                type="button"
-                              >
-                                <img
-                                  src={
-                                    product.status ===
-                                    "Out of Stock"
-                                      ? removeIcon
-                                      : tickIcon
-                                  }
-                                  alt={
-                                    product.status
-                                  }
-                                />
-                              </button>
-                            </td>
+                              <img src={moreIcon} alt="More" />
+                            </button>
 
-                            <td className="action-buttons">
-                              <button
-                                className="icon-btn"
-                                type="button"
-                                onClick={() =>
-                                  setProductActionMenuId(
-                                    productActionMenuId ===
-                                      product.id
-                                      ? null
-                                      : product.id,
-                                  )
-                                }
-                              >
-                                <img
-                                  src={
-                                    moreIcon
-                                  }
-                                  alt="More"
-                                />
-                              </button>
+                            {productActionMenuId === product.id && (
+                              <div className="product-action-menu">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProductActionMenuId(null);
+                                    editRow(product.raw);
+                                  }}
+                                >
+                                  Edit
+                                </button>
 
-                              {productActionMenuId ===
-                                product.id && (
-                                <div className="product-action-menu">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setProductActionMenuId(
-                                        null,
-                                      );
-                                      editRow(
-                                        product,
-                                      );
-                                    }}
-                                  >
-                                    Edit
-                                  </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProductActionMenuId(null);
+                                    deleteRow(product.id);
+                                  }}
+                                >
+                                  Delete
+                                </button>
 
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setProductActionMenuId(
-                                        null,
-                                      );
-                                      deleteRow(
-                                        product.id,
-                                      );
-                                    }}
-                                  >
-                                    Delete
-                                  </button>
+                                <button
+                                  type="button"
+                                  onClick={() => addProductToInventory(product.raw)}
+                                >
+                                  Add to Inventory
+                                </button>
 
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      addProductToInventory(
-                                        product,
-                                      )
-                                    }
-                                  >
-                                    Add to Inventory
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      addProductToDamage(
-                                        product,
-                                      )
-                                    }
-                                  >
-                                    Damage Product
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        ),
-                      )
+                                <button
+                                  type="button"
+                                  onClick={() => addProductToDamage(product.raw)}
+                                >
+                                  Damage Product
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))
                     )}
                   </tbody>
                 </>
@@ -1385,7 +1076,6 @@ function Inventory() {
                       <th>Product</th>
                       <th>Cost Price</th>
                       <th>Selling Price</th>
-                      <th>Weight</th>
                       <th>Quantity</th>
                       <th>Stock Status</th>
                       <th>Action</th>
@@ -1395,116 +1085,51 @@ function Inventory() {
                   <tbody>
                     {currentProducts.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan="7"
-                          className="empty-bill-cell"
-                        >
+                        <td colSpan="6" className="empty-bill-cell">
                           No Inventory Items
                         </td>
                       </tr>
                     ) : (
-                      currentProducts.map(
-                        (item) => (
-                          <tr
-                            key={item.id}
-                          >
-                            <td>
-                              <div className="item">
-                                <strong>
-                                  {
-                                    item.product
-                                  }
-                                </strong>
-                              </div>
-                            </td>
+                      currentProducts.map((item) => (
+                        <tr key={item.id}>
+                          <td>
+                            <div className="item">
+                              <strong>{item.product}</strong>
+                            </div>
+                          </td>
 
-                            <td className="meta-text">
-                              ₹{item.cost}
-                            </td>
+                          <td className="meta-text">
+                            {item.cost === "-" ? "-" : `₹${item.cost}`}
+                          </td>
 
-                            <td className="meta-text">
-                              ₹
-                              {
-                                item.sellingPrice
-                              }
-                            </td>
+                          <td className="meta-text">₹{item.sellingPrice}</td>
+                          <td className="meta-text">{item.quantity}</td>
 
-                            <td className="meta-text">
-                              {item.weight}
-                            </td>
+                          <td className="status-cell" id={statusIdFor(item.stockStatus)}>
+                            <button className="status-btn" type="button" title={item.stockStatus}>
+                              <img src={statusIconFor(item.stockStatus)} alt={item.stockStatus} />
+                            </button>
+                          </td>
 
-                            <td className="meta-text">
-                              {item.quantity}
-                            </td>
-
-                            <td
-                              className="status-cell"
-                              id={
-                                item.stockStatus ===
-                                "Available"
-                                  ? "available"
-                                  : item.stockStatus ===
-                                      "Low Stock"
-                                    ? "lowStock"
-                                    : "outOfStock"
-                              }
+                          <td className="action-buttons">
+                            <button
+                              className="icon-btn"
+                              type="button"
+                              onClick={() => editInventoryRow(item.raw)}
                             >
-                              <button
-                                className="status-btn"
-                                type="button"
-                              >
-                                <img
-                                  src={
-                                    item.stockStatus ===
-                                    "Out of Stock"
-                                      ? removeIcon
-                                      : tickIcon
-                                  }
-                                  alt={
-                                    item.stockStatus
-                                  }
-                                />
-                              </button>
-                            </td>
+                              <img src={pencilIcon} alt="Edit" />
+                            </button>
 
-                            <td className="action-buttons">
-                              <button
-                                className="icon-btn"
-                                type="button"
-                                onClick={() =>
-                                  editInventoryRow(
-                                    item,
-                                  )
-                                }
-                              >
-                                <img
-                                  src={
-                                    pencilIcon
-                                  }
-                                  alt="Edit"
-                                />
-                              </button>
-
-                              <button
-                                className="icon-btn"
-                                type="button"
-                                onClick={() =>
-                                  deleteInventoryRow(
-                                    item.id,
-                                  )
-                                }
-                              >
-                                <img
-                                  src={
-                                    deleteIcon
-                                  }
-                                  alt="Delete"
-                                />
-                              </button>
-                            </td>
-                          </tr>
-                        ),
-                      )
+                            <button
+                              className="icon-btn"
+                              type="button"
+                              onClick={() => deleteInventoryRow(item.id)}
+                            >
+                              <img src={deleteIcon} alt="Delete" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
                     )}
                   </tbody>
                 </>
@@ -1528,83 +1153,43 @@ function Inventory() {
                   <tbody>
                     {currentProducts.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan="6"
-                          className="empty-bill-cell"
-                        >
+                        <td colSpan="6" className="empty-bill-cell">
                           No Damage Goods
                         </td>
                       </tr>
                     ) : (
-                      currentProducts.map(
-                        (item) => (
-                          <tr
-                            key={item.id}
-                          >
-                            <td>
-                              <div className="item">
-                                <strong>
-                                  {
-                                    item.product
-                                  }
-                                </strong>
-                              </div>
-                            </td>
+                      currentProducts.map((item) => (
+                        <tr key={item.id}>
+                          <td>
+                            <div className="item">
+                              <strong>{item.product}</strong>
+                            </div>
+                          </td>
 
-                            <td className="meta-text">
-                              {item.quantity}
-                            </td>
+                          <td className="meta-text">{item.quantity}</td>
+                          <td className="meta-text">{item.reason}</td>
+                          <td className="price">₹{item.unitCost}</td>
+                          <td className="price">₹{item.lossValue}</td>
 
-                            <td className="meta-text">
-                              {item.reason}
-                            </td>
+                          <td className="action-buttons">
+                            <button
+                              className="icon-btn"
+                              type="button"
+                              onClick={() => editDamageRow(item.raw)}
+                            >
+                              <img src={pencilIcon} alt="Edit" />
+                            </button>
 
-                            <td className="price">
-                              ₹{item.unitCost}
-                            </td>
-
-                            <td className="price">
-                              ₹{item.lossValue}
-                            </td>
-
-                            <td className="action-buttons">
-                              <button
-                                className="icon-btn"
-                                type="button"
-                                onClick={() =>
-                                  editDamageRow(
-                                    item,
-                                  )
-                                }
-                              >
-                                <img
-                                  src={
-                                    pencilIcon
-                                  }
-                                  alt="Edit"
-                                />
-                              </button>
-
-                              <button
-                                className="icon-btn"
-                                type="button"
-                                onClick={() =>
-                                  deleteDamageRow(
-                                    item.id,
-                                  )
-                                }
-                              >
-                                <img
-                                  src={
-                                    deleteIcon
-                                  }
-                                  alt="Delete"
-                                />
-                              </button>
-                            </td>
-                          </tr>
-                        ),
-                      )
+                            <button
+                              className="icon-btn"
+                              type="button"
+                              onClick={() => deleteDamageRow(item.id)}
+                            >
+                              <img src={deleteIcon} alt="Delete" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
                     )}
                   </tbody>
                 </>
@@ -1627,28 +1212,18 @@ function Inventory() {
               </div>
             ) : (
               currentProducts.map((item) => (
-                <div
-                  className="bill-card"
-                  key={item.id}
-                >
+                <div className="bill-card" key={item.id}>
                   <div className="bill-card-header">
-                    <strong>
-                      {item.product}
-                    </strong>
+                    <strong>{item.product}</strong>
 
                     <div className="row-actions">
                       {activeTab === "product" && (
                         <button
                           className="edit-item-button"
                           type="button"
-                          onClick={() =>
-                            editRow(item)
-                          }
+                          onClick={() => editRow(item.raw)}
                         >
-                          <img
-                            src={pencilIcon}
-                            alt="Edit"
-                          />
+                          <img src={pencilIcon} alt="Edit" />
                         </button>
                       )}
 
@@ -1656,16 +1231,9 @@ function Inventory() {
                         <button
                           className="edit-item-button"
                           type="button"
-                          onClick={() =>
-                            editInventoryRow(
-                              item,
-                            )
-                          }
+                          onClick={() => editInventoryRow(item.raw)}
                         >
-                          <img
-                            src={pencilIcon}
-                            alt="Edit"
-                          />
+                          <img src={pencilIcon} alt="Edit" />
                         </button>
                       )}
 
@@ -1673,14 +1241,9 @@ function Inventory() {
                         <button
                           className="edit-item-button"
                           type="button"
-                          onClick={() =>
-                            editDamageRow(item)
-                          }
+                          onClick={() => editDamageRow(item.raw)}
                         >
-                          <img
-                            src={pencilIcon}
-                            alt="Edit"
-                          />
+                          <img src={pencilIcon} alt="Edit" />
                         </button>
                       )}
 
@@ -1688,29 +1251,16 @@ function Inventory() {
                         className="delete-item-button"
                         type="button"
                         onClick={() => {
-                          if (
-                            activeTab ===
-                            "product"
-                          ) {
+                          if (activeTab === "product") {
                             deleteRow(item.id);
-                          } else if (
-                            activeTab ===
-                            "inventory"
-                          ) {
-                            deleteInventoryRow(
-                              item.id,
-                            );
+                          } else if (activeTab === "inventory") {
+                            deleteInventoryRow(item.id);
                           } else {
-                            deleteDamageRow(
-                              item.id,
-                            );
+                            deleteDamageRow(item.id);
                           }
                         }}
                       >
-                        <img
-                          src={deleteIcon}
-                          alt="Delete"
-                        />
+                        <img src={deleteIcon} alt="Delete" />
                       </button>
 
                       {activeTab === "product" && (
@@ -1720,41 +1270,23 @@ function Inventory() {
                             type="button"
                             onClick={() =>
                               setProductActionMenuId(
-                                productActionMenuId ===
-                                  item.id
-                                  ? null
-                                  : item.id,
+                                productActionMenuId === item.id ? null : item.id,
                               )
                             }
                           >
-                            <img
-                              src={moreIcon}
-                              alt="More"
-                            />
+                            <img src={moreIcon} alt="More" />
                           </button>
 
-                          {productActionMenuId ===
-                            item.id && (
+                          {productActionMenuId === item.id && (
                             <div className="mobile-product-action-menu">
                               <button
                                 type="button"
-                                onClick={() =>
-                                  addProductToInventory(
-                                    item,
-                                  )
-                                }
+                                onClick={() => addProductToInventory(item.raw)}
                               >
                                 Add to Inventory
                               </button>
 
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  addProductToDamage(
-                                    item,
-                                  )
-                                }
-                              >
+                              <button type="button" onClick={() => addProductToDamage(item.raw)}>
                                 Damage Product
                               </button>
                             </div>
@@ -1767,56 +1299,25 @@ function Inventory() {
                   {activeTab === "product" && (
                     <>
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Type
-                        </span>
-
-                        <span className="bill-card-value">
-                          {item.type}
-                        </span>
+                        <span className="bill-card-label">Type</span>
+                        <span className="bill-card-value">{item.type}</span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Brand
-                        </span>
-
-                        <span className="bill-card-value">
-                          {item.brand}
-                        </span>
+                        <span className="bill-card-label">Brand</span>
+                        <span className="bill-card-value">{item.brand}</span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Unit
-                        </span>
-
-                        <span className="bill-card-value">
-                          {item.unit}
-                        </span>
+                        <span className="bill-card-label">Unit</span>
+                        <span className="bill-card-value">{item.unit}</span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Status
-                        </span>
-
+                        <span className="bill-card-label">Status</span>
                         <span className="bill-card-value">
-                          <button
-                            className="status-btn"
-                            type="button"
-                          >
-                            <img
-                              src={
-                                item.status ===
-                                "Out of Stock"
-                                  ? removeIcon
-                                  : tickIcon
-                              }
-                              alt={
-                                item.status
-                              }
-                            />
+                          <button className="status-btn" type="button">
+                            <img src={statusIconFor(item.status)} alt={item.status} />
                           </button>
                         </span>
                       </div>
@@ -1826,68 +1327,29 @@ function Inventory() {
                   {activeTab === "inventory" && (
                     <>
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Cost Price
-                        </span>
-
+                        <span className="bill-card-label">Cost Price</span>
                         <span className="bill-card-value">
-                          ₹{item.cost}
+                          {item.cost === "-" ? "-" : `₹${item.cost}`}
                         </span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Selling Price
-                        </span>
-
-                        <span className="bill-card-value">
-                          ₹
-                          {
-                            item.sellingPrice
-                          }
-                        </span>
+                        <span className="bill-card-label">Selling Price</span>
+                        <span className="bill-card-value">₹{item.sellingPrice}</span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Weight
-                        </span>
-
-                        <span className="bill-card-value">
-                          {item.weight}
-                        </span>
+                        <span className="bill-card-label">Quantity</span>
+                        <span className="bill-card-value">{item.quantity}</span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Quantity
-                        </span>
-
+                        <span className="bill-card-label">Stock Status</span>
                         <span className="bill-card-value">
-                          {item.quantity}
-                        </span>
-                      </div>
-
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Stock Status
-                        </span>
-
-                        <span className="bill-card-value">
-                          <button
-                            className="status-btn"
-                            type="button"
-                          >
+                          <button className="status-btn" type="button">
                             <img
-                              src={
-                                item.stockStatus ===
-                                "Out of Stock"
-                                  ? removeIcon
-                                  : tickIcon
-                              }
-                              alt={
-                                item.stockStatus
-                              }
+                              src={statusIconFor(item.stockStatus)}
+                              alt={item.stockStatus}
                             />
                           </button>
                         </span>
@@ -1898,46 +1360,23 @@ function Inventory() {
                   {activeTab === "damage" && (
                     <>
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Quantity
-                        </span>
-
-                        <span className="bill-card-value">
-                          {item.quantity}
-                        </span>
+                        <span className="bill-card-label">Quantity</span>
+                        <span className="bill-card-value">{item.quantity}</span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Reason
-                        </span>
-
-                        <span className="bill-card-value">
-                          {item.reason}
-                        </span>
+                        <span className="bill-card-label">Reason</span>
+                        <span className="bill-card-value">{item.reason}</span>
                       </div>
 
                       <div className="bill-card-row">
-                        <span className="bill-card-label">
-                          Unit Cost
-                        </span>
-
-                        <span className="bill-card-value">
-                          ₹{item.unitCost}
-                        </span>
+                        <span className="bill-card-label">Unit Cost</span>
+                        <span className="bill-card-value">₹{item.unitCost}</span>
                       </div>
 
                       <div className="bill-card-row bill-card-total">
-                        <span className="bill-card-label">
-                          Loss Value
-                        </span>
-
-                        <span className="bill-card-value">
-                          ₹
-                          {
-                            item.lossValue
-                          }
-                        </span>
+                        <span className="bill-card-label">Loss Value</span>
+                        <span className="bill-card-value">₹{item.lossValue}</span>
                       </div>
                     </>
                   )}
@@ -1951,39 +1390,25 @@ function Inventory() {
           ================================================== */}
 
           <div className="pagination-container">
-            <div className="pagination-text">
-              {paginationText}
-            </div>
+            <div className="pagination-text">{paginationText}</div>
 
             <div className="pagination-buttons">
               <button
                 className="pagination-btn"
                 type="button"
                 onClick={previousPage}
-                disabled={
-                  currentPage === 1 ||
-                  totalProducts === 0
-                }
+                disabled={currentPage === 1 || totalProducts === 0}
               >
-                <img
-                  src={leftIcon}
-                  alt="Previous"
-                />
+                <img src={leftIcon} alt="Previous" />
               </button>
 
               <button
                 className="pagination-btn"
                 type="button"
                 onClick={nextPage}
-                disabled={
-                  currentPage >= totalPages ||
-                  totalProducts === 0
-                }
+                disabled={currentPage >= totalPages || totalProducts === 0}
               >
-                <img
-                  src={chevronIcon}
-                  alt="Next"
-                />
+                <img src={chevronIcon} alt="Next" />
               </button>
             </div>
           </div>
@@ -1998,89 +1423,53 @@ function Inventory() {
         <div
           className="popup"
           onClick={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               closePopup();
             }
           }}
         >
           <div className="popup-content">
-
             {/* ==================================================
                 PRODUCT POPUP
             ================================================== */}
 
             {activeTab === "product" && (
               <>
-                <h2>
-                  {editingProductId !== null
-                    ? "Edit Product"
-                    : "Add Product"}
-                </h2>
-
-                {/* PRODUCT NAME - TEXT BOX */}
+                <h2>{editingProductId !== null ? "Edit Product" : "Add Product"}</h2>
 
                 <input
                   type="text"
-                  name="product"
+                  name="productName"
                   placeholder="Product Name"
-                  value={formData.product}
-                  onChange={
-                    handleInputChange
-                  }
+                  value={formData.productName}
+                  onChange={handleInputChange}
                 />
 
                 {/* TYPE */}
 
                 {!addingNewType ? (
-                  <select
-                    name="type"
-                    value={formData.type}
-                    onChange={
-                      handleTypeChange
-                    }
-                  >
-                    <option value="">
-                      Select Type
-                    </option>
+                  <select name="typeId" value={formData.typeId} onChange={handleTypeChange}>
+                    <option value="">Select Type</option>
 
-                    {productTypes.map(
-                      (type) => (
-                        <option
-                          key={type}
-                          value={type}
-                        >
-                          {type}
-                        </option>
-                      ),
-                    )}
+                    {productTypes.map((type) => (
+                      <option key={type.product_type_id} value={type.product_type_id}>
+                        {type.type_name}
+                      </option>
+                    ))}
 
-                    <option value="__ADD_NEW__">
-                      + Add New Type
-                    </option>
+                    <option value="__ADD_NEW__">+ Add New Type</option>
                   </select>
                 ) : (
                   <div>
                     <input
                       type="text"
-                      name="type"
+                      name="typeName"
                       placeholder="Enter New Type"
-                      value={formData.type}
-                      onChange={
-                        handleInputChange
-                      }
+                      value={formData.typeName}
+                      onChange={handleInputChange}
                     />
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setAddingNewType(
-                          false,
-                        )
-                      }
-                    >
+                    <button type="button" onClick={() => setAddingNewType(false)}>
                       Use Existing Type
                     </button>
                   </div>
@@ -2089,54 +1478,28 @@ function Inventory() {
                 {/* BRAND */}
 
                 {!addingNewBrand ? (
-                  <select
-                    name="brand"
-                    value={formData.brand}
-                    onChange={
-                      handleBrandChange
-                    }
-                  >
-                    <option value="">
-                      Select Brand
-                    </option>
+                  <select name="brandId" value={formData.brandId} onChange={handleBrandChange}>
+                    <option value="">Select Brand</option>
 
-                    {productBrands.map(
-                      (brand) => (
-                        <option
-                          key={brand}
-                          value={brand}
-                        >
-                          {brand}
-                        </option>
-                      ),
-                    )}
+                    {productBrands.map((brand) => (
+                      <option key={brand.product_brand_id} value={brand.product_brand_id}>
+                        {brand.brand_name}
+                      </option>
+                    ))}
 
-                    <option value="__ADD_NEW__">
-                      + Add New Brand
-                    </option>
+                    <option value="__ADD_NEW__">+ Add New Brand</option>
                   </select>
                 ) : (
                   <div>
                     <input
                       type="text"
-                      name="brand"
+                      name="brandName"
                       placeholder="Enter New Brand"
-                      value={
-                        formData.brand
-                      }
-                      onChange={
-                        handleInputChange
-                      }
+                      value={formData.brandName}
+                      onChange={handleInputChange}
                     />
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setAddingNewBrand(
-                          false,
-                        )
-                      }
-                    >
+                    <button type="button" onClick={() => setAddingNewBrand(false)}>
                       Use Existing Brand
                     </button>
                   </div>
@@ -2144,90 +1507,30 @@ function Inventory() {
 
                 {/* UNIT */}
 
-                {!addingNewUnit ? (
-                  <select
-                    name="unit"
-                    value={formData.unit}
-                    onChange={
-                      handleUnitChange
-                    }
-                  >
-                    <option value="">
-                      Select Unit
+                <select name="unitId" value={formData.unitId} onChange={handleInputChange}>
+                  <option value="">Select Unit</option>
+
+                  {units.map((unit) => (
+                    <option key={unit.unit_id} value={unit.unit_id}>
+                      {unit.unit_name}
                     </option>
-
-                    {units.map((unit) => (
-                      <option
-                        key={unit}
-                        value={unit}
-                      >
-                        {unit}
-                      </option>
-                    ))}
-
-                    <option value="__ADD_NEW__">
-                      + Add New Unit
-                    </option>
-                  </select>
-                ) : (
-                  <div>
-                    <input
-                      type="text"
-                      name="unit"
-                      placeholder="Enter New Unit"
-                      value={formData.unit}
-                      onChange={
-                        handleInputChange
-                      }
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setAddingNewUnit(
-                          false,
-                        )
-                      }
-                    >
-                      Use Existing Unit
-                    </button>
-                  </div>
-                )}
-
-                <input
-                  type="text"
-                  name="weight"
-                  placeholder="Weight"
-                  value={formData.weight}
-                  onChange={
-                    handleInputChange
-                  }
-                />
+                  ))}
+                </select>
 
                 <input
                   type="number"
-                  name="quantity"
-                  placeholder="Quantity"
-                  value={
-                    formData.quantity
-                  }
-                  onChange={
-                    handleInputChange
-                  }
+                  name="unitQuantity"
+                  placeholder="Unit Quantity (e.g. 500)"
+                  value={formData.unitQuantity}
+                  onChange={handleInputChange}
                 />
 
                 <div className="popup-buttons">
-                  <button
-                    type="button"
-                    onClick={closePopup}
-                  >
+                  <button type="button" onClick={closePopup}>
                     Close
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={addProduct}
-                  >
+                  <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
                     Submit
                   </button>
                 </div>
@@ -2240,96 +1543,69 @@ function Inventory() {
 
             {activeTab === "inventory" && (
               <>
-                <h2>
-                  {editingInventoryId !==
-                  null
-                    ? "Edit Inventory"
-                    : "Add Inventory"}
-                </h2>
+                <h2>{editingInventoryId !== null ? "Edit Inventory" : "Add Inventory"}</h2>
 
-                {/* PRODUCT DROPDOWN */}
+                {editingInventoryId === null ? (
+                  <select name="productId" value={formData.productId} onChange={handleInputChange}>
+                    <option value="">Select Product</option>
 
-                <select
-                  name="product"
-                  value={formData.product}
-                  onChange={
-                    handleProductChange
-                  }
-                >
-                  <option value="">
-                    Select Product
-                  </option>
-
-                  {productNames.map(
-                    (product) => (
-                      <option
-                        key={product}
-                        value={product}
-                      >
-                        {product}
-                      </option>
-                    ),
-                  )}
-                </select>
+                    {products
+                      .filter((product) => !inventoryByProductId.has(product.product_id))
+                      .map((product) => (
+                        <option key={product.product_id} value={product.product_id}>
+                          {product.product_name}
+                        </option>
+                      ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={
+                      products.find((p) => p.product_id === formData.productId)?.product_name ||
+                      ""
+                    }
+                    disabled
+                  />
+                )}
 
                 <input
                   type="number"
-                  name="cost"
+                  name="costPrice"
                   placeholder="Cost Price"
-                  value={formData.cost}
-                  onChange={
-                    handleInputChange
-                  }
+                  value={formData.costPrice}
+                  onChange={handleInputChange}
                 />
 
                 <input
                   type="number"
                   name="sellingPrice"
                   placeholder="Selling Price"
-                  value={
-                    formData.sellingPrice
-                  }
-                  onChange={
-                    handleInputChange
-                  }
+                  value={formData.sellingPrice}
+                  onChange={handleInputChange}
                 />
 
-                <input
-                  type="text"
-                  name="weight"
-                  placeholder="Weight"
-                  value={formData.weight}
-                  onChange={
-                    handleInputChange
-                  }
-                />
+                {editingInventoryId === null && (
+                  <input
+                    type="number"
+                    name="qty"
+                    placeholder="Quantity"
+                    value={formData.qty}
+                    onChange={handleInputChange}
+                  />
+                )}
 
-                <input
-                  type="number"
-                  name="quantity"
-                  placeholder="Quantity"
-                  value={
-                    formData.quantity
-                  }
-                  onChange={
-                    handleInputChange
-                  }
-                />
+                {editingInventoryId !== null && (
+                  <p className="meta-text">
+                    Current quantity: {formData.qty} (use Damage Goods to reduce stock)
+                  </p>
+                )}
 
                 <div className="popup-buttons">
-                  <button
-                    type="button"
-                    onClick={closePopup}
-                  >
+                  <button type="button" onClick={closePopup}>
                     Close
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={
-                      addInventory
-                    }
-                  >
+                  <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
                     Submit
                   </button>
                 </div>
@@ -2342,45 +1618,40 @@ function Inventory() {
 
             {activeTab === "damage" && (
               <>
-                <h2>
-                  {editingDamageId !== null
-                    ? "Edit Damage Good"
-                    : "Add Damage Good"}
-                </h2>
+                <h2>{editingDamageId !== null ? "Edit Damage Good" : "Add Damage Good"}</h2>
 
-                <select
-                  name="product"
-                  value={formData.product}
-                  onChange={
-                    handleProductChange
-                  }
-                >
-                  <option value="">
-                    Select Product
-                  </option>
+                {editingDamageId === null ? (
+                  <select
+                    name="inventoryId"
+                    value={formData.inventoryId}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select Product</option>
 
-                  {productNames.map(
-                    (product) => (
-                      <option
-                        key={product}
-                        value={product}
-                      >
-                        {product}
+                    {inventory.map((item) => (
+                      <option key={item.inventory_id} value={item.inventory_id}>
+                        {item.product?.product_name || `Product #${item.product_id}`} (
+                        {item.qty} in stock)
                       </option>
-                    ),
-                  )}
-                </select>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={
+                      inventoryById.get(formData.inventoryId)?.product?.product_name ||
+                      `Inventory #${formData.inventoryId}`
+                    }
+                    disabled
+                  />
+                )}
 
                 <input
                   type="number"
-                  name="quantity"
+                  name="damageQty"
                   placeholder="Quantity"
-                  value={
-                    formData.quantity
-                  }
-                  onChange={
-                    handleInputChange
-                  }
+                  value={formData.damageQty}
+                  onChange={handleInputChange}
                 />
 
                 <input
@@ -2388,57 +1659,34 @@ function Inventory() {
                   name="reason"
                   placeholder="Reason"
                   value={formData.reason}
-                  onChange={
-                    handleInputChange
-                  }
+                  onChange={handleInputChange}
                 />
 
                 <input
                   type="number"
                   name="unitCost"
                   placeholder="Unit Cost"
-                  value={
-                    formData.unitCost
-                  }
-                  onChange={
-                    handleInputChange
-                  }
+                  value={formData.unitCost}
+                  onChange={handleInputChange}
                 />
 
                 <input
                   type="number"
-                  name="lossValue"
                   placeholder="Loss Value"
                   value={
-                    formData.quantity !==
-                      "" &&
-                    formData.unitCost !==
-                      ""
-                      ? Number(
-                          formData.quantity,
-                        ) *
-                        Number(
-                          formData.unitCost,
-                        )
+                    formData.damageQty !== "" && formData.unitCost !== ""
+                      ? Number(formData.damageQty) * Number(formData.unitCost)
                       : ""
                   }
                   readOnly
                 />
 
                 <div className="popup-buttons">
-                  <button
-                    type="button"
-                    onClick={closePopup}
-                  >
+                  <button type="button" onClick={closePopup}>
                     Close
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={
-                      addDamageGood
-                    }
-                  >
+                  <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
                     Submit
                   </button>
                 </div>
