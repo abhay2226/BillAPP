@@ -1,3 +1,4 @@
+
 /* ============================================================
    LOGIN / SIGNUP PAGE
 ============================================================ */
@@ -16,10 +17,15 @@
 
   background: #f4faf5;
 
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
 }
-
 
 /* ============================================================
    HEADER
@@ -47,6 +53,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  color: #1f7a3d;
 }
 
 .auth-icon-badge img {
@@ -75,7 +83,6 @@
   line-height: 1.5;
 }
 
-
 /* ============================================================
    CARD
 ============================================================ */
@@ -93,7 +100,6 @@
 
   box-sizing: border-box;
 }
-
 
 /* ============================================================
    TABS
@@ -116,7 +122,6 @@
 
 .auth-tab {
   flex: 1;
-
   min-width: 0;
 
   padding: 10px 0;
@@ -150,9 +155,8 @@
   opacity: 0.6;
 }
 
-
 /* ============================================================
-   FORM ROWS / INPUTS
+   FORM ROWS
 ============================================================ */
 
 .auth-name-row {
@@ -172,6 +176,10 @@
   margin-bottom: 0;
 }
 
+/* ============================================================
+   INPUT WRAPPER
+============================================================ */
+
 .auth-input-wrap {
   width: 100%;
 
@@ -180,7 +188,12 @@
   margin-bottom: 12px;
 }
 
-.auth-input-wrap input {
+/* ============================================================
+   MAIN INPUTS
+============================================================ */
+
+.auth-input-wrap input,
+.auth-input-wrap select {
   width: 100%;
 
   box-sizing: border-box;
@@ -207,17 +220,36 @@
   color: #8fac96;
 }
 
-.auth-input-wrap input:focus {
+.auth-input-wrap input:focus,
+.auth-input-wrap select:focus {
   border-color: #1f7a3d;
-
   background: #ffffff;
 }
 
-.auth-input-wrap input:disabled {
+.auth-input-wrap input:disabled,
+.auth-input-wrap select:disabled {
   cursor: not-allowed;
-
   opacity: 0.6;
 }
+
+/* ============================================================
+   ROLE SELECT
+============================================================ */
+
+.auth-input-wrap select {
+  appearance: auto;
+
+  cursor: pointer;
+}
+
+.auth-input-wrap select option {
+  color: #14321c;
+  background: #ffffff;
+}
+
+/* ============================================================
+   PASSWORD EYE
+============================================================ */
 
 .auth-eye-toggle {
   position: absolute;
@@ -240,6 +272,10 @@
   padding: 4px;
 }
 
+.auth-eye-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
 /* ============================================================
    LOGIN OPTIONS ROW
@@ -293,7 +329,6 @@
   padding: 0;
 }
 
-
 /* ============================================================
    FEEDBACK
 ============================================================ */
@@ -330,9 +365,8 @@
   border: 1px solid #c9e9cd;
 }
 
-
 /* ============================================================
-   SUBMIT
+   SUBMIT BUTTON
 ============================================================ */
 
 .auth-submit {
@@ -370,7 +404,6 @@
 
 .auth-submit:disabled {
   cursor: not-allowed;
-
   opacity: 0.7;
 }
 
@@ -378,9 +411,8 @@
   font-size: 15px;
 }
 
-
 /* ============================================================
-   STORE POPUP
+   STORE POPUP OVERLAY
 ============================================================ */
 
 .store-popup-overlay {
@@ -406,8 +438,13 @@
   overflow-y: auto;
 }
 
+/* ============================================================
+   STORE POPUP
+============================================================ */
+
 .store-popup {
   width: 100%;
+
   max-width: 380px;
 
   background: #ffffff;
@@ -421,8 +458,10 @@
   max-height: 90vh;
 
   overflow-y: auto;
-}
 
+  box-shadow:
+    0 18px 50px rgba(20, 50, 28, 0.18);
+}
 
 /* ============================================================
    POPUP HEADER
@@ -442,6 +481,7 @@
 
 .store-popup-header h2 {
   font-size: 17px;
+
   font-weight: 600;
 
   color: #14321c;
@@ -479,6 +519,14 @@
   padding: 2px 6px;
 }
 
+.store-popup-close:hover:not(:disabled) {
+  color: #14321c;
+}
+
+.store-popup-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
 
 /* ============================================================
    POPUP FORM
@@ -488,7 +536,6 @@
   width: 100%;
 
   display: flex;
-
   flex-direction: column;
 
   gap: 12px;
@@ -497,6 +544,10 @@
 
   overflow-y: auto;
 }
+
+/* ============================================================
+   POPUP INPUT
+============================================================ */
 
 .popup-input-wrap {
   width: 100%;
@@ -554,6 +605,147 @@
   opacity: 0.6;
 }
 
+/* ============================================================
+   STAFF STORE SEARCH
+============================================================ */
+
+.store-popup-form .popup-input-wrap > div {
+  width: 100%;
+
+  display: flex;
+
+  align-items: stretch;
+
+  gap: 8px;
+}
+
+.store-popup-form .popup-input-wrap > div input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Search button */
+
+.store-popup-form .popup-input-wrap > div .popup-create-button {
+  flex: 0 0 auto;
+
+  width: auto;
+
+  min-width: 88px;
+
+  padding: 10px 14px;
+}
+
+/* ============================================================
+   STORE SEARCH RESULTS
+============================================================ */
+
+.store-search-results {
+  width: 100%;
+
+  box-sizing: border-box;
+}
+
+.store-search-results > label {
+  display: block;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  color: #5b7863;
+
+  margin-bottom: 6px;
+}
+
+/* ============================================================
+   STORE RESULT BUTTONS
+============================================================ */
+
+.store-search-results button {
+  width: 100%;
+
+  display: block;
+
+  box-sizing: border-box;
+
+  text-align: left;
+
+  margin-top: 8px;
+
+  padding: 12px;
+
+  border: 1px solid #d9ecdc;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #14321c;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.store-search-results button:hover:not(:disabled) {
+  border-color: #1f7a3d;
+
+  background: #f7fdf8;
+}
+
+.store-search-results button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+}
+
+/* ============================================================
+   SELECTED STORE
+============================================================ */
+
+.store-selected-box {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+  background: #f0faf7;
+
+  border: 1px solid #1f7a3d;
+
+  color: #14321c;
+}
+
+.store-selected-box strong {
+  display: block;
+
+  font-size: 13px;
+
+  color: #14321c;
+
+  margin-bottom: 5px;
+}
+
+.store-selected-box p {
+  margin: 4px 0 0;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+
+  color: #5b7863;
+}
 
 /* ============================================================
    POPUP ACTIONS
@@ -587,7 +779,8 @@
 
   transition:
     background 0.15s ease,
-    opacity 0.15s ease;
+    opacity 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .popup-cancel-button {
@@ -600,6 +793,8 @@
 
 .popup-cancel-button:hover:not(:disabled) {
   background: #f4faf5;
+
+  border-color: #b8d8bf;
 }
 
 .popup-create-button {
@@ -621,6 +816,33 @@
   opacity: 0.6;
 }
 
+/* ============================================================
+   POPUP SCROLLBAR
+============================================================ */
+
+.store-popup::-webkit-scrollbar,
+.store-popup-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.store-popup::-webkit-scrollbar-track,
+.store-popup-form::-webkit-scrollbar-track {
+  background: #f4faf5;
+
+  border-radius: 10px;
+}
+
+.store-popup::-webkit-scrollbar-thumb,
+.store-popup-form::-webkit-scrollbar-thumb {
+  background: #cfe6d4;
+
+  border-radius: 10px;
+}
+
+.store-popup::-webkit-scrollbar-thumb:hover,
+.store-popup-form::-webkit-scrollbar-thumb:hover {
+  background: #a9cdb0;
+}
 
 /* ============================================================
    LARGE DESKTOP
@@ -651,7 +873,6 @@
   }
 }
 
-
 /* ============================================================
    DESKTOP / LAPTOP
    1024px - 1439px
@@ -662,7 +883,6 @@
     padding: 48px 24px;
   }
 }
-
 
 /* ============================================================
    TABLET
@@ -686,7 +906,6 @@
     max-width: 400px;
   }
 }
-
 
 /* ============================================================
    MOBILE
@@ -720,7 +939,6 @@
     padding: 22px;
   }
 }
-
 
 /* ============================================================
    SMALL MOBILE
@@ -806,6 +1024,8 @@
     font-size: 12px;
   }
 
+  /* Popup */
+
   .store-popup-overlay {
     align-items: center;
 
@@ -836,8 +1056,25 @@
 
     font-size: 13px;
   }
-}
 
+  /* Staff search */
+
+  .store-popup-form .popup-input-wrap > div {
+    flex-direction: column;
+
+    gap: 8px;
+  }
+
+  .store-popup-form .popup-input-wrap > div input {
+    width: 100%;
+  }
+
+  .store-popup-form .popup-input-wrap > div .popup-create-button {
+    width: 100%;
+
+    min-width: 0;
+  }
+}
 
 /* ============================================================
    VERY SMALL MOBILE
@@ -871,7 +1108,8 @@
     padding: 9px 0;
   }
 
-  .auth-input-wrap input {
+  .auth-input-wrap input,
+  .auth-input-wrap select {
     padding: 10px 11px;
 
     font-size: 13px;
@@ -900,8 +1138,13 @@
 
     font-size: 13px;
   }
-}
 
+  .store-search-results button {
+    padding: 10px;
+
+    font-size: 12px;
+  }
+}
 
 /* ============================================================
    SHORT DESKTOP / LAPTOP HEIGHT
@@ -931,7 +1174,6 @@
   }
 }
 
-
 /* ============================================================
    MOBILE HEIGHT
 ============================================================ */
@@ -951,7 +1193,6 @@
   }
 }
 
-
 /* ============================================================
    ACCESSIBILITY
 ============================================================ */
@@ -962,12 +1203,15 @@
 .auth-forgot-link:focus-visible,
 .store-popup-close:focus-visible,
 .popup-cancel-button:focus-visible,
-.popup-create-button:focus-visible {
+.popup-create-button:focus-visible,
+.store-search-results button:focus-visible,
+.auth-input-wrap input:focus-visible,
+.auth-input-wrap select:focus-visible,
+.popup-input-wrap input:focus-visible {
   outline: 2px solid #1f7a3d;
 
   outline-offset: 2px;
 }
-
 
 /* ============================================================
    REDUCED MOTION
@@ -976,10 +1220,13 @@
 @media (prefers-reduced-motion: reduce) {
   .auth-tab,
   .auth-input-wrap input,
+  .auth-input-wrap select,
   .auth-submit,
   .popup-input-wrap input,
   .popup-cancel-button,
-  .popup-create-button {
+  .popup-create-button,
+  .store-search-results button {
     transition: none;
   }
 }
+

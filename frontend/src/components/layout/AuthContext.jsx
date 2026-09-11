@@ -72,6 +72,7 @@ export function AuthProvider({ children }) {
       gst_no,
       location,
       store_id,
+      role_id,
     }) => {
       setIsLoading(true);
 
@@ -85,6 +86,7 @@ export function AuthProvider({ children }) {
           gst_no,
           location,
           store_id,
+          role_id,
         });
 
         const createdUser = result.user;

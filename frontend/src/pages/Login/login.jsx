@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/layout/AuthContext";
 import "./Login.css";
 
-// If you have the real image, put it at: src/assets/storeicon.png
-// and swap this back to: import storeIcon from "../../assets/storeicon.png";
+const OWNER_ROLE_ID = "1";
+
 const StoreIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -20,24 +21,53 @@ const StoreIcon = () => (
 export default function Login() {
   const navigate = useNavigate();
 
-  const { login, isLoading } = useAuth();
+  const { login, signup, isLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState("login");
+
+  // ============================================================
+  // LOGIN
+  // ============================================================
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [showStorePopup, setShowStorePopup] = useState(false);
+  // ============================================================
+  // SIGNUP
+  // ============================================================
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  const [storeId, setStoreId] = useState("");
   const [roleId, setRoleId] = useState("");
+
+  // ============================================================
+  // OWNER STORE DETAILS
+  // ============================================================
+
   const [storeName, setStoreName] = useState("");
   const [gstNumber, setGstNumber] = useState("");
   const [location, setLocation] = useState("");
+
+  // ============================================================
+  // STAFF STORE SEARCH
+  // ============================================================
+
+  const [storeSearch, setStoreSearch] = useState("");
+  const [storeResults, setStoreResults] = useState([]);
+  const [selectedStore, setSelectedStore] = useState(null);
+  const [isSearchingStores, setIsSearchingStores] = useState(false);
+
+  // ============================================================
+  // POPUP
+  // ============================================================
+
+  const [showStorePopup, setShowStorePopup] = useState(false);
+
+  // ============================================================
+  // FEEDBACK
+  // ============================================================
 
   const [feedback, setFeedback] = useState({
     type: "",
@@ -49,15 +79,50 @@ export default function Login() {
     text: "",
   });
 
+  // ============================================================
+  // TAB CHANGE
+  // ============================================================
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+
     setEmail("");
     setPassword("");
     setShowPassword(false);
-    setFeedback({ type: "", text: "" });
+
+    setFeedback({
+      type: "",
+      text: "",
+    });
+
+    setPopupFeedback({
+      type: "",
+      text: "",
+    });
+
+    setRoleId("");
+
+    setStoreName("");
+    setGstNumber("");
+    setLocation("");
+
+    setStoreSearch("");
+    setStoreResults([]);
+    setSelectedStore(null);
+
+    setShowStorePopup(false);
   };
 
+  // ============================================================
+  // LOGIN
+  // ============================================================
+
   const handleLogin = async () => {
+    setFeedback({
+      type: "",
+      text: "",
+    });
+
     if (!email.trim()) {
       setFeedback({
         type: "error",
@@ -76,6 +141,7 @@ export default function Login() {
 
     try {
       await login(email.trim(), password);
+
       navigate("/dashboard");
     } catch (error) {
       setFeedback({
@@ -85,15 +151,22 @@ export default function Login() {
     }
   };
 
-  const handleOpenStorePopup = () => {
-    setFeedback({ type: "", text: "" });
+  // ============================================================
+  // VALIDATE BASIC SIGNUP DETAILS
+  // ============================================================
+
+  const validateSignupDetails = () => {
+    setFeedback({
+      type: "",
+      text: "",
+    });
 
     if (!firstName.trim()) {
       setFeedback({
         type: "error",
         text: "Please enter your first name.",
       });
-      return;
+      return false;
     }
 
     if (!lastName.trim()) {
@@ -101,7 +174,7 @@ export default function Login() {
         type: "error",
         text: "Please enter your last name.",
       });
-      return;
+      return false;
     }
 
     if (!email.trim()) {
@@ -109,7 +182,7 @@ export default function Login() {
         type: "error",
         text: "Please enter your email.",
       });
-      return;
+      return false;
     }
 
     if (!password) {
@@ -117,6 +190,26 @@ export default function Login() {
         type: "error",
         text: "Please enter your password.",
       });
+      return false;
+    }
+
+    if (!roleId) {
+      setFeedback({
+        type: "error",
+        text: "Please select your role.",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  // ============================================================
+  // OPEN OWNER / STAFF POPUP
+  // ============================================================
+
+  const handleOpenStorePopup = () => {
+    if (!validateSignupDetails()) {
       return;
     }
 
@@ -125,11 +218,21 @@ export default function Login() {
       text: "",
     });
 
+    setStoreSearch("");
+    setStoreResults([]);
+    setSelectedStore(null);
+
     setShowStorePopup(true);
   };
 
+  // ============================================================
+  // CLOSE POPUP
+  // ============================================================
+
   const handleCloseStorePopup = () => {
-    if (isLoading) return;
+    if (isLoading) {
+      return;
+    }
 
     setShowStorePopup(false);
 
@@ -137,7 +240,113 @@ export default function Login() {
       type: "",
       text: "",
     });
+
+    setStoreSearch("");
+    setStoreResults([]);
+    setSelectedStore(null);
   };
+
+  // ============================================================
+  // SEARCH EXISTING STORES
+  // STAFF ONLY
+  // ============================================================
+
+  const searchStores = async () => {
+    setPopupFeedback({
+      type: "",
+      text: "",
+    });
+
+    if (!storeSearch.trim()) {
+      setPopupFeedback({
+        type: "error",
+        text: "Enter a Store ID or Store Name to search.",
+      });
+      return;
+    }
+
+    try {
+      setIsSearchingStores(true);
+
+      setSelectedStore(null);
+
+      /*
+       * CHANGE THIS URL if your backend uses a different route.
+       *
+       * Example expected:
+       * GET /api/stores/search?query=abc
+       */
+
+      const response = await fetch(
+        `/api/stores/search?query=${encodeURIComponent(
+          storeSearch.trim()
+        )}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Unable to search stores."
+        );
+      }
+
+      /*
+       * Supports:
+       *
+       * [
+       *   { store_id: 1, store_name: "ABC Store", location: "..." }
+       * ]
+       *
+       * OR:
+       *
+       * { stores: [...] }
+       */
+
+      const stores = Array.isArray(data)
+        ? data
+        : Array.isArray(data.stores)
+        ? data.stores
+        : [];
+
+      setStoreResults(stores);
+
+      if (stores.length === 0) {
+        setPopupFeedback({
+          type: "error",
+          text: "No stores found. Try another Store ID or Store Name.",
+        });
+      }
+    } catch (error) {
+      setStoreResults([]);
+
+      setPopupFeedback({
+        type: "error",
+        text:
+          error.message ||
+          "Unable to search stores. Please try again.",
+      });
+    } finally {
+      setIsSearchingStores(false);
+    }
+  };
+
+  // ============================================================
+  // SELECT STAFF STORE
+  // ============================================================
+
+  const handleSelectStore = (store) => {
+    setSelectedStore(store);
+
+    setPopupFeedback({
+      type: "",
+      text: "",
+    });
+  };
+
+  // ============================================================
+  // CREATE ACCOUNT
+  // ============================================================
 
   const handleCreateAccount = async () => {
     setPopupFeedback({
@@ -145,70 +354,139 @@ export default function Login() {
       text: "",
     });
 
-    if (!storeId.trim()) {
-      setPopupFeedback({
-        type: "error",
-        text: "Please enter your store ID.",
-      });
-      return;
-    }
+    // ==========================================================
+    // OWNER
+    // ==========================================================
 
-    if (!roleId.trim()) {
-      setPopupFeedback({
-        type: "error",
-        text: "Please enter your role ID.",
-      });
-      return;
-    }
-
-    if (!storeName.trim()) {
-      setPopupFeedback({
-        type: "error",
-        text: "Please enter your store name.",
-      });
-      return;
-    }
-
-    if (!gstNumber.trim()) {
-      setPopupFeedback({
-        type: "error",
-        text: "Please enter your GST number.",
-      });
-      return;
-    }
-
-    if (!location.trim()) {
-      setPopupFeedback({
-        type: "error",
-        text: "Please enter your store location.",
-      });
-      return;
-    }
-
-    /*
-      Signup API payload:
-
-      {
-        firstname: firstName,
-        lastname: lastName,
-        email: email,
-        password: password,
-        store_id: storeId,
-        role_id: roleId,
-        store_name: storeName,
-        gst_no: gstNumber,
-        location: location
+    if (roleId === OWNER_ROLE_ID) {
+      if (!storeName.trim()) {
+        setPopupFeedback({
+          type: "error",
+          text: "Please enter your store name.",
+        });
+        return;
       }
-    */
 
-    setPopupFeedback({
-      type: "success",
-      text: "Store details validated successfully.",
-    });
+      if (!gstNumber.trim()) {
+        setPopupFeedback({
+          type: "error",
+          text: "Please enter your GST number.",
+        });
+        return;
+      }
+
+      if (!location.trim()) {
+        setPopupFeedback({
+          type: "error",
+          text: "Please enter your store location.",
+        });
+        return;
+      }
+
+      try {
+        await signup({
+          firstname: firstName.trim(),
+          lastname: lastName.trim(),
+          email: email.trim(),
+          password,
+
+          role_id: roleId,
+
+          // Owner creates a new store
+          store_id: "",
+
+          store_name: storeName.trim(),
+          gst_no: gstNumber.trim(),
+          location: location.trim(),
+        });
+
+        setShowStorePopup(false);
+
+        navigate("/dashboard");
+      } catch (error) {
+        setPopupFeedback({
+          type: "error",
+          text:
+            error.message ||
+            "Unable to create owner account.",
+        });
+      }
+
+      return;
+    }
+
+    // ==========================================================
+    // STAFF
+    // ==========================================================
+
+    if (!selectedStore) {
+      setPopupFeedback({
+        type: "error",
+        text: "Please search and select a store to join.",
+      });
+      return;
+    }
+
+    try {
+      await signup({
+        firstname: firstName.trim(),
+        lastname: lastName.trim(),
+        email: email.trim(),
+        password,
+
+        // Staff role
+        role_id: roleId,
+
+        // Selected existing store
+        store_id:
+          selectedStore.store_id ||
+          selectedStore.id,
+
+        // Staff does NOT create store details
+        store_name: "",
+        gst_no: "",
+        location: "",
+      });
+
+      setShowStorePopup(false);
+
+      navigate("/dashboard");
+    } catch (error) {
+      setPopupFeedback({
+        type: "error",
+        text:
+          error.message ||
+          "Unable to create staff account.",
+      });
+    }
   };
+
+  // ============================================================
+  // ROLE LABEL
+  // ============================================================
+
+  const getRoleLabel = () => {
+    if (roleId === OWNER_ROLE_ID) {
+      return "Owner";
+    }
+
+    if (roleId) {
+      return "Staff";
+    }
+
+    return "";
+  };
+
+  // ============================================================
+  // JSX
+  // ============================================================
 
   return (
     <main className="login-signup-page">
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+
       <div className="auth-header-block">
         <div className="auth-icon-badge">
           <StoreIcon />
@@ -227,7 +505,15 @@ export default function Login() {
         </p>
       </div>
 
+      {/* ======================================================
+          CARD
+      ====================================================== */}
+
       <div className="auth-card">
+        {/* ====================================================
+            TABS
+        ==================================================== */}
+
         <div className="auth-tabs">
           <button
             type="button"
@@ -252,6 +538,10 @@ export default function Login() {
           </button>
         </div>
 
+        {/* ====================================================
+            FORM
+        ==================================================== */}
+
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -263,6 +553,10 @@ export default function Login() {
             }
           }}
         >
+          {/* ==================================================
+              SIGNUP NAME
+          ================================================== */}
+
           {activeTab === "signup" && (
             <div className="auth-name-row">
               <div className="auth-input-wrap">
@@ -291,6 +585,10 @@ export default function Login() {
             </div>
           )}
 
+          {/* ==================================================
+              EMAIL
+          ================================================== */}
+
           <div className="auth-input-wrap">
             <input
               type="email"
@@ -302,6 +600,10 @@ export default function Login() {
               disabled={isLoading}
             />
           </div>
+
+          {/* ==================================================
+              PASSWORD
+          ================================================== */}
 
           <div className="auth-input-wrap">
             <input
@@ -326,6 +628,43 @@ export default function Login() {
             </button>
           </div>
 
+          {/* ==================================================
+              ROLE
+          ================================================== */}
+
+          {activeTab === "signup" && (
+            <div className="auth-input-wrap">
+              <select
+                value={roleId}
+                onChange={(event) => {
+                  setRoleId(event.target.value);
+
+                  setFeedback({
+                    type: "",
+                    text: "",
+                  });
+                }}
+                disabled={isLoading}
+              >
+                <option value="">
+                  Select your role
+                </option>
+
+                <option value="1">
+                  Owner
+                </option>
+
+                <option value="2">
+                  Staff
+                </option>
+              </select>
+            </div>
+          )}
+
+          {/* ==================================================
+              LOGIN OPTIONS
+          ================================================== */}
+
           {activeTab === "login" && (
             <div className="auth-label-row">
               <label className="auth-checkbox-row">
@@ -342,6 +681,10 @@ export default function Login() {
             </div>
           )}
 
+          {/* ==================================================
+              FEEDBACK
+          ================================================== */}
+
           {feedback.text && (
             <div
               className={`auth-feedback ${feedback.type}`}
@@ -349,6 +692,10 @@ export default function Login() {
               {feedback.text}
             </div>
           )}
+
+          {/* ==================================================
+              SUBMIT
+          ================================================== */}
 
           <button
             type="submit"
@@ -361,16 +708,24 @@ export default function Login() {
               ? "Login"
               : "Continue"}
 
-            <span className="auth-submit-arrow">→</span>
+            <span className="auth-submit-arrow">
+              →
+            </span>
           </button>
         </form>
       </div>
+
+      {/* ======================================================
+          OWNER / STAFF POPUP
+      ====================================================== */}
 
       {showStorePopup && (
         <div
           className="store-popup-overlay"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
+            if (
+              event.target === event.currentTarget
+            ) {
               handleCloseStorePopup();
             }
           }}
@@ -382,12 +737,22 @@ export default function Login() {
               overflowY: "auto",
             }}
           >
+            {/* ==================================================
+                POPUP HEADER
+            ================================================== */}
+
             <div className="store-popup-header">
               <div>
-                <h2>Store Details</h2>
+                <h2>
+                  {roleId === OWNER_ROLE_ID
+                    ? "Create Your Store"
+                    : "Join a Store"}
+                </h2>
 
                 <p>
-                  Enter your store information to continue.
+                  {roleId === OWNER_ROLE_ID
+                    ? "Enter your store details to create a new store."
+                    : "Search for an existing store and select it to join."}
                 </p>
               </div>
 
@@ -401,118 +766,401 @@ export default function Login() {
               </button>
             </div>
 
-            <div
-              className="store-popup-form"
-              style={{
-                maxHeight: "70vh",
-                overflowY: "auto",
-              }}
-            >
-              <div className="popup-input-wrap">
-                <label>Store ID</label>
+            {/* ==================================================
+                OWNER POPUP
+            ================================================== */}
 
-                <input
-                  type="text"
-                  value={storeId}
-                  onChange={(event) =>
-                    setStoreId(event.target.value)
-                  }
-                  placeholder="Enter store ID"
-                  disabled={isLoading}
-                />
-              </div>
+            {roleId === OWNER_ROLE_ID && (
+              <div
+                className="store-popup-form"
+                style={{
+                  maxHeight: "70vh",
+                  overflowY: "auto",
+                }}
+              >
+                {/* ROLE */}
 
-              <div className="popup-input-wrap">
-                <label>Role ID</label>
+                <div className="popup-input-wrap">
+                  <label>Role</label>
 
-                <input
-                  type="text"
-                  value={roleId}
-                  onChange={(event) =>
-                    setRoleId(event.target.value)
-                  }
-                  placeholder="Enter role ID"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="popup-input-wrap">
-                <label>Store Name</label>
-
-                <input
-                  type="text"
-                  value={storeName}
-                  onChange={(event) =>
-                    setStoreName(event.target.value)
-                  }
-                  placeholder="Enter store name"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="popup-input-wrap">
-                <label>GST Number</label>
-
-                <input
-                  type="text"
-                  value={gstNumber}
-                  onChange={(event) =>
-                    setGstNumber(
-                      event.target.value.toUpperCase()
-                    )
-                  }
-                  placeholder="Enter GST number"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="popup-input-wrap">
-                <label>Location</label>
-
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(event) =>
-                    setLocation(event.target.value)
-                  }
-                  placeholder="Enter store location"
-                  disabled={isLoading}
-                />
-              </div>
-
-              {popupFeedback.text && (
-                <div
-                  className={`auth-feedback ${popupFeedback.type}`}
-                >
-                  {popupFeedback.text}
+                  <input
+                    type="text"
+                    value="Owner"
+                    disabled
+                  />
                 </div>
-              )}
 
-              <div className="store-popup-actions">
-                <button
-                  type="button"
-                  className="popup-cancel-button"
-                  onClick={handleCloseStorePopup}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </button>
+                {/* STORE NAME */}
 
-                <button
-                  type="button"
-                  className="popup-create-button"
-                  onClick={handleCreateAccount}
-                  disabled={isLoading}
-                >
-                  {isLoading
-                    ? "Creating..."
-                    : "Create Account"}
-                </button>
+                <div className="popup-input-wrap">
+                  <label>Store Name</label>
+
+                  <input
+                    type="text"
+                    value={storeName}
+                    onChange={(event) =>
+                      setStoreName(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter store name"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* GST */}
+
+                <div className="popup-input-wrap">
+                  <label>GST Number</label>
+
+                  <input
+                    type="text"
+                    value={gstNumber}
+                    onChange={(event) =>
+                      setGstNumber(
+                        event.target.value.toUpperCase()
+                      )
+                    }
+                    placeholder="Enter GST number"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* LOCATION */}
+
+                <div className="popup-input-wrap">
+                  <label>Store Location</label>
+
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(event) =>
+                      setLocation(
+                        event.target.value
+                      )
+                    }
+                    placeholder="Enter store location"
+                    disabled={isLoading}
+                  />
+                </div>
+
+                {/* FEEDBACK */}
+
+                {popupFeedback.text && (
+                  <div
+                    className={`auth-feedback ${popupFeedback.type}`}
+                  >
+                    {popupFeedback.text}
+                  </div>
+                )}
+
+                {/* ACTIONS */}
+
+                <div className="store-popup-actions">
+                  <button
+                    type="button"
+                    className="popup-cancel-button"
+                    onClick={handleCloseStorePopup}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="popup-create-button"
+                    onClick={handleCreateAccount}
+                    disabled={isLoading}
+                  >
+                    {isLoading
+                      ? "Creating..."
+                      : "Create Account"}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* ==================================================
+                STAFF POPUP
+            ================================================== */}
+
+            {roleId !== OWNER_ROLE_ID && (
+              <div
+                className="store-popup-form"
+                style={{
+                  maxHeight: "70vh",
+                  overflowY: "auto",
+                }}
+              >
+                {/* ROLE */}
+
+                <div className="popup-input-wrap">
+                  <label>Role</label>
+
+                  <input
+                    type="text"
+                    value={`Staff${
+                      roleId
+                        ? ` (Role ID: ${roleId})`
+                        : ""
+                    }`}
+                    disabled
+                  />
+                </div>
+
+                {/* SEARCH */}
+
+                <div className="popup-input-wrap">
+                  <label>
+                    Search Existing Store
+                  </label>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                    }}
+                  >
+                    <input
+                      type="text"
+                      value={storeSearch}
+                      onChange={(event) =>
+                        setStoreSearch(
+                          event.target.value
+                        )
+                      }
+                      onKeyDown={(event) => {
+                        if (
+                          event.key === "Enter"
+                        ) {
+                          event.preventDefault();
+                          searchStores();
+                        }
+                      }}
+                      placeholder="Search by Store ID or Store Name"
+                      disabled={
+                        isLoading ||
+                        isSearchingStores
+                      }
+                    />
+
+                    <button
+                      type="button"
+                      className="popup-create-button"
+                      onClick={searchStores}
+                      disabled={
+                        isLoading ||
+                        isSearchingStores
+                      }
+                    >
+                      {isSearchingStores
+                        ? "Searching..."
+                        : "Search"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* ==================================================
+                    SEARCH RESULTS
+                ================================================== */}
+
+                {storeResults.length > 0 && (
+                  <div
+                    className="store-search-results"
+                    style={{
+                      marginTop: "15px",
+                    }}
+                  >
+                    <label>
+                      Select Store
+                    </label>
+
+                    {storeResults.map(
+                      (store, index) => {
+                        const currentStoreId =
+                          store.store_id ||
+                          store.id;
+
+                        const isSelected =
+                          selectedStore &&
+                          (
+                            selectedStore.store_id ||
+                            selectedStore.id
+                          ) === currentStoreId;
+
+                        return (
+                          <button
+                            type="button"
+                            key={
+                              currentStoreId ||
+                              index
+                            }
+                            onClick={() =>
+                              handleSelectStore(
+                                store
+                              )
+                            }
+                            disabled={isLoading}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              marginTop: "8px",
+                              padding: "12px",
+                              border:
+                                isSelected
+                                  ? "2px solid #008f6b"
+                                  : "1px solid #ddd",
+                              borderRadius:
+                                "8px",
+                              background:
+                                isSelected
+                                  ? "#f0faf7"
+                                  : "#fff",
+                              cursor:
+                                "pointer",
+                            }}
+                          >
+                            <strong>
+                              {store.store_name ||
+                                store.name ||
+                                "Unnamed Store"}
+                            </strong>
+
+                            <br />
+
+                            <span>
+                              Store ID:{" "}
+                              {currentStoreId}
+                            </span>
+
+                            {store.location && (
+                              <>
+                                <br />
+
+                                <span>
+                                  Location:{" "}
+                                  {
+                                    store.location
+                                  }
+                                </span>
+                              </>
+                            )}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+                )}
+
+                {/* ==================================================
+                    SELECTED STORE
+                ================================================== */}
+
+                {selectedStore && (
+                  <div
+                    style={{
+                      marginTop: "15px",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      background: "#f0faf7",
+                      border:
+                        "1px solid #008f6b",
+                    }}
+                  >
+                    <strong>
+                      Selected Store
+                    </strong>
+
+                    <p
+                      style={{
+                        margin:
+                          "6px 0 0",
+                      }}
+                    >
+                      {
+                        selectedStore.store_name ||
+                        selectedStore.name
+                      }
+                    </p>
+
+                    <p
+                      style={{
+                        margin:
+                          "4px 0 0",
+                      }}
+                    >
+                      Store ID:{" "}
+                      {
+                        selectedStore.store_id ||
+                        selectedStore.id
+                      }
+                    </p>
+
+                    {selectedStore.location && (
+                      <p
+                        style={{
+                          margin:
+                            "4px 0 0",
+                        }}
+                      >
+                        Location:{" "}
+                        {
+                          selectedStore.location
+                        }
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* ==================================================
+                    FEEDBACK
+                ================================================== */}
+
+                {popupFeedback.text && (
+                  <div
+                    className={`auth-feedback ${popupFeedback.type}`}
+                    style={{
+                      marginTop: "15px",
+                    }}
+                  >
+                    {popupFeedback.text}
+                  </div>
+                )}
+
+                {/* ==================================================
+                    ACTIONS
+                ================================================== */}
+
+                <div className="store-popup-actions">
+                  <button
+                    type="button"
+                    className="popup-cancel-button"
+                    onClick={handleCloseStorePopup}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="popup-create-button"
+                    onClick={handleCreateAccount}
+                    disabled={
+                      isLoading ||
+                      !selectedStore
+                    }
+                  >
+                    {isLoading
+                      ? "Joining..."
+                      : "Join Store"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
     </main>
   );
 }
+

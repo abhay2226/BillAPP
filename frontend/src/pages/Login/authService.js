@@ -61,6 +61,7 @@ export async function signup({
   gst_no,
   location,
   store_id,
+  role_id,
 }) {
   const body = {
     firstname,
@@ -69,8 +70,12 @@ export async function signup({
     password,
   };
 
-  if (store_id !== undefined && store_id !== null) {
+  if (store_id !== undefined && store_id !== null && store_id !== "") {
     body.store_id = Number(store_id);
+
+    if (role_id !== undefined && role_id !== null && role_id !== "") {
+      body.role_id = Number(role_id);
+    }
   } else {
     body.store_name = store_name;
     body.gst_no = gst_no;
