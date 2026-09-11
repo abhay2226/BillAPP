@@ -4,13 +4,19 @@ import { StockMovement } from "../entity/TransactionsStockMovement.js";
 import { ReferenceType } from "../entity/MasterReference.js";
 import {Audit} from "../entity/TransactionsAudit.js";
 
+import { MovementType } from "../entity/MasterMovementType.js";
+import { createAuditRecordService } from "./AuditServices.js";
+
 const inventoryRepository = AppDataSource.getRepository(Inventory);
 
 export type InventoryData = Partial<Inventory> & {
     movement_type_id?: number;
     reference_type_code?: string;
     reference_id?: number;
+    session_id?: number;
 };
+
+
 
 const getReferenceType = async (
     manager: any,
@@ -32,6 +38,58 @@ const getReferenceType = async (
     return referenceType;
 };
 
+const getMovementType = async (
+    manager: any,
+    code: string
+): Promise<MovementType> => {
+    const movementType = await manager.findOne(MovementType, {
+        where: {
+            code,
+            is_active: true
+        }
+    });
+
+    if (!movementType) {
+        throw new Error(
+            `Movement type with code '${code}' not found or inactive`
+        );
+    }
+
+    return movementType;
+};
+
+const resolveMovementType = async (
+    manager: any,
+    movementTypeId: number | undefined
+): Promise<MovementType> => {
+    if (
+        movementTypeId !== undefined &&
+        Number.isInteger(movementTypeId) &&
+        movementTypeId > 0
+    ) {
+        const movementType = await manager.findOne(
+            MovementType,
+            {
+                where: {
+                    movement_type_id: movementTypeId,
+                    is_active: true
+                }
+            }
+        );
+
+        if (!movementType) {
+            throw new Error(
+                "Valid movement type ID is required"
+            );
+        }
+
+        return movementType;
+    }
+
+    return getMovementType(manager, "STOCK");
+};
+
+
 export const createInventoryService = async (
     inventoryData: InventoryData
 ) => {
@@ -39,6 +97,7 @@ export const createInventoryService = async (
     const productId = inventoryData.product_id;
     const quantity = inventoryData.qty ?? 0;
     const userId = inventoryData.created_by;
+    const sessionId = inventoryData.session_id ?? 1;
 
     if (
         storeId === undefined ||
@@ -106,18 +165,25 @@ export const createInventoryService = async (
 
             inventory = await inventoryRepo.save(inventory);
 
-            if (quantity > 0) {
-                if (
-                    inventoryData.movement_type_id === undefined ||
-                    !Number.isInteger(
-                        inventoryData.movement_type_id
-                    ) ||
-                    inventoryData.movement_type_id <= 0
-                ) {
-                    throw new Error(
-                        "Valid movement type ID is required"
-                    );
+            await createAuditRecordService(
+                queryRunner.manager,
+                {
+                    tableName: "transactions_inventory",
+                    recordId: inventory.inventory_id,
+                    actionTypeName: "INSERT",
+                    userId: userId ?? 1,
+                    storeId: storeId,
+                    sessionId: sessionId
                 }
+            );
+
+
+            if (quantity > 0) {
+                const movementType =
+                    await resolveMovementType(
+                        queryRunner.manager,
+                        inventoryData.movement_type_id
+                    );
 
                 const stockMovement =
                     stockMovementRepo.create({
@@ -125,7 +191,7 @@ export const createInventoryService = async (
                             inventory.inventory_id,
 
                         movement_type_id:
-                            inventoryData.movement_type_id,
+                            movementType.movement_type_id,
 
                         reference_type_id:
                             referenceType.reference_type_id,
@@ -143,38 +209,58 @@ export const createInventoryService = async (
                         created_at: now,
                         created_by: userId ?? null,
 
-                        updated_at: now,
-                        updated_by: userId ?? null
+                        updated_at: null,
+                        updated_by: null
                     });
 
-                await stockMovementRepo.save(stockMovement);
+                const savedMovement =await stockMovementRepo.save(stockMovement);
+                
+                await createAuditRecordService(
+                    queryRunner.manager,
+                    {
+                        tableName: "transactions_stock_movement",
+                        recordId: savedMovement.movement_id,
+                        actionTypeName: "INSERT",
+                        userId: userId ?? 1,
+                        storeId: storeId,
+                        sessionId: sessionId
+                    }
+                );
             }
+                
         } else {
             if (quantity > 0) {
-                if (
-                    inventoryData.movement_type_id === undefined ||
-                    !Number.isInteger(
-                        inventoryData.movement_type_id
-                    ) ||
-                    inventoryData.movement_type_id <= 0
-                ) {
-                    throw new Error(
-                        "Valid movement type ID is required"
-                    );
-                }
-
                 const referenceType = await getReferenceType(
                     queryRunner.manager,
                     "INVADD"
                 );
 
+                const movementType =
+                    await resolveMovementType(
+                        queryRunner.manager,
+                        inventoryData.movement_type_id
+                    );
+
+
                 inventory.qty += quantity;
                 inventory.is_active = true;
-                inventory.updated_at = now;
-                inventory.updated_by = userId ?? null;
+                inventory.updated_at = null;
+                inventory.updated_by =  null;
 
                 inventory =
                     await inventoryRepo.save(inventory);
+
+                await createAuditRecordService(
+                    queryRunner.manager,
+                    {
+                        tableName: "transactions_inventory",
+                        recordId: inventory.inventory_id,
+                        actionTypeName: "UPDATE",
+                        userId: userId ?? 1,
+                        storeId: storeId,
+                        sessionId: sessionId
+                    }
+                );
 
                 const stockMovement =
                     stockMovementRepo.create({
@@ -182,7 +268,7 @@ export const createInventoryService = async (
                             inventory.inventory_id,
 
                         movement_type_id:
-                            inventoryData.movement_type_id,
+                            movementType.movement_type_id,
 
                         reference_type_id:
                             referenceType.reference_type_id,
@@ -200,11 +286,22 @@ export const createInventoryService = async (
                         created_at: now,
                         created_by: userId ?? null,
 
-                        updated_at: now,
-                        updated_by: userId ?? null
+                        updated_at: null,
+                        updated_by: null
                     });
 
-                await stockMovementRepo.save(stockMovement);
+                const savedMovement = await stockMovementRepo.save(stockMovement);
+                await createAuditRecordService(
+                    queryRunner.manager,
+                    {
+                        tableName: "transactions_stock_movement",
+                        recordId: savedMovement.movement_id,
+                        actionTypeName: "INSERT",
+                        userId: userId ?? 1,
+                        storeId: storeId,
+                        sessionId: sessionId
+                    }
+                );
             } else if (!inventory.is_active) {
                 inventory.is_active = true;
                 inventory.updated_at = now;
@@ -212,6 +309,18 @@ export const createInventoryService = async (
 
                 inventory =
                     await inventoryRepo.save(inventory);
+
+                await createAuditRecordService(
+                    queryRunner.manager,
+                    {
+                        tableName: "transactions_inventory",
+                        recordId: inventory.inventory_id,
+                        actionTypeName: "UPDATE",
+                        userId: userId ?? 1,
+                        storeId: storeId,
+                        sessionId: sessionId
+                    }
+                );
             }
         }
 
@@ -224,7 +333,7 @@ export const createInventoryService = async (
     } finally {
         await queryRunner.release();
     }
-};
+}
 
 export const getInventoryByStoreService = async (
     storeId: number,
@@ -539,3 +648,5 @@ export const deactivateInventoryService = async (
         await queryRunner.release();
     }
 };
+
+
