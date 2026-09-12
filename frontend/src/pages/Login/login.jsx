@@ -624,7 +624,7 @@ export default function Login() {
               }
               disabled={isLoading}
             >
-              {showPassword ? "🙈" : "👁"}
+              {showPassword ? "$" : "S"}
             </button>
           </div>
 
@@ -899,11 +899,7 @@ export default function Login() {
 
                   <input
                     type="text"
-                    value={`Staff${
-                      roleId
-                        ? ` (Role ID: ${roleId})`
-                        : ""
-                    }`}
+                    value={getRoleLabel() || "Staff"}
                     disabled
                   />
                 </div>

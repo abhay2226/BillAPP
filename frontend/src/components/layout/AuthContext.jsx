@@ -5,7 +5,7 @@ import {
   useCallback,
 } from "react";
 
-import * as authService from "../../pages/Login/authService";
+import * as authService from "../../services/authService";
 import * as userService from "../../services/userService";
 
 const AuthContext = createContext(null);
