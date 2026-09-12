@@ -22,9 +22,7 @@ import damageGoodsRoutes from "./routes/DamageGood.routes.js";
 
 const app: Application = express();
 
-// In development (no FRONTEND_URL set) allow any origin so localhost testing
-// just works. In production, set FRONTEND_URL to your deployed frontend's
-// exact URL so only that site can call this API from a browser.
+
 const allowedOrigins = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(",").map((origin) => origin.trim())
     : true;
