@@ -17,7 +17,7 @@ import stockMovementRoutes from "./routes/StockMovement.Routes.js";
 import ProductTypeRouter from "./routes/ProductTypeRoutes.js";
 import ProductBrandRouter from "./routes/ProductBrandRoutes.js";
 import UnitRouter from "./routes/UomRoute.js";
-import damagedGoodsRoutes from "./routes/DamageGood.routes.js";
+import damageGoodsRoutes from "./routes/DamageGood.routes.js";
 
 
 const app: Application = express();
@@ -39,7 +39,7 @@ app.use("/stock-movements", stockMovementRoutes);
 app.use("/product-types",ProductTypeRouter);
 app.use("/product-brands",ProductBrandRouter);
 app.use("/units",UnitRouter);
-app.use("/damaged-goods", damagedGoodsRoutes);
+app.use("/damaged-goods", damageGoodsRoutes);
 
 // Catch-all 404 handler for undefined routes
 app.use((req: Request, res: Response) => {
