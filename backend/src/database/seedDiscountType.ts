@@ -15,7 +15,7 @@ async function seedDiscountTypes() {
                 description: "apply fixed deduction."
             },
             {
-                code: "FLAT",
+                code: "PERCENT",
                 description: "apply percantage formula."
             },
             

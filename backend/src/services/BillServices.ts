@@ -34,7 +34,6 @@ export interface CreateBillInput {
   customer_id: number;
   items: BillItemInput[];
   discount_id?: number | null;
-  tax_total?: number;
 }
 
 
@@ -51,6 +50,9 @@ const round2 = (n: number) =>
   Math.round(n * 100) / 100;
 
 const TEN_MINUTES_MS = 10 * 60 * 1000;
+
+// Must match GST_RATE in frontend/src/pages/Voicebilling/Voicebilling.jsx
+const GST_RATE = 18;
 
 
 // ======================================================
@@ -476,10 +478,6 @@ export const createBillService = async (
         seenInventoryIds.add(item.inventory_id);
     }
 
-    if (input.tax_total !== undefined && input.tax_total < 0) {
-        throw new Error("tax_total cannot be negative.");
-    }
-    
     return AppDataSource.transaction(
     async (manager) => {
 
@@ -625,9 +623,12 @@ export const createBillService = async (
       // TOTALS
       // ==================================================
 
+      // Computed server-side from the validated subtotal — never trust a
+      // client-supplied tax_total, since that would let a caller under-report
+      // GST on the recorded invoice.
       const tax_total =
         round2(
-          input.tax_total ?? 0
+          subtotal * GST_RATE / 100
         );
 
       const rawGrandTotal =

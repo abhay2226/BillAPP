@@ -4,8 +4,11 @@ import { apiRequest, getCurrentStoreId } from "./api";
  * POST /bills
  *
  * items: [{ inventory_id, qty }]
+ *
+ * tax_total is computed server-side from the subtotal — it is not accepted
+ * from the client.
  */
-export async function createBill({ customer_id, items, discount_id, tax_total }) {
+export async function createBill({ customer_id, items, discount_id }) {
   const storeId = getCurrentStoreId();
 
   const result = await apiRequest("/bills", {
@@ -15,7 +18,6 @@ export async function createBill({ customer_id, items, discount_id, tax_total })
       customer_id,
       items,
       discount_id: discount_id ?? null,
-      tax_total: tax_total ?? 0,
     },
   });
 
