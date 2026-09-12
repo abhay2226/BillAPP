@@ -30,13 +30,7 @@ export function getCurrentUser() {
 
 /**
  * Generic authenticated request helper used by every service module.
- *
- * - Automatically attaches the Bearer token (when present).
- * - Automatically serializes `body` as JSON.
- * - Automatically serializes `params` as a query string.
- * - Throws an Error with the backend's message on any non-2xx response,
- *   or when the response body explicitly reports `success: false`.
- */
+**/
 export async function apiRequest(path, { method = "GET", body, params } = {}) {
   let url = `${API_URL}${path}`;
 
