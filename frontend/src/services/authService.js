@@ -116,7 +116,6 @@ export async function getSignupRoles() {
       result.message || "Unable to load signup roles."
     );
   }
-
   return result.data;
 }
 
@@ -195,4 +194,3 @@ export async function logout() {
 
   return true;
 }
-
