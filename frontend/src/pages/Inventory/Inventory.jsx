@@ -16,6 +16,7 @@ import * as inventoryService from "../../services/inventoryService";
 import * as damageGoodsService from "../../services/damageGoodsService";
 import * as masterDataService from "../../services/masterDataService";
 
+import Discounts from "../Discounts/Discounts";
 const LOW_STOCK_THRESHOLD = 5;
 
 function Inventory() {
@@ -130,6 +131,7 @@ function Inventory() {
 
   useEffect(() => {
     loadAll();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -221,7 +223,13 @@ function Inventory() {
 
     if (value === "__ADD_NEW__") {
       setAddingNewType(true);
-      setFormData((previous) => ({ ...previous, typeId: "", typeName: "" }));
+
+      setFormData((previous) => ({
+        ...previous,
+        typeId: "",
+        typeName: "",
+      }));
+
       return;
     }
 
@@ -239,7 +247,13 @@ function Inventory() {
 
     if (value === "__ADD_NEW__") {
       setAddingNewBrand(true);
-      setFormData((previous) => ({ ...previous, brandId: "", brandName: "" }));
+
+      setFormData((previous) => ({
+        ...previous,
+        brandId: "",
+        brandName: "",
+      }));
+
       return;
     }
 
@@ -395,7 +409,7 @@ function Inventory() {
 
   /*
   ============================================================
-  ADD PRODUCT TO INVENTORY (from product row action menu)
+  ADD PRODUCT TO INVENTORY
   ============================================================
   */
 
@@ -405,7 +419,9 @@ function Inventory() {
     const existingInventory = inventoryByProductId.get(product.product_id);
 
     if (existingInventory) {
-      alert("This product already has an inventory record. Edit it from the Inventory tab.");
+      alert(
+        "This product already has an inventory record. Edit it from the Inventory tab.",
+      );
       return;
     }
 
@@ -428,7 +444,7 @@ function Inventory() {
 
   /*
   ============================================================
-  DAMAGE PRODUCT (from product row action menu)
+  DAMAGE PRODUCT
   ============================================================
   */
 
@@ -438,7 +454,9 @@ function Inventory() {
     const existingInventory = inventoryByProductId.get(product.product_id);
 
     if (!existingInventory) {
-      alert("This product has no inventory record yet. Add it to inventory first.");
+      alert(
+        "This product has no inventory record yet. Add it to inventory first.",
+      );
       return;
     }
 
@@ -463,7 +481,9 @@ function Inventory() {
   */
 
   const submitInventory = async () => {
-    const costPrice = formData.costPrice === "" ? null : Number(formData.costPrice);
+    const costPrice =
+      formData.costPrice === "" ? null : Number(formData.costPrice);
+
     const sellingPrice = Number(formData.sellingPrice);
 
     if (formData.sellingPrice === "") {
@@ -471,7 +491,10 @@ function Inventory() {
       return;
     }
 
-    if (costPrice !== null && (!Number.isFinite(costPrice) || costPrice < 0)) {
+    if (
+      costPrice !== null &&
+      (!Number.isFinite(costPrice) || costPrice < 0)
+    ) {
       alert("Cost price cannot be negative.");
       return;
     }
@@ -485,10 +508,13 @@ function Inventory() {
 
     try {
       if (editingInventoryId !== null) {
-        await inventoryService.updateInventoryPricing(editingInventoryId, {
-          cost_price: costPrice,
-          selling_price: sellingPrice,
-        });
+        await inventoryService.updateInventoryPricing(
+          editingInventoryId,
+          {
+            cost_price: costPrice,
+            selling_price: sellingPrice,
+          },
+        );
       } else {
         if (!formData.productId) {
           alert("Please select a product.");
@@ -496,7 +522,8 @@ function Inventory() {
           return;
         }
 
-        const qty = formData.qty === "" ? 0 : Number(formData.qty);
+        const qty =
+          formData.qty === "" ? 0 : Number(formData.qty);
 
         if (!Number.isInteger(qty) || qty < 0) {
           alert("Quantity must be a non-negative whole number.");
@@ -568,7 +595,11 @@ function Inventory() {
       return;
     }
 
-    if (formData.damageQty === "" || !Number.isInteger(quantity) || quantity <= 0) {
+    if (
+      formData.damageQty === "" ||
+      !Number.isInteger(quantity) ||
+      quantity <= 0
+    ) {
       alert("Quantity must be a positive whole number.");
       return;
     }
@@ -578,7 +609,11 @@ function Inventory() {
       return;
     }
 
-    if (formData.unitCost === "" || !Number.isFinite(unitCost) || unitCost < 0) {
+    if (
+      formData.unitCost === "" ||
+      !Number.isFinite(unitCost) ||
+      unitCost < 0
+    ) {
       alert("Please enter a valid unit cost.");
       return;
     }
@@ -587,11 +622,14 @@ function Inventory() {
 
     try {
       if (editingDamageId !== null) {
-        await damageGoodsService.updateDamagedGoods(editingDamageId, {
-          qty: quantity,
-          reason,
-          unit_cost: unitCost,
-        });
+        await damageGoodsService.updateDamagedGoods(
+          editingDamageId,
+          {
+            qty: quantity,
+            reason,
+            unit_cost: unitCost,
+          },
+        );
       } else {
         await damageGoodsService.createDamagedGoods({
           inventory_id: Number(formData.inventoryId),
@@ -646,7 +684,7 @@ function Inventory() {
       submitProduct();
     } else if (activeTab === "inventory") {
       submitInventory();
-    } else {
+    } else if (activeTab === "damage") {
       submitDamageGood();
     }
   };
@@ -668,6 +706,7 @@ function Inventory() {
       weight: product.unit_quantity,
       status: getProductStatus(product),
     }));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products, inventoryByProductId]);
 
@@ -675,7 +714,9 @@ function Inventory() {
     return inventory.map((item) => ({
       id: item.inventory_id,
       raw: item,
-      product: item.product?.product_name || `Product #${item.product_id}`,
+      product:
+        item.product?.product_name ||
+        `Product #${item.product_id}`,
       cost: item.cost_price ?? "-",
       sellingPrice: item.selling_price,
       quantity: item.qty,
@@ -685,7 +726,9 @@ function Inventory() {
 
   const displayDamageGoods = useMemo(() => {
     return damageGoods.map((item) => {
-      const inventoryRecord = inventoryById.get(item.inventory_id) || item.inventory;
+      const inventoryRecord =
+        inventoryById.get(item.inventory_id) ||
+        item.inventory;
 
       return {
         id: item.damage_id,
@@ -777,7 +820,10 @@ function Inventory() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
 
-  const currentProducts = activeData.slice(startIndex, endIndex);
+  const currentProducts = activeData.slice(
+    startIndex,
+    endIndex,
+  );
 
   const previousPage = () => {
     if (currentPage > 1) {
@@ -797,17 +843,28 @@ function Inventory() {
   ============================================================
   */
 
-  const itemsIn = displayProducts.filter((product) => product.status === "Available").length;
-  const lowStock = displayProducts.filter((product) => product.status === "Low Stock").length;
+  const itemsIn = displayProducts.filter(
+    (product) => product.status === "Available",
+  ).length;
+
+  const lowStock = displayProducts.filter(
+    (product) => product.status === "Low Stock",
+  ).length;
+
   const outOfStock = displayProducts.filter(
-    (product) => product.status === "Out of Stock" || product.status === "Not Stocked",
+    (product) =>
+      product.status === "Out of Stock" ||
+      product.status === "Not Stocked",
   ).length;
 
   let paginationText = "Showing 0 of 0";
 
   if (totalProducts > 0) {
     const firstProduct = startIndex + 1;
-    const lastProduct = Math.min(endIndex, totalProducts);
+    const lastProduct = Math.min(
+      endIndex,
+      totalProducts,
+    );
 
     const label =
       activeTab === "product"
@@ -819,11 +876,13 @@ function Inventory() {
     paginationText = `Showing ${firstProduct}-${lastProduct} of ${totalProducts} ${label}`;
   }
 
-  const statusIconFor = (status) => (status === "Available" ? tickIcon : removeIcon);
+  const statusIconFor = (status) =>
+    status === "Available" ? tickIcon : removeIcon;
 
   const statusIdFor = (status) => {
     if (status === "Available") return "available";
     if (status === "Low Stock") return "lowStock";
+
     return "outOfStock";
   };
 
@@ -836,7 +895,9 @@ function Inventory() {
   if (isLoading) {
     return (
       <section className="main-container">
-        <div className="empty-bill-cell">Loading inventory...</div>
+        <div className="empty-bill-cell">
+          Loading inventory...
+        </div>
       </section>
     );
   }
@@ -846,7 +907,10 @@ function Inventory() {
       <section className="main-container">
         <div>
           {errorMessage && (
-            <div className="empty-bill-cell" style={{ color: "#c0392b" }}>
+            <div
+              className="empty-bill-cell"
+              style={{ color: "#c0392b" }}
+            >
               {errorMessage}
             </div>
           )}
@@ -858,7 +922,11 @@ function Inventory() {
           <div className="inventory-tabs">
             <button
               type="button"
-              className={activeTab === "product" ? "inventory-tab active" : "inventory-tab"}
+              className={
+                activeTab === "product"
+                  ? "inventory-tab active"
+                  : "inventory-tab"
+              }
               onClick={() => {
                 setActiveTab("product");
                 setSearchValue("");
@@ -870,7 +938,11 @@ function Inventory() {
 
             <button
               type="button"
-              className={activeTab === "inventory" ? "inventory-tab active" : "inventory-tab"}
+              className={
+                activeTab === "inventory"
+                  ? "inventory-tab active"
+                  : "inventory-tab"
+              }
               onClick={() => {
                 setActiveTab("inventory");
                 setSearchValue("");
@@ -882,7 +954,11 @@ function Inventory() {
 
             <button
               type="button"
-              className={activeTab === "damage" ? "inventory-tab active" : "inventory-tab"}
+              className={
+                activeTab === "damage"
+                  ? "inventory-tab active"
+                  : "inventory-tab"
+              }
               onClick={() => {
                 setActiveTab("damage");
                 setSearchValue("");
@@ -891,527 +967,851 @@ function Inventory() {
             >
               DamageGood
             </button>
+
+            {/* ==================================================
+                DISCOUNTS TAB - NEW
+            ================================================== */}
+
+            <button
+              type="button"
+              className={
+                activeTab === "discounts"
+                  ? "inventory-tab active"
+                  : "inventory-tab"
+              }
+              onClick={() => {
+                setActiveTab("discounts");
+                setSearchValue("");
+                setProductActionMenuId(null);
+                setShowPopup(false);
+              }}
+            >
+              Discounts
+            </button>
           </div>
 
           {/* ==================================================
-              SEARCH + CARDS
+              DISCOUNTS PAGE
           ================================================== */}
 
-          <div className="search-inventory-cards">
-            <div className="search-container">
-              <div className="search-input-wrapper">
-                <img className="search-icon" src={searchIcon} alt="Search" />
+          {activeTab === "discounts" ? (
+            <Discounts />
+          ) : (
+            <>
+              {/* ==================================================
+                  SEARCH + CARDS
+              ================================================== */}
 
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder={
-                    activeTab === "product"
-                      ? "Search Product"
-                      : activeTab === "inventory"
-                        ? "Search Inventory"
-                        : "Search DamageGood"
-                  }
-                  value={searchValue}
-                  onChange={(event) => setSearchValue(event.target.value)}
-                />
-              </div>
-            </div>
+              <div className="search-inventory-cards">
+                <div className="search-container">
+                  <div className="search-input-wrapper">
+                    <img
+                      className="search-icon"
+                      src={searchIcon}
+                      alt="Search"
+                    />
 
-            <div className="card_section">
-              <div className="card_box">
-                <div className="card_box_header">Items IN</div>
-                <div className="card_box_count">{String(itemsIn).padStart(2, "0")}</div>
-              </div>
+                    <input
+                      type="text"
+                      className="search-input"
+                      placeholder={
+                        activeTab === "product"
+                          ? "Search Product"
+                          : activeTab === "inventory"
+                            ? "Search Inventory"
+                            : "Search DamageGood"
+                      }
+                      value={searchValue}
+                      onChange={(event) =>
+                        setSearchValue(event.target.value)
+                      }
+                    />
+                  </div>
+                </div>
 
-              <div className="card_box">
-                <div className="card_box_header">Low Stock</div>
-                <div className="card_box_count">{String(lowStock).padStart(2, "0")}</div>
-              </div>
+                <div className="card_section">
+                  <div className="card_box">
+                    <div className="card_box_header">
+                      Items IN
+                    </div>
 
-              <div className="card_box">
-                <div className="card_box_header">Out of Stock</div>
-                <div className="card_box_count">{String(outOfStock).padStart(2, "0")}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* ==================================================
-              ADD BUTTON
-          ================================================== */}
-
-          <div className="add-product-container">
-            {activeTab === "product" && (
-              <button className="add-product-button" type="button" onClick={openPopup}>
-                Add Product
-              </button>
-            )}
-
-            {activeTab === "inventory" && (
-              <button className="add-product-button" type="button" onClick={openPopup}>
-                Add Inventory
-              </button>
-            )}
-
-            {activeTab === "damage" && (
-              <button className="add-product-button" type="button" onClick={openPopup}>
-                Add Damage Good
-              </button>
-            )}
-          </div>
-
-          {/* ==================================================
-              TABLE
-          ================================================== */}
-
-          <div className="table-container">
-            <table>
-              {/* PRODUCT TABLE */}
-
-              {activeTab === "product" && (
-                <>
-                  <thead>
-                    <tr>
-                      <th>Prod Name</th>
-                      <th>Type</th>
-                      <th>Brand</th>
-                      <th>Unit</th>
-                      <th>Weight</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {currentProducts.length === 0 ? (
-                      <tr>
-                        <td colSpan="7" className="empty-bill-cell">
-                          Add Items to Product
-                        </td>
-                      </tr>
-                    ) : (
-                      currentProducts.map((product) => (
-                        <tr key={product.id}>
-                          <td>
-                            <div className="item">
-                              <strong>{product.product}</strong>
-                            </div>
-                          </td>
-
-                          <td className="meta-text">{product.type}</td>
-                          <td className="meta-text">{product.brand}</td>
-                          <td className="meta-text">{product.unit}</td>
-                          <td className="meta-text">{product.weight}</td>
-
-                          <td className="status-cell" id={statusIdFor(product.status)}>
-                            <button className="status-btn" type="button" title={product.status}>
-                              <img src={statusIconFor(product.status)} alt={product.status} />
-                            </button>
-                          </td>
-
-                          <td className="action-buttons">
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() =>
-                                setProductActionMenuId(
-                                  productActionMenuId === product.id ? null : product.id,
-                                )
-                              }
-                            >
-                              <img src={moreIcon} alt="More" />
-                            </button>
-
-                            {productActionMenuId === product.id && (
-                              <div className="product-action-menu">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setProductActionMenuId(null);
-                                    editRow(product.raw);
-                                  }}
-                                >
-                                  Edit
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setProductActionMenuId(null);
-                                    deleteRow(product.id);
-                                  }}
-                                >
-                                  Delete
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => addProductToInventory(product.raw)}
-                                >
-                                  Add to Inventory
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => addProductToDamage(product.raw)}
-                                >
-                                  Damage Product
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </>
-              )}
-
-              {/* INVENTORY TABLE */}
-
-              {activeTab === "inventory" && (
-                <>
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Cost Price</th>
-                      <th>Selling Price</th>
-                      <th>Quantity</th>
-                      <th>Stock Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {currentProducts.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="empty-bill-cell">
-                          No Inventory Items
-                        </td>
-                      </tr>
-                    ) : (
-                      currentProducts.map((item) => (
-                        <tr key={item.id}>
-                          <td>
-                            <div className="item">
-                              <strong>{item.product}</strong>
-                            </div>
-                          </td>
-
-                          <td className="meta-text">
-                            {item.cost === "-" ? "-" : `₹${item.cost}`}
-                          </td>
-
-                          <td className="meta-text">₹{item.sellingPrice}</td>
-                          <td className="meta-text">{item.quantity}</td>
-
-                          <td className="status-cell" id={statusIdFor(item.stockStatus)}>
-                            <button className="status-btn" type="button" title={item.stockStatus}>
-                              <img src={statusIconFor(item.stockStatus)} alt={item.stockStatus} />
-                            </button>
-                          </td>
-
-                          <td className="action-buttons">
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() => editInventoryRow(item.raw)}
-                            >
-                              <img src={pencilIcon} alt="Edit" />
-                            </button>
-
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() => deleteInventoryRow(item.id)}
-                            >
-                              <img src={deleteIcon} alt="Delete" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </>
-              )}
-
-              {/* DAMAGE TABLE */}
-
-              {activeTab === "damage" && (
-                <>
-                  <thead>
-                    <tr>
-                      <th>Product</th>
-                      <th>Quantity</th>
-                      <th>Reason</th>
-                      <th>Unit Cost</th>
-                      <th>Loss Value</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {currentProducts.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="empty-bill-cell">
-                          No Damage Goods
-                        </td>
-                      </tr>
-                    ) : (
-                      currentProducts.map((item) => (
-                        <tr key={item.id}>
-                          <td>
-                            <div className="item">
-                              <strong>{item.product}</strong>
-                            </div>
-                          </td>
-
-                          <td className="meta-text">{item.quantity}</td>
-                          <td className="meta-text">{item.reason}</td>
-                          <td className="price">₹{item.unitCost}</td>
-                          <td className="price">₹{item.lossValue}</td>
-
-                          <td className="action-buttons">
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() => editDamageRow(item.raw)}
-                            >
-                              <img src={pencilIcon} alt="Edit" />
-                            </button>
-
-                            <button
-                              className="icon-btn"
-                              type="button"
-                              onClick={() => deleteDamageRow(item.id)}
-                            >
-                              <img src={deleteIcon} alt="Delete" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </>
-              )}
-            </table>
-          </div>
-
-          {/* ==================================================
-              MOBILE CARDS
-          ================================================== */}
-
-          <div className="bill-cards-container">
-            {currentProducts.length === 0 ? (
-              <div className="empty-bill-cell">
-                {activeTab === "product"
-                  ? "Add Items to Product."
-                  : activeTab === "inventory"
-                    ? "No Inventory Items."
-                    : "No Damage Goods."}
-              </div>
-            ) : (
-              currentProducts.map((item) => (
-                <div className="bill-card" key={item.id}>
-                  <div className="bill-card-header">
-                    <strong>{item.product}</strong>
-
-                    <div className="row-actions">
-                      {activeTab === "product" && (
-                        <button
-                          className="edit-item-button"
-                          type="button"
-                          onClick={() => editRow(item.raw)}
-                        >
-                          <img src={pencilIcon} alt="Edit" />
-                        </button>
-                      )}
-
-                      {activeTab === "inventory" && (
-                        <button
-                          className="edit-item-button"
-                          type="button"
-                          onClick={() => editInventoryRow(item.raw)}
-                        >
-                          <img src={pencilIcon} alt="Edit" />
-                        </button>
-                      )}
-
-                      {activeTab === "damage" && (
-                        <button
-                          className="edit-item-button"
-                          type="button"
-                          onClick={() => editDamageRow(item.raw)}
-                        >
-                          <img src={pencilIcon} alt="Edit" />
-                        </button>
-                      )}
-
-                      <button
-                        className="delete-item-button"
-                        type="button"
-                        onClick={() => {
-                          if (activeTab === "product") {
-                            deleteRow(item.id);
-                          } else if (activeTab === "inventory") {
-                            deleteInventoryRow(item.id);
-                          } else {
-                            deleteDamageRow(item.id);
-                          }
-                        }}
-                      >
-                        <img src={deleteIcon} alt="Delete" />
-                      </button>
-
-                      {activeTab === "product" && (
-                        <div className="mobile-product-more">
-                          <button
-                            className="more-item-button"
-                            type="button"
-                            onClick={() =>
-                              setProductActionMenuId(
-                                productActionMenuId === item.id ? null : item.id,
-                              )
-                            }
-                          >
-                            <img src={moreIcon} alt="More" />
-                          </button>
-
-                          {productActionMenuId === item.id && (
-                            <div className="mobile-product-action-menu">
-                              <button
-                                type="button"
-                                onClick={() => addProductToInventory(item.raw)}
-                              >
-                                Add to Inventory
-                              </button>
-
-                              <button type="button" onClick={() => addProductToDamage(item.raw)}>
-                                Damage Product
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                    <div className="card_box_count">
+                      {String(itemsIn).padStart(2, "0")}
                     </div>
                   </div>
 
+                  <div className="card_box">
+                    <div className="card_box_header">
+                      Low Stock
+                    </div>
+
+                    <div className="card_box_count">
+                      {String(lowStock).padStart(2, "0")}
+                    </div>
+                  </div>
+
+                  <div className="card_box">
+                    <div className="card_box_header">
+                      Out of Stock
+                    </div>
+
+                    <div className="card_box_count">
+                      {String(outOfStock).padStart(2, "0")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ==================================================
+                  ADD BUTTON
+              ================================================== */}
+
+              <div className="add-product-container">
+                {activeTab === "product" && (
+                  <button
+                    className="add-product-button"
+                    type="button"
+                    onClick={openPopup}
+                  >
+                    Add Product
+                  </button>
+                )}
+
+                {activeTab === "inventory" && (
+                  <button
+                    className="add-product-button"
+                    type="button"
+                    onClick={openPopup}
+                  >
+                    Add Inventory
+                  </button>
+                )}
+
+                {activeTab === "damage" && (
+                  <button
+                    className="add-product-button"
+                    type="button"
+                    onClick={openPopup}
+                  >
+                    Add Damage Good
+                  </button>
+                )}
+              </div>
+
+              {/* ==================================================
+                  TABLE
+              ================================================== */}
+
+              <div className="table-container">
+                <table>
+
+                  {/* PRODUCT TABLE */}
+
                   {activeTab === "product" && (
                     <>
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Type</span>
-                        <span className="bill-card-value">{item.type}</span>
-                      </div>
+                      <thead>
+                        <tr>
+                          <th>Prod Name</th>
+                          <th>Type</th>
+                          <th>Brand</th>
+                          <th>Unit</th>
+                          <th>Weight</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Brand</span>
-                        <span className="bill-card-value">{item.brand}</span>
-                      </div>
+                      <tbody>
+                        {currentProducts.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan="7"
+                              className="empty-bill-cell"
+                            >
+                              Add Items to Product
+                            </td>
+                          </tr>
+                        ) : (
+                          currentProducts.map((product) => (
+                            <tr key={product.id}>
+                              <td>
+                                <div className="item">
+                                  <strong>
+                                    {product.product}
+                                  </strong>
+                                </div>
+                              </td>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Unit</span>
-                        <span className="bill-card-value">{item.unit}</span>
-                      </div>
+                              <td className="meta-text">
+                                {product.type}
+                              </td>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Status</span>
-                        <span className="bill-card-value">
-                          <button className="status-btn" type="button">
-                            <img src={statusIconFor(item.status)} alt={item.status} />
-                          </button>
-                        </span>
-                      </div>
+                              <td className="meta-text">
+                                {product.brand}
+                              </td>
+
+                              <td className="meta-text">
+                                {product.unit}
+                              </td>
+
+                              <td className="meta-text">
+                                {product.weight}
+                              </td>
+
+                              <td
+                                className="status-cell"
+                                id={statusIdFor(
+                                  product.status,
+                                )}
+                              >
+                                <button
+                                  className="status-btn"
+                                  type="button"
+                                  title={product.status}
+                                >
+                                  <img
+                                    src={statusIconFor(
+                                      product.status,
+                                    )}
+                                    alt={product.status}
+                                  />
+                                </button>
+                              </td>
+
+                              <td className="action-buttons">
+                                <button
+                                  className="icon-btn"
+                                  type="button"
+                                  onClick={() =>
+                                    setProductActionMenuId(
+                                      productActionMenuId ===
+                                        product.id
+                                        ? null
+                                        : product.id,
+                                    )
+                                  }
+                                >
+                                  <img
+                                    src={moreIcon}
+                                    alt="More"
+                                  />
+                                </button>
+
+                                {productActionMenuId ===
+                                  product.id && (
+                                  <div className="product-action-menu">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setProductActionMenuId(
+                                          null,
+                                        );
+                                        editRow(
+                                          product.raw,
+                                        );
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setProductActionMenuId(
+                                          null,
+                                        );
+                                        deleteRow(
+                                          product.id,
+                                        );
+                                      }}
+                                    >
+                                      Delete
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        addProductToInventory(
+                                          product.raw,
+                                        )
+                                      }
+                                    >
+                                      Add to Inventory
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        addProductToDamage(
+                                          product.raw,
+                                        )
+                                      }
+                                    >
+                                      Damage Product
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
                     </>
                   )}
+
+                  {/* INVENTORY TABLE */}
 
                   {activeTab === "inventory" && (
                     <>
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Cost Price</span>
-                        <span className="bill-card-value">
-                          {item.cost === "-" ? "-" : `₹${item.cost}`}
-                        </span>
-                      </div>
+                      <thead>
+                        <tr>
+                          <th>Product</th>
+                          <th>Cost Price</th>
+                          <th>Selling Price</th>
+                          <th>Quantity</th>
+                          <th>Stock Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Selling Price</span>
-                        <span className="bill-card-value">₹{item.sellingPrice}</span>
-                      </div>
+                      <tbody>
+                        {currentProducts.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan="6"
+                              className="empty-bill-cell"
+                            >
+                              No Inventory Items
+                            </td>
+                          </tr>
+                        ) : (
+                          currentProducts.map((item) => (
+                            <tr key={item.id}>
+                              <td>
+                                <div className="item">
+                                  <strong>
+                                    {item.product}
+                                  </strong>
+                                </div>
+                              </td>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Quantity</span>
-                        <span className="bill-card-value">{item.quantity}</span>
-                      </div>
+                              <td className="meta-text">
+                                {item.cost === "-"
+                                  ? "-"
+                                  : `₹${item.cost}`}
+                              </td>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Stock Status</span>
-                        <span className="bill-card-value">
-                          <button className="status-btn" type="button">
-                            <img
-                              src={statusIconFor(item.stockStatus)}
-                              alt={item.stockStatus}
-                            />
-                          </button>
-                        </span>
-                      </div>
+                              <td className="meta-text">
+                                ₹{item.sellingPrice}
+                              </td>
+
+                              <td className="meta-text">
+                                {item.quantity}
+                              </td>
+
+                              <td
+                                className="status-cell"
+                                id={statusIdFor(
+                                  item.stockStatus,
+                                )}
+                              >
+                                <button
+                                  className="status-btn"
+                                  type="button"
+                                  title={item.stockStatus}
+                                >
+                                  <img
+                                    src={statusIconFor(
+                                      item.stockStatus,
+                                    )}
+                                    alt={item.stockStatus}
+                                  />
+                                </button>
+                              </td>
+
+                              <td className="action-buttons">
+                                <button
+                                  className="icon-btn"
+                                  type="button"
+                                  onClick={() =>
+                                    editInventoryRow(
+                                      item.raw,
+                                    )
+                                  }
+                                >
+                                  <img
+                                    src={pencilIcon}
+                                    alt="Edit"
+                                  />
+                                </button>
+
+                                <button
+                                  className="icon-btn"
+                                  type="button"
+                                  onClick={() =>
+                                    deleteInventoryRow(
+                                      item.id,
+                                    )
+                                  }
+                                >
+                                  <img
+                                    src={deleteIcon}
+                                    alt="Delete"
+                                  />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
                     </>
                   )}
+
+                  {/* DAMAGE TABLE */}
 
                   {activeTab === "damage" && (
                     <>
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Quantity</span>
-                        <span className="bill-card-value">{item.quantity}</span>
-                      </div>
+                      <thead>
+                        <tr>
+                          <th>Product</th>
+                          <th>Quantity</th>
+                          <th>Reason</th>
+                          <th>Unit Cost</th>
+                          <th>Loss Value</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Reason</span>
-                        <span className="bill-card-value">{item.reason}</span>
-                      </div>
+                      <tbody>
+                        {currentProducts.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan="6"
+                              className="empty-bill-cell"
+                            >
+                              No Damage Goods
+                            </td>
+                          </tr>
+                        ) : (
+                          currentProducts.map((item) => (
+                            <tr key={item.id}>
+                              <td>
+                                <div className="item">
+                                  <strong>
+                                    {item.product}
+                                  </strong>
+                                </div>
+                              </td>
 
-                      <div className="bill-card-row">
-                        <span className="bill-card-label">Unit Cost</span>
-                        <span className="bill-card-value">₹{item.unitCost}</span>
-                      </div>
+                              <td className="meta-text">
+                                {item.quantity}
+                              </td>
 
-                      <div className="bill-card-row bill-card-total">
-                        <span className="bill-card-label">Loss Value</span>
-                        <span className="bill-card-value">₹{item.lossValue}</span>
-                      </div>
+                              <td className="meta-text">
+                                {item.reason}
+                              </td>
+
+                              <td className="price">
+                                ₹{item.unitCost}
+                              </td>
+
+                              <td className="price">
+                                ₹{item.lossValue}
+                              </td>
+
+                              <td className="action-buttons">
+                                <button
+                                  className="icon-btn"
+                                  type="button"
+                                  onClick={() =>
+                                    editDamageRow(
+                                      item.raw,
+                                    )
+                                  }
+                                >
+                                  <img
+                                    src={pencilIcon}
+                                    alt="Edit"
+                                  />
+                                </button>
+
+                                <button
+                                  className="icon-btn"
+                                  type="button"
+                                  onClick={() =>
+                                    deleteDamageRow(
+                                      item.id,
+                                    )
+                                  }
+                                >
+                                  <img
+                                    src={deleteIcon}
+                                    alt="Delete"
+                                  />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
                     </>
                   )}
+                </table>
+              </div>
+
+              {/* ==================================================
+                  MOBILE CARDS
+              ================================================== */}
+
+              <div className="bill-cards-container">
+                {currentProducts.length === 0 ? (
+                  <div className="empty-bill-cell">
+                    {activeTab === "product"
+                      ? "Add Items to Product."
+                      : activeTab === "inventory"
+                        ? "No Inventory Items."
+                        : "No Damage Goods."}
+                  </div>
+                ) : (
+                  currentProducts.map((item) => (
+                    <div
+                      className="bill-card"
+                      key={item.id}
+                    >
+                      <div className="bill-card-header">
+                        <strong>{item.product}</strong>
+
+                        <div className="row-actions">
+                          {activeTab === "product" && (
+                            <button
+                              className="edit-item-button"
+                              type="button"
+                              onClick={() =>
+                                editRow(item.raw)
+                              }
+                            >
+                              <img
+                                src={pencilIcon}
+                                alt="Edit"
+                              />
+                            </button>
+                          )}
+
+                          {activeTab === "inventory" && (
+                            <button
+                              className="edit-item-button"
+                              type="button"
+                              onClick={() =>
+                                editInventoryRow(
+                                  item.raw,
+                                )
+                              }
+                            >
+                              <img
+                                src={pencilIcon}
+                                alt="Edit"
+                              />
+                            </button>
+                          )}
+
+                          {activeTab === "damage" && (
+                            <button
+                              className="edit-item-button"
+                              type="button"
+                              onClick={() =>
+                                editDamageRow(item.raw)
+                              }
+                            >
+                              <img
+                                src={pencilIcon}
+                                alt="Edit"
+                              />
+                            </button>
+                          )}
+
+                          <button
+                            className="delete-item-button"
+                            type="button"
+                            onClick={() => {
+                              if (
+                                activeTab ===
+                                "product"
+                              ) {
+                                deleteRow(item.id);
+                              } else if (
+                                activeTab ===
+                                "inventory"
+                              ) {
+                                deleteInventoryRow(
+                                  item.id,
+                                );
+                              } else {
+                                deleteDamageRow(
+                                  item.id,
+                                );
+                              }
+                            }}
+                          >
+                            <img
+                              src={deleteIcon}
+                              alt="Delete"
+                            />
+                          </button>
+
+                          {activeTab === "product" && (
+                            <div className="mobile-product-more">
+                              <button
+                                className="more-item-button"
+                                type="button"
+                                onClick={() =>
+                                  setProductActionMenuId(
+                                    productActionMenuId ===
+                                      item.id
+                                      ? null
+                                      : item.id,
+                                  )
+                                }
+                              >
+                                <img
+                                  src={moreIcon}
+                                  alt="More"
+                                />
+                              </button>
+
+                              {productActionMenuId ===
+                                item.id && (
+                                <div className="mobile-product-action-menu">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      addProductToInventory(
+                                        item.raw,
+                                      )
+                                    }
+                                  >
+                                    Add to Inventory
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      addProductToDamage(
+                                        item.raw,
+                                      )
+                                    }
+                                  >
+                                    Damage Product
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {activeTab === "product" && (
+                        <>
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Type
+                            </span>
+
+                            <span className="bill-card-value">
+                              {item.type}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Brand
+                            </span>
+
+                            <span className="bill-card-value">
+                              {item.brand}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Unit
+                            </span>
+
+                            <span className="bill-card-value">
+                              {item.unit}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Status
+                            </span>
+
+                            <span className="bill-card-value">
+                              <button
+                                className="status-btn"
+                                type="button"
+                              >
+                                <img
+                                  src={statusIconFor(
+                                    item.status,
+                                  )}
+                                  alt={item.status}
+                                />
+                              </button>
+                            </span>
+                          </div>
+                        </>
+                      )}
+
+                      {activeTab === "inventory" && (
+                        <>
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Cost Price
+                            </span>
+
+                            <span className="bill-card-value">
+                              {item.cost === "-"
+                                ? "-"
+                                : `₹${item.cost}`}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Selling Price
+                            </span>
+
+                            <span className="bill-card-value">
+                              ₹{item.sellingPrice}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Quantity
+                            </span>
+
+                            <span className="bill-card-value">
+                              {item.quantity}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Stock Status
+                            </span>
+
+                            <span className="bill-card-value">
+                              <button
+                                className="status-btn"
+                                type="button"
+                              >
+                                <img
+                                  src={statusIconFor(
+                                    item.stockStatus,
+                                  )}
+                                  alt={
+                                    item.stockStatus
+                                  }
+                                />
+                              </button>
+                            </span>
+                          </div>
+                        </>
+                      )}
+
+                      {activeTab === "damage" && (
+                        <>
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Quantity
+                            </span>
+
+                            <span className="bill-card-value">
+                              {item.quantity}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Reason
+                            </span>
+
+                            <span className="bill-card-value">
+                              {item.reason}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row">
+                            <span className="bill-card-label">
+                              Unit Cost
+                            </span>
+
+                            <span className="bill-card-value">
+                              ₹{item.unitCost}
+                            </span>
+                          </div>
+
+                          <div className="bill-card-row bill-card-total">
+                            <span className="bill-card-label">
+                              Loss Value
+                            </span>
+
+                            <span className="bill-card-value">
+                              ₹{item.lossValue}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* ==================================================
+                  PAGINATION
+              ================================================== */}
+
+              <div className="pagination-container">
+                <div className="pagination-text">
+                  {paginationText}
                 </div>
-              ))
-            )}
-          </div>
 
-          {/* ==================================================
-              PAGINATION
-          ================================================== */}
+                <div className="pagination-buttons">
+                  <button
+                    className="pagination-btn"
+                    type="button"
+                    onClick={previousPage}
+                    disabled={
+                      currentPage === 1 ||
+                      totalProducts === 0
+                    }
+                  >
+                    <img
+                      src={leftIcon}
+                      alt="Previous"
+                    />
+                  </button>
 
-          <div className="pagination-container">
-            <div className="pagination-text">{paginationText}</div>
-
-            <div className="pagination-buttons">
-              <button
-                className="pagination-btn"
-                type="button"
-                onClick={previousPage}
-                disabled={currentPage === 1 || totalProducts === 0}
-              >
-                <img src={leftIcon} alt="Previous" />
-              </button>
-
-              <button
-                className="pagination-btn"
-                type="button"
-                onClick={nextPage}
-                disabled={currentPage >= totalPages || totalProducts === 0}
-              >
-                <img src={chevronIcon} alt="Next" />
-              </button>
-            </div>
-          </div>
+                  <button
+                    className="pagination-btn"
+                    type="button"
+                    onClick={nextPage}
+                    disabled={
+                      currentPage >= totalPages ||
+                      totalProducts === 0
+                    }
+                  >
+                    <img
+                      src={chevronIcon}
+                      alt="Next"
+                    />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -1429,13 +1829,18 @@ function Inventory() {
           }}
         >
           <div className="popup-content">
+
             {/* ==================================================
                 PRODUCT POPUP
             ================================================== */}
 
             {activeTab === "product" && (
               <>
-                <h2>{editingProductId !== null ? "Edit Product" : "Add Product"}</h2>
+                <h2>
+                  {editingProductId !== null
+                    ? "Edit Product"
+                    : "Add Product"}
+                </h2>
 
                 <input
                   type="text"
@@ -1448,16 +1853,27 @@ function Inventory() {
                 {/* TYPE */}
 
                 {!addingNewType ? (
-                  <select name="typeId" value={formData.typeId} onChange={handleTypeChange}>
-                    <option value="">Select Type</option>
+                  <select
+                    name="typeId"
+                    value={formData.typeId}
+                    onChange={handleTypeChange}
+                  >
+                    <option value="">
+                      Select Type
+                    </option>
 
                     {productTypes.map((type) => (
-                      <option key={type.product_type_id} value={type.product_type_id}>
+                      <option
+                        key={type.product_type_id}
+                        value={type.product_type_id}
+                      >
                         {type.type_name}
                       </option>
                     ))}
 
-                    <option value="__ADD_NEW__">+ Add New Type</option>
+                    <option value="__ADD_NEW__">
+                      + Add New Type
+                    </option>
                   </select>
                 ) : (
                   <div>
@@ -1469,7 +1885,12 @@ function Inventory() {
                       onChange={handleInputChange}
                     />
 
-                    <button type="button" onClick={() => setAddingNewType(false)}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAddingNewType(false)
+                      }
+                    >
                       Use Existing Type
                     </button>
                   </div>
@@ -1478,16 +1899,27 @@ function Inventory() {
                 {/* BRAND */}
 
                 {!addingNewBrand ? (
-                  <select name="brandId" value={formData.brandId} onChange={handleBrandChange}>
-                    <option value="">Select Brand</option>
+                  <select
+                    name="brandId"
+                    value={formData.brandId}
+                    onChange={handleBrandChange}
+                  >
+                    <option value="">
+                      Select Brand
+                    </option>
 
                     {productBrands.map((brand) => (
-                      <option key={brand.product_brand_id} value={brand.product_brand_id}>
+                      <option
+                        key={brand.product_brand_id}
+                        value={brand.product_brand_id}
+                      >
                         {brand.brand_name}
                       </option>
                     ))}
 
-                    <option value="__ADD_NEW__">+ Add New Brand</option>
+                    <option value="__ADD_NEW__">
+                      + Add New Brand
+                    </option>
                   </select>
                 ) : (
                   <div>
@@ -1499,7 +1931,12 @@ function Inventory() {
                       onChange={handleInputChange}
                     />
 
-                    <button type="button" onClick={() => setAddingNewBrand(false)}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setAddingNewBrand(false)
+                      }
+                    >
                       Use Existing Brand
                     </button>
                   </div>
@@ -1507,11 +1944,20 @@ function Inventory() {
 
                 {/* UNIT */}
 
-                <select name="unitId" value={formData.unitId} onChange={handleInputChange}>
-                  <option value="">Select Unit</option>
+                <select
+                  name="unitId"
+                  value={formData.unitId}
+                  onChange={handleInputChange}
+                >
+                  <option value="">
+                    Select Unit
+                  </option>
 
                   {units.map((unit) => (
-                    <option key={unit.unit_id} value={unit.unit_id}>
+                    <option
+                      key={unit.unit_id}
+                      value={unit.unit_id}
+                    >
                       {unit.unit_name}
                     </option>
                   ))}
@@ -1526,11 +1972,18 @@ function Inventory() {
                 />
 
                 <div className="popup-buttons">
-                  <button type="button" onClick={closePopup}>
+                  <button
+                    type="button"
+                    onClick={closePopup}
+                  >
                     Close
                   </button>
 
-                  <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                  >
                     Submit
                   </button>
                 </div>
@@ -1543,16 +1996,34 @@ function Inventory() {
 
             {activeTab === "inventory" && (
               <>
-                <h2>{editingInventoryId !== null ? "Edit Inventory" : "Add Inventory"}</h2>
+                <h2>
+                  {editingInventoryId !== null
+                    ? "Edit Inventory"
+                    : "Add Inventory"}
+                </h2>
 
                 {editingInventoryId === null ? (
-                  <select name="productId" value={formData.productId} onChange={handleInputChange}>
-                    <option value="">Select Product</option>
+                  <select
+                    name="productId"
+                    value={formData.productId}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">
+                      Select Product
+                    </option>
 
                     {products
-                      .filter((product) => !inventoryByProductId.has(product.product_id))
+                      .filter(
+                        (product) =>
+                          !inventoryByProductId.has(
+                            product.product_id,
+                          ),
+                      )
                       .map((product) => (
-                        <option key={product.product_id} value={product.product_id}>
+                        <option
+                          key={product.product_id}
+                          value={product.product_id}
+                        >
                           {product.product_name}
                         </option>
                       ))}
@@ -1561,8 +2032,11 @@ function Inventory() {
                   <input
                     type="text"
                     value={
-                      products.find((p) => p.product_id === formData.productId)?.product_name ||
-                      ""
+                      products.find(
+                        (p) =>
+                          p.product_id ===
+                          formData.productId,
+                      )?.product_name || ""
                     }
                     disabled
                   />
@@ -1596,16 +2070,24 @@ function Inventory() {
 
                 {editingInventoryId !== null && (
                   <p className="meta-text">
-                    Current quantity: {formData.qty} (use Damage Goods to reduce stock)
+                    Current quantity: {formData.qty} (use
+                    Damage Goods to reduce stock)
                   </p>
                 )}
 
                 <div className="popup-buttons">
-                  <button type="button" onClick={closePopup}>
+                  <button
+                    type="button"
+                    onClick={closePopup}
+                  >
                     Close
                   </button>
 
-                  <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                  >
                     Submit
                   </button>
                 </div>
@@ -1618,7 +2100,11 @@ function Inventory() {
 
             {activeTab === "damage" && (
               <>
-                <h2>{editingDamageId !== null ? "Edit Damage Good" : "Add Damage Good"}</h2>
+                <h2>
+                  {editingDamageId !== null
+                    ? "Edit Damage Good"
+                    : "Add Damage Good"}
+                </h2>
 
                 {editingDamageId === null ? (
                   <select
@@ -1626,12 +2112,18 @@ function Inventory() {
                     value={formData.inventoryId}
                     onChange={handleInputChange}
                   >
-                    <option value="">Select Product</option>
+                    <option value="">
+                      Select Product
+                    </option>
 
                     {inventory.map((item) => (
-                      <option key={item.inventory_id} value={item.inventory_id}>
-                        {item.product?.product_name || `Product #${item.product_id}`} (
-                        {item.qty} in stock)
+                      <option
+                        key={item.inventory_id}
+                        value={item.inventory_id}
+                      >
+                        {item.product?.product_name ||
+                          `Product #${item.product_id}`}{" "}
+                        ({item.qty} in stock)
                       </option>
                     ))}
                   </select>
@@ -1639,7 +2131,9 @@ function Inventory() {
                   <input
                     type="text"
                     value={
-                      inventoryById.get(formData.inventoryId)?.product?.product_name ||
+                      inventoryById.get(
+                        formData.inventoryId,
+                      )?.product?.product_name ||
                       `Inventory #${formData.inventoryId}`
                     }
                     disabled
@@ -1674,19 +2168,28 @@ function Inventory() {
                   type="number"
                   placeholder="Loss Value"
                   value={
-                    formData.damageQty !== "" && formData.unitCost !== ""
-                      ? Number(formData.damageQty) * Number(formData.unitCost)
+                    formData.damageQty !== "" &&
+                    formData.unitCost !== ""
+                      ? Number(formData.damageQty) *
+                        Number(formData.unitCost)
                       : ""
                   }
                   readOnly
                 />
 
                 <div className="popup-buttons">
-                  <button type="button" onClick={closePopup}>
+                  <button
+                    type="button"
+                    onClick={closePopup}
+                  >
                     Close
                   </button>
 
-                  <button type="button" onClick={handleSubmit} disabled={isSubmitting}>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                  >
                     Submit
                   </button>
                 </div>
