@@ -47,7 +47,6 @@ app.use("/product-brands",ProductBrandRouter);
 app.use("/units",UnitRouter);
 app.use("/damaged-goods", damageGoodsRoutes);
 
-// Catch-all 404 handler for undefined routes
 app.use((req: Request, res: Response) => {
     res.status(404).json({
         success: false,
@@ -55,7 +54,7 @@ app.use((req: Request, res: Response) => {
     });
 });
 
-// Centralized error handling middleware (registered AFTER all routes)
+
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error("Unhandled error:", err);
     const status = err.statusCode || err.status || 500;
