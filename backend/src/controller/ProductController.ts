@@ -29,7 +29,8 @@ export async function createProductController(
                 req.body,
                 req.auth.userId,
                 req.auth.sessionId,
-                clientIp
+                clientIp,
+                req.auth.storeId
             );
 
 
@@ -42,8 +43,14 @@ export async function createProductController(
 
         console.error(error);
 
-        return res.status(500).json({
-            message: "Failed to create product"
+        if (error instanceof Error && error.message === "STORE_MISMATCH") {
+            return res.status(403).json({
+                message: "You cannot create a product for another store."
+            });
+        }
+
+        return res.status(400).json({
+            message: error instanceof Error ? error.message : "Failed to create product"
         });
     }
 }
@@ -136,7 +143,8 @@ export const getProductByIdController = async (
 
         const product =
             await getProductByIdService(
-                productId
+                productId,
+                req.auth.storeId
             );
 
 
@@ -156,6 +164,12 @@ export const getProductByIdController = async (
     } catch (error) {
 
         console.error(error);
+
+        if (error instanceof Error && error.message === "STORE_MISMATCH") {
+            return res.status(403).json({
+                message: "You cannot access a product from another store."
+            });
+        }
 
         return res.status(500).json({
             message: "Failed to fetch product"
@@ -201,7 +215,8 @@ export const updateProductController = async (
                 req.body,
                 req.auth.userId,
                 req.auth.sessionId,
-                clientIp
+                clientIp,
+                req.auth.storeId
             );
 
 
@@ -222,8 +237,14 @@ export const updateProductController = async (
 
         console.error(error);
 
-        return res.status(500).json({
-            message: "Failed to update product"
+        if (error instanceof Error && error.message === "STORE_MISMATCH") {
+            return res.status(403).json({
+                message: "You cannot update a product from another store."
+            });
+        }
+
+        return res.status(400).json({
+            message: error instanceof Error ? error.message : "Failed to update product"
         });
     }
 };
@@ -265,7 +286,8 @@ export const deleteProductController = async (
                 productId,
                 req.auth.userId,
                 req.auth.sessionId,
-                clientIp
+                clientIp,
+                req.auth.storeId
             );
 
 
@@ -285,8 +307,14 @@ export const deleteProductController = async (
 
         console.error(error);
 
-        return res.status(500).json({
-            message: "Failed to delete product"
+        if (error instanceof Error && error.message === "STORE_MISMATCH") {
+            return res.status(403).json({
+                message: "You cannot delete a product from another store."
+            });
+        }
+
+        return res.status(400).json({
+            message: error instanceof Error ? error.message : "Failed to delete product"
         });
     }
 };

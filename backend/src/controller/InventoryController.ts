@@ -80,6 +80,18 @@ const handleError = (
         return;
     }
 
+    // Anything else thrown by the service layer is a business-rule /
+    // validation error (e.g. "Cannot delete inventory with available
+    // stock") - surface the real reason instead of a generic 500 so
+    // the UI can actually tell the user what went wrong.
+    if (error instanceof Error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+        return;
+    }
+
     res.status(500).json({
         success: false,
         message

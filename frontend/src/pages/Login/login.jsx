@@ -1,10 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/layout/AuthContext";
+import { getSignupRoles, getSignupStores } from "../../services/authService";
 import "./Login.css";
-
-const OWNER_ROLE_ID = "1";
 
 const StoreIcon = () => (
   <svg
@@ -41,6 +40,21 @@ export default function Login() {
   const [lastName, setLastName] = useState("");
 
   const [roleId, setRoleId] = useState("");
+
+  // Signup roles are fetched from the backend rather than hardcoded,
+  // since role ids are not guaranteed to be 1/2 (e.g. after roles are
+  // recreated or extra roles are added, ids can shift).
+  const [signupRoles, setSignupRoles] = useState([]);
+
+  useEffect(() => {
+    getSignupRoles()
+      .then(setSignupRoles)
+      .catch(() => setSignupRoles([]));
+  }, []);
+
+  const ownerRoleId = String(
+    signupRoles.find((role) => role.role_name === "OWNER")?.role_id ?? ""
+  );
 
   // ============================================================
   // OWNER STORE DETAILS
@@ -270,44 +284,7 @@ export default function Login() {
 
       setSelectedStore(null);
 
-      /*
-       * CHANGE THIS URL if your backend uses a different route.
-       *
-       * Example expected:
-       * GET /api/stores/search?query=abc
-       */
-
-      const response = await fetch(
-        `/api/stores/search?query=${encodeURIComponent(
-          storeSearch.trim()
-        )}`
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Unable to search stores."
-        );
-      }
-
-      /*
-       * Supports:
-       *
-       * [
-       *   { store_id: 1, store_name: "ABC Store", location: "..." }
-       * ]
-       *
-       * OR:
-       *
-       * { stores: [...] }
-       */
-
-      const stores = Array.isArray(data)
-        ? data
-        : Array.isArray(data.stores)
-        ? data.stores
-        : [];
+      const stores = await getSignupStores(storeSearch.trim());
 
       setStoreResults(stores);
 
@@ -358,7 +335,7 @@ export default function Login() {
     // OWNER
     // ==========================================================
 
-    if (roleId === OWNER_ROLE_ID) {
+    if (roleId === ownerRoleId) {
       if (!storeName.trim()) {
         setPopupFeedback({
           type: "error",
@@ -438,9 +415,7 @@ export default function Login() {
         role_id: roleId,
 
         // Selected existing store
-        store_id:
-          selectedStore.store_id ||
-          selectedStore.id,
+        store_id: selectedStore.storeId,
 
         // Staff does NOT create store details
         store_name: "",
@@ -466,7 +441,7 @@ export default function Login() {
   // ============================================================
 
   const getRoleLabel = () => {
-    if (roleId === OWNER_ROLE_ID) {
+    if (roleId === ownerRoleId) {
       return "Owner";
     }
 
@@ -650,13 +625,12 @@ export default function Login() {
                   Select your role
                 </option>
 
-                <option value="1">
-                  Owner
-                </option>
-
-                <option value="2">
-                  Staff
-                </option>
+                {signupRoles.map((role) => (
+                  <option key={role.role_id} value={role.role_id}>
+                    {role.role_name.charAt(0) +
+                      role.role_name.slice(1).toLowerCase()}
+                  </option>
+                ))}
               </select>
             </div>
           )}
@@ -744,13 +718,13 @@ export default function Login() {
             <div className="store-popup-header">
               <div>
                 <h2>
-                  {roleId === OWNER_ROLE_ID
+                  {roleId === ownerRoleId
                     ? "Create Your Store"
                     : "Join a Store"}
                 </h2>
 
                 <p>
-                  {roleId === OWNER_ROLE_ID
+                  {roleId === ownerRoleId
                     ? "Enter your store details to create a new store."
                     : "Search for an existing store and select it to join."}
                 </p>
@@ -770,7 +744,7 @@ export default function Login() {
                 OWNER POPUP
             ================================================== */}
 
-            {roleId === OWNER_ROLE_ID && (
+            {roleId === ownerRoleId && (
               <div
                 className="store-popup-form"
                 style={{
@@ -884,7 +858,7 @@ export default function Login() {
                 STAFF POPUP
             ================================================== */}
 
-            {roleId !== OWNER_ROLE_ID && (
+            {roleId !== ownerRoleId && (
               <div
                 className="store-popup-form"
                 style={{
@@ -973,16 +947,11 @@ export default function Login() {
 
                     {storeResults.map(
                       (store, index) => {
-                        const currentStoreId =
-                          store.store_id ||
-                          store.id;
+                        const currentStoreId = store.storeId;
 
                         const isSelected =
                           selectedStore &&
-                          (
-                            selectedStore.store_id ||
-                            selectedStore.id
-                          ) === currentStoreId;
+                          selectedStore.storeId === currentStoreId;
 
                         return (
                           <button
@@ -1017,8 +986,7 @@ export default function Login() {
                             }}
                           >
                             <strong>
-                              {store.store_name ||
-                                store.name ||
+                              {store.storeName ||
                                 "Unnamed Store"}
                             </strong>
 
@@ -1073,10 +1041,7 @@ export default function Login() {
                           "6px 0 0",
                       }}
                     >
-                      {
-                        selectedStore.store_name ||
-                        selectedStore.name
-                      }
+                      {selectedStore.storeName}
                     </p>
 
                     <p
@@ -1086,10 +1051,7 @@ export default function Login() {
                       }}
                     >
                       Store ID:{" "}
-                      {
-                        selectedStore.store_id ||
-                        selectedStore.id
-                      }
+                      {selectedStore.storeId}
                     </p>
 
                     {selectedStore.location && (

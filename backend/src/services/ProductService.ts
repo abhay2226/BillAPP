@@ -29,12 +29,20 @@ export const createProductService = async (
 
     userId?: number,
     sessionId?: number,
-    ipAddress?: string | null
+    ipAddress?: string | null,
+    callerStoreId?: number
 
 ) => {
 
     const storeId =
         productData.store_id;
+
+    if (
+        callerStoreId !== undefined &&
+        storeId !== callerStoreId
+    ) {
+        throw new Error("STORE_MISMATCH");
+    }
 
     const productName =
         productData.product_name;
@@ -413,7 +421,10 @@ export const createProductService = async (
                                 storeId,
 
                             product_name:
-                                trimmedProductName
+                                trimmedProductName,
+
+                            is_active:
+                                true
                         }
                     }
                 );
@@ -628,7 +639,8 @@ export const getAllProductsService = async (
 // ======================================================
 
 export const getProductByIdService = async (
-    productId: number
+    productId: number,
+    callerStoreId?: number
 ) => {
 
     if (
@@ -642,7 +654,7 @@ export const getProductByIdService = async (
     }
 
 
-    return await productRepository.findOne(
+    const product = await productRepository.findOne(
         {
             where: {
                 product_id:
@@ -660,6 +672,16 @@ export const getProductByIdService = async (
             ]
         }
     );
+
+    if (
+        product &&
+        callerStoreId !== undefined &&
+        product.store_id !== callerStoreId
+    ) {
+        throw new Error("STORE_MISMATCH");
+    }
+
+    return product;
 };
 
 
@@ -678,7 +700,8 @@ export const updateProductService = async (
 
     userId?: number,
     sessionId?: number,
-    ipAddress?: string | null
+    ipAddress?: string | null,
+    callerStoreId?: number
 
 ) => {
 
@@ -722,6 +745,13 @@ export const updateProductService = async (
 
             if (!product) {
                 return null;
+            }
+
+            if (
+                callerStoreId !== undefined &&
+                product.store_id !== callerStoreId
+            ) {
+                throw new Error("STORE_MISMATCH");
             }
 
 
@@ -785,7 +815,10 @@ export const updateProductService = async (
                                     product.store_id,
 
                                 product_name:
-                                    trimmedProductName
+                                    trimmedProductName,
+
+                                is_active:
+                                    true
                             }
                         }
                     );
@@ -1032,7 +1065,8 @@ export const deleteProductService = async (
 
     userId?: number,
     sessionId?: number,
-    ipAddress?: string | null
+    ipAddress?: string | null,
+    callerStoreId?: number
 
 ) => {
 
@@ -1076,6 +1110,13 @@ export const deleteProductService = async (
 
             if (!product) {
                 return null;
+            }
+
+            if (
+                callerStoreId !== undefined &&
+                product.store_id !== callerStoreId
+            ) {
+                throw new Error("STORE_MISMATCH");
             }
 
 
