@@ -1,0 +1,396 @@
+/* =========================================================
+   DISCOUNTS PAGE
+   ========================================================= */
+
+.discounts-page {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #111;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.discounts-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.discounts-header h2 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+
+/* =========================================================
+   ADD DISCOUNT BUTTON
+   ========================================================= */
+
+.add-discount-button {
+  height: 34px;
+  min-width: 121px;
+
+  padding: 0 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  border: 1px solid #d2d2d2;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #222;
+
+  font-size: 12px;
+  font-weight: 400;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.add-discount-button:hover {
+  background-color: #f8f8f8;
+  border-color: #bdbdbd;
+}
+
+.plus-icon {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 400;
+  margin-top: -1px;
+}
+
+
+/* =========================================================
+   DISCOUNT GRID
+   ========================================================= */
+
+.discounts-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+
+/* =========================================================
+   DISCOUNT CARD
+   ========================================================= */
+
+.discount-card {
+  min-width: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #dedede;
+  border-radius: 14px;
+
+  padding: 13px 14px 13px 14px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CARD TOP
+   ========================================================= */
+
+.discount-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 18px;
+}
+
+.discount-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+}
+
+.discount-ticket {
+  color: #087d67;
+  font-size: 14px;
+  line-height: 1;
+  transform: rotate(90deg);
+  display: inline-block;
+}
+
+
+/* =========================================================
+   ACTIVE STATUS
+   ========================================================= */
+
+.active-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  font-size: 11px;
+  color: #146b27;
+  white-space: nowrap;
+}
+
+.active-dot {
+  width: 6px;
+  height: 6px;
+
+  background-color: #087d2b;
+
+  border-radius: 50%;
+  display: inline-block;
+}
+
+
+/* =========================================================
+   DISCOUNT VALUE
+   ========================================================= */
+
+.discount-value-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 12px;
+}
+
+.discount-value {
+  font-size: 20px;
+  line-height: 1;
+
+  font-weight: 600;
+
+  color: #151515;
+}
+
+
+/* =========================================================
+   DISCOUNT TYPE PILLS
+   ========================================================= */
+
+.discount-type-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 18px;
+
+  padding: 0 7px;
+
+  border-radius: 10px;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  line-height: 1;
+}
+
+.percentage-pill {
+  min-width: 18px;
+
+  background-color: #cfe8fa;
+  color: #2582b7;
+}
+
+.flat-pill {
+  min-width: 34px;
+
+  background-color: #ffdca8;
+  color: #a86505;
+}
+
+
+/* =========================================================
+   DETAILS
+   ========================================================= */
+
+.discount-details {
+  margin-top: 13px;
+}
+
+.detail-row {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 1fr auto;
+
+  align-items: center;
+
+  min-height: 20px;
+}
+
+.detail-label {
+  font-size: 11px;
+  color: #555;
+}
+
+.detail-value {
+  font-size: 11px;
+  color: #222;
+
+  text-align: right;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.discount-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  gap: 7px;
+
+  margin-top: 10px;
+}
+
+.discount-actions button {
+  height: 28px;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  font-size: 11px;
+  font-weight: 400;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+/* Edit */
+
+.edit-button {
+  border: 1px solid #d0d0d0;
+  color: #222;
+}
+
+.edit-button:hover {
+  background-color: #f7f7f7;
+  border-color: #bcbcbc;
+}
+
+
+/* Deactivate */
+
+.deactivate-button {
+  border: 1px solid #ed9999;
+  color: #9c2929;
+}
+
+.deactivate-button:hover {
+  background-color: #fff6f6;
+  border-color: #d87878;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .discounts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .discount-card {
+    padding: 14px;
+  }
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .discounts-header {
+    align-items: center;
+  }
+
+  .discounts-header h2 {
+    font-size: 16px;
+  }
+
+  .add-discount-button {
+    height: 32px;
+    min-width: auto;
+
+    padding: 0 10px;
+
+    font-size: 11px;
+  }
+
+  .discounts-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .discount-card {
+    border-radius: 12px;
+    padding: 13px;
+  }
+
+  .discount-value {
+    font-size: 19px;
+  }
+
+  .detail-label,
+  .detail-value {
+    font-size: 10.5px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 360px) {
+  .discounts-header h2 {
+    font-size: 15px;
+  }
+
+  .add-discount-button {
+    padding: 0 8px;
+  }
+
+  .discount-name {
+    font-size: 12px;
+  }
+
+  .discount-value {
+    font-size: 18px;
+  }
+
+  .discount-actions button {
+    font-size: 10px;
+  }
+}
