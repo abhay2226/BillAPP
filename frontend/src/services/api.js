@@ -1,12 +1,12 @@
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 function getToken() {
-  return localStorage.getItem("token");
+  return sessionStorage.getItem("token");
 }
 
 function getStoredUser() {
   try {
-    const raw = localStorage.getItem("user");
+    const raw = sessionStorage.getItem("user");
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;

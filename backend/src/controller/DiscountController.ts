@@ -9,8 +9,13 @@ import {
   setDiscountActiveService,
 } from "../services/DiscountServices.js";
 
-// Helper: verify the bearer token and return the decoded payload.
-// Throws if missing/invalid so each controller can catch it uniformly.
+import {
+  getDiscountTypeByCode,
+  getDiscountTypeById,
+  getDiscountTypes,
+} from "../services/DiscountTypeServices.js";
+
+
 function getAuthUser(req: Request) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
@@ -18,9 +23,35 @@ function getAuthUser(req: Request) {
     err.status = 401;
     throw err;
   }
-  return verifyToken(token); // expected shape: { userId, roleId, storeId, ... }
+  return verifyToken(token);
 }
 
+export async function getDiscountTypeController(req:Request,res:Response){
+  try{
+    const discountTypes = await getDiscountTypes();
+    return res.status(200).json({success:true ,data: discountTypes});
+  }
+  catch(error){
+    console.error("get discount types:",error);
+    const status = (error as any)?.status ?? 400;
+    return res.status(status).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch discounts." });
+  }
+}
+
+export async function getDiscountTypeByCodeController(req:Request,res:Response){
+  try{
+
+    getAuthUser(req);
+    const name = String(req.query.name ?? "");
+    const discountTypeName = await getDiscountTypeByCode(name);
+    return res.status(200).json({success:true ,data: discountTypeName});
+  }
+  catch(error){
+    console.error("get discount types:",error);
+    const status = (error as any)?.status ?? 400;
+    return res.status(status).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch discounts." });
+  }
+}
 export async function createDiscountController(req: Request, res: Response) {
   try {
     const actingUserId = req.auth.userId;
@@ -55,6 +86,18 @@ export async function getDiscountByIdController(req: Request, res: Response) {
     console.error("Get discount error:", error);
     const status = (error as any)?.status ?? 404;
     return res.status(status).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch discount." });
+  }
+}
+
+export async function getDiscountTypeByIdController(req:Request,res:Response){
+  try{
+    const discountType = await getDiscountTypeById(Number(req.params.id));
+    return res.status(200).json({success:true ,data: discountType});
+  }
+  catch(error){
+    console.error("get discount types:",error);
+    const status = (error as any)?.status ?? 400;
+    return res.status(status).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch discounts." });
   }
 }
 
