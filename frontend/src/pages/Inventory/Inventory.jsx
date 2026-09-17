@@ -17,7 +17,6 @@ import * as damageGoodsService from "../../services/damageGoodsService";
 import * as masterDataService from "../../services/masterDataService";
 
 import Discounts from "../Discounts/Discounts";
-const LOW_STOCK_THRESHOLD = 5;
 
 function Inventory() {
   const [activeTab, setActiveTab] = useState("product");
@@ -144,34 +143,49 @@ function Inventory() {
     return map;
   }, [inventory]);
 
-  const getProductStatus = (product) => {
-    const inventoryRecord = inventoryByProductId.get(product.product_id);
+  /*
+  ============================================================
+  STATUS — sourced from the backend
 
-    if (!inventoryRecord) {
-      return "Not Stocked";
-    }
+  Assumes the API sends a `status` field on the product record
+  and on the inventory record (e.g. product.status, item.status)
+  with a value like "Available" / "Low Stock" / "Out of Stock"
+  (case/format flexible — see normalizeStatus below).
 
-    if (inventoryRecord.qty <= 0) {
+  If your backend uses a different field name or different value
+  strings, update normalizeStatus / getProductStatus / getInventoryStatus
+  accordingly.
+  ============================================================
+  */
+
+  const normalizeStatus = (rawStatus) => {
+    const value = (rawStatus || "").toString().trim().toLowerCase();
+
+    if (
+      value === "out of stock" ||
+      value === "out_of_stock" ||
+      value === "outofstock"
+    ) {
       return "Out of Stock";
     }
 
-    if (inventoryRecord.qty <= LOW_STOCK_THRESHOLD) {
+    if (
+      value === "low stock" ||
+      value === "low_stock" ||
+      value === "lowstock"
+    ) {
       return "Low Stock";
     }
 
     return "Available";
   };
 
+  const getProductStatus = (product) => {
+    return normalizeStatus(product.status);
+  };
+
   const getInventoryStatus = (item) => {
-    if (item.qty <= 0) {
-      return "Out of Stock";
-    }
-
-    if (item.qty <= LOW_STOCK_THRESHOLD) {
-      return "Low Stock";
-    }
-
-    return "Available";
+    return normalizeStatus(item.status);
   };
 
   /*
@@ -689,9 +703,7 @@ function Inventory() {
       weight: product.unit_quantity,
       status: getProductStatus(product),
     }));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, inventoryByProductId]);
+  }, [products]);
 
   const displayInventory = useMemo(() => {
     return inventory.map((item) => ({
@@ -835,9 +847,7 @@ function Inventory() {
   ).length;
 
   const outOfStock = displayProducts.filter(
-    (product) =>
-      product.status === "Out of Stock" ||
-      product.status === "Not Stocked",
+    (product) => product.status === "Out of Stock",
   ).length;
 
   let paginationText = "Showing 0 of 0";

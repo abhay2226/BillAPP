@@ -31,6 +31,7 @@ const GST_RATE = 18;
 // ============================================================
 
 const Billing = () => {
+
   // ==========================================================
   // VOICE STATE
   // ==========================================================
@@ -70,7 +71,7 @@ const Billing = () => {
 
 
   // ==========================================================
-  // INVENTORY (loaded from backend)
+  // INVENTORY
   // ==========================================================
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,7 +94,7 @@ const Billing = () => {
 
 
   // ==========================================================
-  // DISCOUNTS (loaded from backend)
+  // DISCOUNTS
   // ==========================================================
 
   const [availableDiscounts, setAvailableDiscounts] = useState([]);
@@ -101,7 +102,7 @@ const Billing = () => {
 
 
   // ==========================================================
-  // LOAD INVENTORY + DISCOUNTS FROM BACKEND
+  // LOAD INVENTORY
   // ==========================================================
 
   const loadInventoryData = async () => {
@@ -110,22 +111,35 @@ const Billing = () => {
 
     try {
       const inventoryData = await inventoryService.getInventory();
+
       setInventory(inventoryData);
     } catch (error) {
       console.error("Unable to load inventory data:", error);
-      setLoadError(error.message || "Unable to load inventory.");
+
+      setLoadError(
+        error.message || "Unable to load inventory."
+      );
+
       setInventory([]);
     } finally {
       setIsLoadingInventory(false);
     }
   };
 
+
+  // ==========================================================
+  // LOAD DISCOUNTS
+  // ==========================================================
+
   const loadDiscounts = async () => {
     try {
-      const discounts = await discountService.getActiveDiscounts();
+      const discounts =
+        await discountService.getActiveDiscounts();
+
       setAvailableDiscounts(discounts);
     } catch (error) {
       console.error("Unable to load discounts:", error);
+
       setAvailableDiscounts([]);
     }
   };
@@ -148,13 +162,29 @@ const Billing = () => {
   const searchableInventoryProducts = useMemo(() => {
     return inventory.map((inventoryItem) => ({
       inventoryId: inventoryItem.inventory_id,
+
       productId: inventoryItem.product_id,
-      name: inventoryItem.product?.product_name || `Product #${inventoryItem.product_id}`,
-      type: inventoryItem.product?.type?.type_name || "",
-      brand: inventoryItem.product?.brand?.brand_name || "",
-      sellingPrice: Number(inventoryItem.selling_price),
-      quantity: Number(inventoryItem.qty),
-      stockStatus: inventoryItem.qty > 0 ? "Available" : "Out of Stock",
+
+      name:
+        inventoryItem.product?.product_name ||
+        `Product #${inventoryItem.product_id}`,
+
+      type:
+        inventoryItem.product?.type?.type_name || "",
+
+      brand:
+        inventoryItem.product?.brand?.brand_name || "",
+
+      sellingPrice:
+        Number(inventoryItem.selling_price),
+
+      quantity:
+        Number(inventoryItem.qty),
+
+      stockStatus:
+        inventoryItem.qty > 0
+          ? "Available"
+          : "Out of Stock",
     }));
   }, [inventory]);
 
@@ -164,47 +194,63 @@ const Billing = () => {
   // ==========================================================
 
   const searchedInventoryProducts = useMemo(() => {
-    const search = searchTerm.trim().toLowerCase();
+
+    const search =
+      searchTerm.trim().toLowerCase();
 
     if (!search) {
       return [];
     }
 
-    return searchableInventoryProducts.filter((product) => {
-      return [
-        product.name,
-        product.type,
-        product.brand,
-        product.sellingPrice,
-      ].some((value) =>
-        String(value ?? "")
-          .toLowerCase()
-          .includes(search)
-      );
-    });
-  }, [searchTerm, searchableInventoryProducts]);
+    return searchableInventoryProducts.filter(
+      (product) => {
+
+        return [
+          product.name,
+          product.type,
+          product.brand,
+          product.sellingPrice,
+        ].some((value) =>
+          String(value ?? "")
+            .toLowerCase()
+            .includes(search)
+        );
+
+      }
+    );
+
+  }, [
+    searchTerm,
+    searchableInventoryProducts,
+  ]);
 
 
   // ==========================================================
   // BILL CALCULATIONS
-  // (mirrors backend: discount applies to pre-tax subtotal,
-  // tax is added on top afterwards)
   // ==========================================================
 
   const subtotal = useMemo(() => {
+
     return items.reduce(
-      (sum, item) => sum + Number(item.total || 0),
+      (sum, item) =>
+        sum + Number(item.total || 0),
       0
     );
+
   }, [items]);
 
 
   const gst = useMemo(() => {
-    return subtotal * GST_RATE / 100;
+
+    return (
+      subtotal * GST_RATE / 100
+    );
+
   }, [subtotal]);
 
 
   const selectedDiscount = useMemo(() => {
+
     if (selectedDiscountId === "none") {
       return null;
     }
@@ -212,40 +258,70 @@ const Billing = () => {
     return (
       availableDiscounts.find(
         (discount) =>
-          String(discount.discount_id) === String(selectedDiscountId)
+          String(discount.discount_id) ===
+          String(selectedDiscountId)
       ) || null
     );
-  }, [selectedDiscountId, availableDiscounts]);
+
+  }, [
+    selectedDiscountId,
+    availableDiscounts,
+  ]);
 
 
   const discountAmount = useMemo(() => {
+
     if (!selectedDiscount) {
       return 0;
     }
 
-    const minBill = Number(selectedDiscount.min_bill_amount || 0);
+    const minBill =
+      Number(
+        selectedDiscount.min_bill_amount || 0
+      );
 
     if (subtotal < minBill) {
       return 0;
     }
 
-    const isPercentage = selectedDiscount.discountType?.code === "PERCENT";
+    const isPercentage =
+      selectedDiscount.discountType?.code ===
+      "PERCENT";
 
     const rawDiscount = isPercentage
-      ? subtotal * Number(selectedDiscount.discount_value) / 100
-      : Number(selectedDiscount.discount_value);
+      ? subtotal *
+        Number(selectedDiscount.discount_value) /
+        100
+      : Number(
+          selectedDiscount.discount_value
+        );
 
-    const maxDiscount = Number(selectedDiscount.max_discount_amount || 0);
+    const maxDiscount =
+      Number(
+        selectedDiscount.max_discount_amount || 0
+      );
 
-    return Math.min(rawDiscount, maxDiscount, subtotal);
-  }, [selectedDiscount, subtotal]);
+    return Math.min(
+      rawDiscount,
+      maxDiscount,
+      subtotal
+    );
+
+  }, [
+    selectedDiscount,
+    subtotal,
+  ]);
 
 
   const grandTotal = useMemo(() => {
+
     return Math.max(
       0,
-      subtotal - discountAmount + gst
+      subtotal -
+        discountAmount +
+        gst
     );
+
   }, [
     subtotal,
     discountAmount,
@@ -258,30 +334,43 @@ const Billing = () => {
   // ==========================================================
 
   const clearSilenceTimer = () => {
+
     if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
+
+      clearTimeout(
+        silenceTimerRef.current
+      );
+
       silenceTimerRef.current = null;
     }
+
   };
 
 
   const resetSilenceTimer = () => {
+
     clearSilenceTimer();
 
-    silenceTimerRef.current = setTimeout(() => {
-      if (
-        recognitionRef.current &&
-        !isStoppingRef.current
-      ) {
-        isStoppingRef.current = true;
+    silenceTimerRef.current =
+      setTimeout(() => {
 
-        try {
-          recognitionRef.current.stop();
-        } catch (error) {
-          console.error(error);
+        if (
+          recognitionRef.current &&
+          !isStoppingRef.current
+        ) {
+
+          isStoppingRef.current = true;
+
+          try {
+            recognitionRef.current.stop();
+          } catch (error) {
+            console.error(error);
+          }
+
         }
-      }
-    }, SILENCE_TIMEOUT);
+
+      }, SILENCE_TIMEOUT);
+
   };
 
 
@@ -290,31 +379,48 @@ const Billing = () => {
   // ==========================================================
 
   const startTimer = () => {
+
     setMinutes(0);
     setSeconds(0);
 
-    timerRef.current = setInterval(() => {
-      setSeconds((previousSeconds) => {
-        if (previousSeconds === 59) {
-          setMinutes(
-            (previousMinutes) =>
-              previousMinutes + 1
-          );
+    timerRef.current =
+      setInterval(() => {
 
-          return 0;
-        }
+        setSeconds(
+          (previousSeconds) => {
 
-        return previousSeconds + 1;
-      });
-    }, 1000);
+            if (
+              previousSeconds === 59
+            ) {
+
+              setMinutes(
+                (previousMinutes) =>
+                  previousMinutes + 1
+              );
+
+              return 0;
+            }
+
+            return previousSeconds + 1;
+          }
+        );
+
+      }, 1000);
+
   };
 
 
   const stopTimer = () => {
+
     if (timerRef.current) {
-      clearInterval(timerRef.current);
+
+      clearInterval(
+        timerRef.current
+      );
+
       timerRef.current = null;
     }
+
   };
 
 
@@ -323,11 +429,13 @@ const Billing = () => {
   // ==========================================================
 
   const startListening = () => {
+
     const SpeechRecognition =
       window.SpeechRecognition ||
       window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
+
       alert(
         "Speech recognition is not supported in this browser."
       );
@@ -336,40 +444,53 @@ const Billing = () => {
     }
 
     if (recognitionRef.current) {
+
       try {
         recognitionRef.current.stop();
       } catch (error) {
         console.error(error);
       }
+
     }
 
     clearSilenceTimer();
+
     stopTimer();
 
-    const recognition = new SpeechRecognition();
+    const recognition =
+      new SpeechRecognition();
 
     recognition.lang =
       navigator.language || "en-US";
 
     recognition.interimResults = true;
+
     recognition.continuous = true;
 
     hasSpokenRef.current = false;
+
     isStoppingRef.current = false;
 
     setVoiceOutput("");
+
     setIsListening(true);
 
     startTimer();
 
+
     recognition.onstart = () => {
+
       setIsListening(true);
+
       resetSilenceTimer();
+
     };
 
 
     recognition.onresult = (event) => {
+
       let finalText = "";
+
       let interimText = "";
 
       for (
@@ -377,62 +498,96 @@ const Billing = () => {
         i < event.results.length;
         i++
       ) {
-        const transcript =
-          event.results[i][0].transcript;
 
-        if (event.results[i].isFinal) {
-          finalText += transcript + " ";
+        const transcript =
+          event.results[i][0]
+            .transcript;
+
+        if (
+          event.results[i].isFinal
+        ) {
+
+          finalText +=
+            transcript + " ";
+
           hasSpokenRef.current = true;
+
         } else {
-          interimText += transcript;
+
+          interimText +=
+            transcript;
+
         }
+
       }
 
       const output =
-        `${finalText}${interimText}`.trim();
+        `${finalText}${interimText}`
+          .trim();
 
       if (output) {
+
         setVoiceOutput(output);
+
         setSearchTerm(output);
+
         resetSilenceTimer();
+
       }
+
     };
 
 
     recognition.onerror = (event) => {
+
       console.error(
         "Speech recognition error:",
         event.error
       );
 
       clearSilenceTimer();
+
       stopTimer();
+
       setIsListening(false);
+
     };
 
 
     recognition.onend = () => {
+
       clearSilenceTimer();
+
       stopTimer();
+
       setIsListening(false);
 
       isStoppingRef.current = false;
+
     };
 
 
-    recognitionRef.current = recognition;
+    recognitionRef.current =
+      recognition;
+
 
     try {
+
       recognition.start();
+
     } catch (error) {
+
       console.error(
         "Unable to start speech recognition:",
         error
       );
 
       setIsListening(false);
+
       stopTimer();
+
     }
+
   };
 
 
@@ -443,24 +598,35 @@ const Billing = () => {
   const stopListening = (
     clearOutput = false
   ) => {
+
     clearSilenceTimer();
+
     stopTimer();
 
     isStoppingRef.current = true;
 
     if (recognitionRef.current) {
+
       try {
+
         recognitionRef.current.stop();
+
       } catch (error) {
+
         console.error(error);
+
       }
+
     }
 
     setIsListening(false);
 
     if (clearOutput) {
+
       setVoiceOutput("");
+
     }
+
   };
 
 
@@ -469,18 +635,29 @@ const Billing = () => {
   // ==========================================================
 
   useEffect(() => {
+
     return () => {
+
       clearSilenceTimer();
+
       stopTimer();
 
       if (recognitionRef.current) {
+
         try {
+
           recognitionRef.current.stop();
+
         } catch (error) {
+
           console.error(error);
+
         }
+
       }
+
     };
+
   }, []);
 
 
@@ -491,59 +668,101 @@ const Billing = () => {
   const addInventoryProductToBill = (
     inventoryProduct
   ) => {
+
     if (!inventoryProduct) {
       return;
     }
 
     const availableQuantity =
-      Number(inventoryProduct.quantity || 0);
+      Number(
+        inventoryProduct.quantity || 0
+      );
 
     if (availableQuantity <= 0) {
-      alert("This product is out of stock.");
+
+      alert(
+        "This product is out of stock."
+      );
+
       return;
     }
 
+
     setItems((previousItems) => {
+
       const existingItem =
         previousItems.find(
           (item) =>
             String(item.inventoryId) ===
-            String(inventoryProduct.inventoryId)
+            String(
+              inventoryProduct.inventoryId
+            )
         );
 
+
       if (existingItem) {
+
         const newQuantity =
           Number(existingItem.quantity) + 1;
 
-        if (newQuantity > availableQuantity) {
+
+        if (
+          newQuantity >
+          availableQuantity
+        ) {
+
           alert(
             `Only ${availableQuantity} unit(s) available in stock.`
           );
 
           return previousItems;
+
         }
 
-        return previousItems.map((item) => {
-          if (item.id !== existingItem.id) {
-            return item;
-          }
 
-          return {
-            ...item,
-            quantity: newQuantity,
-            total:
-              newQuantity *
-              Number(item.price || 0),
-          };
-        });
+        return previousItems.map(
+          (item) => {
+
+            if (
+              item.id !==
+              existingItem.id
+            ) {
+
+              return item;
+
+            }
+
+
+            return {
+
+              ...item,
+
+              quantity:
+                newQuantity,
+
+              total:
+                newQuantity *
+                Number(
+                  item.price || 0
+                ),
+
+            };
+
+          }
+        );
+
       }
+
 
       const price =
         Number(
-          inventoryProduct.sellingPrice || 0
+          inventoryProduct.sellingPrice ||
+            0
         );
 
+
       const newItem = {
+
         id:
           `${Date.now()}-${Math.random()
             .toString(16)
@@ -555,7 +774,8 @@ const Billing = () => {
         productId:
           inventoryProduct.productId,
 
-        name: inventoryProduct.name,
+        name:
+          inventoryProduct.name,
 
         quantity: 1,
 
@@ -569,57 +789,177 @@ const Billing = () => {
 
         total: price,
 
-        maxQuantity: availableQuantity,
+        maxQuantity:
+          availableQuantity,
+
       };
+
 
       return [
         ...previousItems,
         newItem,
       ];
+
     });
 
+
     setSearchTerm("");
+
   };
 
 
   // ==========================================================
-  // EDIT BILL ITEM (quantity only — price/name come from inventory)
+  // INCREMENT / DECREMENT TABLE QUANTITY
+  // ==========================================================
+
+  const updateItemQuantity = (
+    itemId,
+    change
+  ) => {
+
+    setItems((previousItems) => {
+
+      return previousItems.map(
+        (item) => {
+
+          if (item.id !== itemId) {
+            return item;
+          }
+
+
+          const currentQuantity =
+            Number(item.quantity) || 1;
+
+          const maxQuantity =
+            Number(
+              item.maxQuantity ??
+                Infinity
+            );
+
+
+          const newQuantity =
+            currentQuantity + change;
+
+
+          if (newQuantity < 1) {
+            return item;
+          }
+
+
+          if (
+            newQuantity >
+            maxQuantity
+          ) {
+
+            alert(
+              `Only ${maxQuantity} unit(s) available in stock.`
+            );
+
+            return item;
+
+          }
+
+
+          return {
+
+            ...item,
+
+            quantity:
+              newQuantity,
+
+            total:
+              newQuantity *
+              Number(item.price || 0),
+
+          };
+
+        }
+      );
+
+    });
+
+  };
+
+
+  // ==========================================================
+  // EDIT BILL ITEM
   // ==========================================================
 
   const handleItemSubmit = () => {
-    const quantity = Number(itemQuantity);
+
+    const quantity =
+      Number(itemQuantity);
+
 
     if (
       itemQuantity === "" ||
       !Number.isFinite(quantity) ||
       quantity < 1
     ) {
-      alert("Quantity must be at least 1.");
+
+      alert(
+        "Quantity must be at least 1."
+      );
+
       return;
+
     }
 
+
     setItems((previousItems) =>
+
       previousItems.map((item) => {
-        if (item.id !== editingItemId) {
+
+        if (
+          item.id !==
+          editingItemId
+        ) {
+
           return item;
+
         }
 
-        const maxQuantity = Number(item.maxQuantity ?? Infinity);
 
-        if (quantity > maxQuantity) {
-          alert(`Only ${maxQuantity} unit(s) available in stock.`);
+        const maxQuantity =
+          Number(
+            item.maxQuantity ??
+              Infinity
+          );
+
+
+        if (
+          quantity >
+          maxQuantity
+        ) {
+
+          alert(
+            `Only ${maxQuantity} unit(s) available in stock.`
+          );
+
           return item;
+
         }
+
 
         return {
+
           ...item,
+
           quantity,
-          total: quantity * Number(item.price || 0),
+
+          total:
+            quantity *
+            Number(item.price || 0),
+
         };
+
       })
+
     );
 
+
     closeItemPopup();
+
   };
 
 
@@ -628,11 +968,16 @@ const Billing = () => {
   // ==========================================================
 
   const deleteItem = (id) => {
+
     setItems((previousItems) =>
+
       previousItems.filter(
-        (item) => item.id !== id
+        (item) =>
+          item.id !== id
       )
+
     );
+
   };
 
 
@@ -641,9 +986,13 @@ const Billing = () => {
   // ==========================================================
 
   const editItem = (item) => {
+
     setEditingItemId(item.id);
+
     setItemQuantity(item.quantity);
+
     setShowItemPopup(true);
+
   };
 
 
@@ -652,36 +1001,79 @@ const Billing = () => {
   // ==========================================================
 
   const closeItemPopup = () => {
+
     setShowItemPopup(false);
+
     setEditingItemId(null);
+
     setItemQuantity(1);
+
   };
 
 
-  const editingItem = items.find((item) => item.id === editingItemId);
+  const editingItem =
+    items.find(
+      (item) =>
+        item.id ===
+        editingItemId
+    );
 
 
   // ==========================================================
-  // QUANTITY STEPPER (edit item popup)
+  // QUANTITY STEPPER - EDIT POPUP
   // ==========================================================
 
   const decrementItemQuantity = () => {
-    setItemQuantity((previousQuantity) => {
-      const currentQuantity = Number(previousQuantity) || 0;
-      const nextQuantity = currentQuantity - 1;
 
-      return nextQuantity < 1 ? 1 : nextQuantity;
-    });
+    setItemQuantity(
+      (previousQuantity) => {
+
+        const currentQuantity =
+          Number(
+            previousQuantity
+          ) || 0;
+
+        const nextQuantity =
+          currentQuantity - 1;
+
+        return nextQuantity < 1
+          ? 1
+          : nextQuantity;
+
+      }
+    );
+
   };
 
-  const incrementItemQuantity = () => {
-    setItemQuantity((previousQuantity) => {
-      const currentQuantity = Number(previousQuantity) || 0;
-      const maxQuantity = Number(editingItem?.maxQuantity ?? Infinity);
-      const nextQuantity = currentQuantity + 1;
 
-      return nextQuantity > maxQuantity ? maxQuantity : nextQuantity;
-    });
+  const incrementItemQuantity = () => {
+
+    setItemQuantity(
+      (previousQuantity) => {
+
+        const currentQuantity =
+          Number(
+            previousQuantity
+          ) || 0;
+
+        const maxQuantity =
+          Number(
+            editingItem?.maxQuantity ??
+              Infinity
+          );
+
+        const nextQuantity =
+          currentQuantity + 1;
+
+
+        return nextQuantity >
+          maxQuantity
+          ? maxQuantity
+          : nextQuantity;
+
+      }
+    );
+
   };
 
 
@@ -690,57 +1082,127 @@ const Billing = () => {
   // ==========================================================
 
   const generateBill = async () => {
+
     if (items.length === 0) {
+
       alert(
         "Please add at least one item before generating the bill."
       );
 
       return;
+
     }
 
-    if (items.some((item) => !item.inventoryId)) {
+
+    if (
+      items.some(
+        (item) =>
+          !item.inventoryId
+      )
+    ) {
+
       alert(
         "Some items are not linked to inventory and cannot be billed."
       );
 
       return;
+
     }
+
 
     setIsSubmittingBill(true);
 
+
     try {
-      const phone = customerPhone.trim() || WALKIN_CUSTOMER_PHONE;
 
-      const customer = await customerService.findOrCreateCustomer(phone);
+      const phone =
+        customerPhone.trim() ||
+        WALKIN_CUSTOMER_PHONE;
 
-      const billItems = items.map((item) => ({
-        inventory_id: item.inventoryId,
-        qty: item.quantity,
-      }));
 
-      const taxTotal = Math.round(gst * 100) / 100;
+      const customer =
+        await customerService.findOrCreateCustomer(
+          phone
+        );
 
-      const bill = await billService.createBill({
-        customer_id: customer.customer_id,
-        items: billItems,
-        discount_id: selectedDiscount ? selectedDiscount.discount_id : null,
-        tax_total: taxTotal,
-      });
 
-      setBillNumber(bill.invoice_number);
-      setBillDate(new Date(bill.created_at).toLocaleString());
-      setSuccessTotalAmount(Number(bill.grand_total));
+      const billItems =
+        items.map((item) => ({
+
+          inventory_id:
+            item.inventoryId,
+
+          qty:
+            item.quantity,
+
+        }));
+
+
+      const taxTotal =
+        Math.round(
+          gst * 100
+        ) / 100;
+
+
+      const bill =
+        await billService.createBill({
+
+          customer_id:
+            customer.customer_id,
+
+          items:
+            billItems,
+
+          discount_id:
+            selectedDiscount
+              ? selectedDiscount.discount_id
+              : null,
+
+          tax_total:
+            taxTotal,
+
+        });
+
+
+      setBillNumber(
+        bill.invoice_number
+      );
+
+      setBillDate(
+        new Date(
+          bill.created_at
+        ).toLocaleString()
+      );
+
+      setSuccessTotalAmount(
+        Number(
+          bill.grand_total
+        )
+      );
 
       setShowSuccessScreen(true);
 
-      // Stock has changed on the server — refresh local inventory.
+
       loadInventoryData();
+
     } catch (error) {
-      console.error("Failed to generate bill:", error);
-      alert(error.message || "Failed to generate bill.");
+
+      console.error(
+        "Failed to generate bill:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "Failed to generate bill."
+      );
+
     } finally {
+
       setIsSubmittingBill(false);
+
     }
+
   };
 
 
@@ -749,18 +1211,22 @@ const Billing = () => {
   // ==========================================================
 
   const shareReceipt = () => {
+
     const message =
       "Here is your bill receipt.";
+
 
     const whatsappUrl =
       `https://wa.me/?text=${encodeURIComponent(
         message
       )}`;
 
+
     window.open(
       whatsappUrl,
       "_blank"
     );
+
   };
 
 
@@ -769,7 +1235,9 @@ const Billing = () => {
   // ==========================================================
 
   const printBill = () => {
+
     window.print();
+
   };
 
 
@@ -778,23 +1246,29 @@ const Billing = () => {
   // ==========================================================
 
   const createNewBill = () => {
+
     setItems([]);
 
     setSearchTerm("");
 
     setVoiceOutput("");
 
-    setSelectedDiscountId("none");
+    setSelectedDiscountId(
+      "none"
+    );
 
     setCustomerPhone("");
 
     setShowSuccessScreen(false);
 
     setBillNumber("");
+
     setBillDate("");
+
     setSuccessTotalAmount(0);
 
     closeItemPopup();
+
   };
 
 
@@ -803,16 +1277,39 @@ const Billing = () => {
   // ==========================================================
 
   if (showSuccessScreen) {
+
     return (
+
       <BillSuccess
-        billNumber={billNumber}
-        billDate={billDate}
-        successTotalAmount={`₹${successTotalAmount.toFixed(2)}`}
-        onNewBill={createNewBill}
-        onShare={shareReceipt}
-        onPrint={printBill}
+
+        billNumber={
+          billNumber
+        }
+
+        billDate={
+          billDate
+        }
+
+        successTotalAmount={
+          `₹${successTotalAmount.toFixed(2)}`
+        }
+
+        onNewBill={
+          createNewBill
+        }
+
+        onShare={
+          shareReceipt
+        }
+
+        onPrint={
+          printBill
+        }
+
       />
+
     );
+
   }
 
 
@@ -821,15 +1318,22 @@ const Billing = () => {
   // ==========================================================
 
   return (
+
     <main className="main-content">
 
       <div className="voice-billing-view">
 
+
         {loadError && (
+
           <div className="bill-product-search-empty">
+
             {loadError}
+
           </div>
+
         )}
+
 
         {/* ==================================================
             VOICE SECTION
@@ -838,23 +1342,35 @@ const Billing = () => {
         <section className="voice-section">
 
           {!isListening ? (
+
             <>
+
               <button
                 type="button"
                 className="voice-button"
-                onClick={startListening}
+                onClick={
+                  startListening
+                }
               >
+
                 <img
                   src={micIcon}
                   alt="Microphone"
                 />
+
               </button>
 
+
               <div className="voice-button-static">
+
                 Tap to speak
+
               </div>
+
             </>
+
           ) : (
+
             <div className="voice-listening-container">
 
               <button
@@ -864,17 +1380,31 @@ const Billing = () => {
                   stopListening(true)
                 }
               >
+
                 <img
                   src="/assets/icons/microphone.png"
                   alt="Microphone"
                 />
+
               </button>
 
+
               <div className="voice-timer">
-                {String(minutes).padStart(2, "0")}
+
+                {String(minutes).padStart(
+                  2,
+                  "0"
+                )}
+
                 :
-                {String(seconds).padStart(2, "0")}
+
+                {String(seconds).padStart(
+                  2,
+                  "0"
+                )}
+
               </div>
+
 
               <button
                 type="button"
@@ -883,10 +1413,13 @@ const Billing = () => {
                   stopListening(false)
                 }
               >
+
                 Stop
+
               </button>
 
             </div>
+
           )}
 
         </section>
@@ -905,25 +1438,33 @@ const Billing = () => {
             </h3>
 
             <p>
+
               {voiceOutput ||
                 "Start speaking to create your bill."}
+
             </p>
 
           </div>
 
 
           {voiceOutput && (
+
             <div className="inventory-status">
 
               <div className="inventory-status-item">
+
                 <strong>
+
                   {searchedInventoryProducts.length > 0
                     ? "Matched with inventory"
                     : "Item not found"}
+
                 </strong>
+
               </div>
 
             </div>
+
           )}
 
         </section>
@@ -944,7 +1485,9 @@ const Billing = () => {
                 : "Search bill items..."
             }
             value={searchTerm}
-            disabled={isLoadingInventory}
+            disabled={
+              isLoadingInventory
+            }
             onChange={(event) =>
               setSearchTerm(
                 event.target.value
@@ -953,19 +1496,20 @@ const Billing = () => {
           />
 
 
-          {/* ==================================================
-              SEARCH RESULTS
-          ================================================== */}
-
           {searchTerm.trim() && (
+
             <div className="bill-product-search-results">
 
               {searchedInventoryProducts.length > 0 ? (
+
                 searchedInventoryProducts.map(
                   (product) => (
+
                     <div
                       className="bill-product-search-card"
-                      key={product.inventoryId}
+                      key={
+                        product.inventoryId
+                      }
                     >
 
                       <div className="bill-product-search-info">
@@ -974,7 +1518,9 @@ const Billing = () => {
                           {product.name}
                         </h4>
 
+
                         <p>
+
                           {product.type
                             ? product.type
                             : "No type"}
@@ -984,21 +1530,29 @@ const Billing = () => {
                           {product.brand
                             ? product.brand
                             : "No brand"}
+
                         </p>
+
 
                         <div className="bill-product-search-details">
 
                           <strong>
+
                             ₹
                             {product.sellingPrice.toFixed(
                               2
                             )}
+
                           </strong>
 
+
                           <span>
+
                             Qty:{" "}
                             {product.quantity}
+
                           </span>
+
 
                           <span
                             className={
@@ -1007,7 +1561,11 @@ const Billing = () => {
                                 : "stock-out"
                             }
                           >
-                            {product.stockStatus}
+
+                            {
+                              product.stockStatus
+                            }
+
                           </span>
 
                         </div>
@@ -1027,19 +1585,29 @@ const Billing = () => {
                           )
                         }
                       >
+
                         Add
+
                       </button>
 
                     </div>
+
                   )
+
                 )
+
               ) : (
+
                 <div className="bill-product-search-empty">
+
                   No matching inventory product found.
+
                 </div>
+
               )}
 
             </div>
+
           )}
 
         </section>
@@ -1050,6 +1618,7 @@ const Billing = () => {
         ================================================== */}
 
         <section className="bill-container">
+
 
           <div className="bill-header">
 
@@ -1065,9 +1634,13 @@ const Billing = () => {
           ================================================== */}
 
           <div className="popup-field">
+
             <label htmlFor="customer-phone">
+
               Customer Phone (optional)
+
             </label>
+
 
             <input
               id="customer-phone"
@@ -1076,9 +1649,12 @@ const Billing = () => {
               placeholder="Walk-in customer"
               value={customerPhone}
               onChange={(event) =>
-                setCustomerPhone(event.target.value)
+                setCustomerPhone(
+                  event.target.value
+                )
               }
             />
+
           </div>
 
 
@@ -1091,55 +1667,146 @@ const Billing = () => {
             <table className="bill-table">
 
               <thead>
+
                 <tr>
-                  <th>Qty</th>
-                  <th>Item</th>
-                  <th>Price</th>
-                  <th>Total</th>
-                  <th>Actions</th>
+
+                  <th>
+                    Qty
+                  </th>
+
+                  <th>
+                    Item
+                  </th>
+
+                  <th>
+                    Price
+                  </th>
+
+                  <th>
+                    Total
+                  </th>
+
+                  <th>
+                    Actions
+                  </th>
+
                 </tr>
+
               </thead>
+
 
               <tbody>
 
                 {items.length > 0 ? (
+
                   items.map((item) => (
+
                     <tr key={item.id}>
 
-                      <td>
-                        {item.quantity}
-                      </td>
+                      {/* ==================================================
+                          UPDATED QUANTITY
+                      ================================================== */}
 
                       <td>
-                        <div className="bill-item-name">
-                          {item.name}
+
+                        <div className="table-qty-selector">
+
+                          <button
+                            type="button"
+                            className="table-qty-btn"
+                            onClick={() =>
+                              updateItemQuantity(
+                                item.id,
+                                -1
+                              )
+                            }
+                            disabled={
+                              Number(item.quantity) <= 1
+                            }
+                          >
+                            -
+                          </button>
+
+
+                          <span className="table-qty-value">
+
+                            {item.quantity}
+
+                          </span>
+
+
+                          <button
+                            type="button"
+                            className="table-qty-btn"
+                            onClick={() =>
+                              updateItemQuantity(
+                                item.id,
+                                1
+                              )
+                            }
+                            disabled={
+                              Number(item.quantity) >=
+                              Number(item.maxQuantity)
+                            }
+                          >
+                            +
+                          </button>
+
                         </div>
+
+                      </td>
+
+
+                      <td>
+
+                        <div className="bill-item-name">
+
+                          {item.name}
+
+                        </div>
+
 
                         {(item.type ||
                           item.brand) && (
+
                           <div className="bill-item-details">
+
                             (
-                            {item.type || "N/A"}
+                            {item.type ||
+                              "N/A"}
+
                             {" - "}
-                            {item.brand || "N/A"}
+
+                            {item.brand ||
+                              "N/A"}
                             )
+
                           </div>
+
                         )}
+
                       </td>
 
+
                       <td>
+
                         ₹
                         {Number(
                           item.price
                         ).toFixed(2)}
+
                       </td>
 
+
                       <td>
+
                         ₹
                         {Number(
                           item.total
                         ).toFixed(2)}
+
                       </td>
+
 
                       <td>
 
@@ -1152,23 +1819,30 @@ const Billing = () => {
                               editItem(item)
                             }
                           >
+
                             <img
                               src={pencilIcon}
                               alt="Edit"
                             />
+
                           </button>
+
 
                           <button
                             type="button"
                             className="bill-delete-button"
                             onClick={() =>
-                              deleteItem(item.id)
+                              deleteItem(
+                                item.id
+                              )
                             }
                           >
+
                             <img
                               src={deleteIcon}
                               alt="Delete"
                             />
+
                           </button>
 
                         </div>
@@ -1176,16 +1850,24 @@ const Billing = () => {
                       </td>
 
                     </tr>
+
                   ))
+
                 ) : (
+
                   <tr>
+
                     <td
                       colSpan="5"
                       className="bill-empty-row"
                     >
+
                       No items added to the bill.
+
                     </td>
+
                   </tr>
+
                 )}
 
               </tbody>
@@ -1202,16 +1884,21 @@ const Billing = () => {
           <div className="voice-bill-cards-container">
 
             {items.length > 0 ? (
+
               items.map((item) => (
+
                 <div
                   className="voice-bill-card"
                   key={item.id}
                 >
 
+
                   <div className="voice-bill-card-header">
+
                     <strong>
                       {item.name}
                     </strong>
+
 
                     <div className="bill-item-actions">
 
@@ -1222,23 +1909,30 @@ const Billing = () => {
                           editItem(item)
                         }
                       >
+
                         <img
                           src={pencilIcon}
                           alt="Edit"
                         />
+
                       </button>
+
 
                       <button
                         type="button"
                         className="bill-delete-button"
                         onClick={() =>
-                          deleteItem(item.id)
+                          deleteItem(
+                            item.id
+                          )
                         }
                       >
+
                         <img
                           src={deleteIcon}
                           alt="Delete"
                         />
+
                       </button>
 
                     </div>
@@ -1248,13 +1942,25 @@ const Billing = () => {
 
                   {(item.type ||
                     item.brand) && (
+
                     <div className="voice-bill-card-details">
-                      {item.type || "N/A"}
+
+                      {item.type ||
+                        "N/A"}
+
                       {" - "}
-                      {item.brand || "N/A"}
+
+                      {item.brand ||
+                        "N/A"}
+
                     </div>
+
                   )}
 
+
+                  {/* ==================================================
+                      UPDATED MOBILE QUANTITY
+                  ================================================== */}
 
                   <div className="voice-bill-card-row">
 
@@ -1262,9 +1968,51 @@ const Billing = () => {
                       Quantity
                     </span>
 
-                    <strong>
-                      {item.quantity}
-                    </strong>
+
+                    <div className="table-qty-selector">
+
+                      <button
+                        type="button"
+                        className="table-qty-btn"
+                        onClick={() =>
+                          updateItemQuantity(
+                            item.id,
+                            -1
+                          )
+                        }
+                        disabled={
+                          Number(item.quantity) <= 1
+                        }
+                      >
+                        -
+                      </button>
+
+
+                      <span className="table-qty-value">
+
+                        {item.quantity}
+
+                      </span>
+
+
+                      <button
+                        type="button"
+                        className="table-qty-btn"
+                        onClick={() =>
+                          updateItemQuantity(
+                            item.id,
+                            1
+                          )
+                        }
+                        disabled={
+                          Number(item.quantity) >=
+                          Number(item.maxQuantity)
+                        }
+                      >
+                        +
+                      </button>
+
+                    </div>
 
                   </div>
 
@@ -1275,11 +2023,14 @@ const Billing = () => {
                       Price
                     </span>
 
+
                     <strong>
+
                       ₹
                       {Number(
                         item.price
                       ).toFixed(2)}
+
                     </strong>
 
                   </div>
@@ -1291,21 +2042,31 @@ const Billing = () => {
                       Total
                     </span>
 
+
                     <strong>
+
                       ₹
                       {Number(
                         item.total
                       ).toFixed(2)}
+
                     </strong>
 
                   </div>
 
+
                 </div>
+
               ))
+
             ) : (
+
               <div className="voice-bill-empty-card">
+
                 No items added to the bill.
+
               </div>
+
             )}
 
           </div>
@@ -1317,15 +2078,19 @@ const Billing = () => {
 
           <div className="bill-summary">
 
+
             <div className="bill-summary-row">
 
               <span>
                 Subtotal
               </span>
 
+
               <strong>
+
                 ₹
                 {subtotal.toFixed(2)}
+
               </strong>
 
             </div>
@@ -1337,9 +2102,12 @@ const Billing = () => {
                 Discount
               </span>
 
+
               <strong>
+
                 ₹
                 {discountAmount.toFixed(2)}
+
               </strong>
 
             </div>
@@ -1348,12 +2116,17 @@ const Billing = () => {
             <div className="bill-summary-row">
 
               <span>
+
                 GST ({GST_RATE}%)
+
               </span>
 
+
               <strong>
+
                 ₹
                 {gst.toFixed(2)}
+
               </strong>
 
             </div>
@@ -1362,12 +2135,17 @@ const Billing = () => {
             <div className="bill-discount-section">
 
               <label htmlFor="bill-discount">
+
                 Select Discount
+
               </label>
+
 
               <select
                 id="bill-discount"
-                value={selectedDiscountId}
+                value={
+                  selectedDiscountId
+                }
                 onChange={(event) =>
                   setSelectedDiscountId(
                     event.target.value
@@ -1376,17 +2154,30 @@ const Billing = () => {
               >
 
                 <option value="none">
+
                   No discount
+
                 </option>
+
 
                 {availableDiscounts.map(
                   (discount) => (
+
                     <option
-                      key={discount.discount_id}
-                      value={discount.discount_id}
+                      key={
+                        discount.discount_id
+                      }
+                      value={
+                        discount.discount_id
+                      }
                     >
-                      {discount.discount_name}
+
+                      {
+                        discount.discount_name
+                      }
+
                     </option>
+
                   )
                 )}
 
@@ -1398,12 +2189,17 @@ const Billing = () => {
             <div className="bill-summary-grand-total">
 
               <span>
+
                 Grand Total
+
               </span>
 
+
               <strong>
+
                 ₹
                 {grandTotal.toFixed(2)}
+
               </strong>
 
             </div>
@@ -1421,12 +2217,19 @@ const Billing = () => {
               type="button"
               className="generate-bill-button"
               onClick={generateBill}
-              disabled={isSubmittingBill}
+              disabled={
+                isSubmittingBill
+              }
             >
-              {isSubmittingBill ? "Generating..." : "Generate Bill"}
+
+              {isSubmittingBill
+                ? "Generating..."
+                : "Generate Bill"}
+
             </button>
 
           </div>
+
 
         </section>
 
@@ -1437,106 +2240,164 @@ const Billing = () => {
           EDIT ITEM POPUP
       ====================================================== */}
 
-      {showItemPopup && editingItem && (
-        <div className="billing-popup-overlay">
+      {showItemPopup &&
+        editingItem && (
 
-          <div className="pop-up">
+          <div className="billing-popup-overlay">
 
-            <h2>
-              Edit bill item
-            </h2>
+            <div className="pop-up">
 
 
-            <div className="popup-form">
+              <h2>
+                Edit bill item
+              </h2>
 
-              <div className="popup-field">
-                <label>Name</label>
-                <input type="text" value={editingItem.name} disabled />
-              </div>
 
-              <div className="popup-field">
+              <div className="popup-form">
 
-                <label>
-                  Quantity
-                </label>
 
-                <div className="qty-selector">
+                <div className="popup-field">
 
-                  <button
-                    type="button"
-                    className="qty-btn"
-                    onClick={decrementItemQuantity}
-                    disabled={Number(itemQuantity) <= 1}
-                  >
-                    -
-                  </button>
+                  <label>
+                    Name
+                  </label>
 
                   <input
-                    type="number"
-                    className="qty-input"
-                    min="1"
-                    max={editingItem.maxQuantity}
-                    value={itemQuantity}
-                    onChange={(event) =>
-                      setItemQuantity(
-                        event.target.value
-                      )
+                    type="text"
+                    value={
+                      editingItem.name
                     }
+                    disabled
                   />
-
-                  <button
-                    type="button"
-                    className="qty-btn"
-                    onClick={incrementItemQuantity}
-                    disabled={
-                      Number(itemQuantity) >=
-                      Number(editingItem.maxQuantity)
-                    }
-                  >
-                    +
-                  </button>
 
                 </div>
 
+
+                <div className="popup-field">
+
+                  <label>
+                    Quantity
+                  </label>
+
+
+                  <div className="qty-selector">
+
+                    <button
+                      type="button"
+                      className="qty-btn"
+                      onClick={
+                        decrementItemQuantity
+                      }
+                      disabled={
+                        Number(
+                          itemQuantity
+                        ) <= 1
+                      }
+                    >
+                      -
+                    </button>
+
+
+                    <input
+                      type="number"
+                      className="qty-input"
+                      min="1"
+                      max={
+                        editingItem.maxQuantity
+                      }
+                      value={
+                        itemQuantity
+                      }
+                      onChange={(event) =>
+                        setItemQuantity(
+                          event.target.value
+                        )
+                      }
+                    />
+
+
+                    <button
+                      type="button"
+                      className="qty-btn"
+                      onClick={
+                        incrementItemQuantity
+                      }
+                      disabled={
+                        Number(
+                          itemQuantity
+                        ) >=
+                        Number(
+                          editingItem.maxQuantity
+                        )
+                      }
+                    >
+                      +
+                    </button>
+
+                  </div>
+
+                </div>
+
+
+                <div className="popup-field">
+
+                  <label>
+                    Price
+                  </label>
+
+
+                  <input
+                    type="number"
+                    value={
+                      editingItem.price
+                    }
+                    disabled
+                  />
+
+                </div>
+
+
               </div>
 
-              <div className="popup-field">
-                <label>Price</label>
-                <input
-                  type="number"
-                  value={editingItem.price}
-                  disabled
-                />
+
+              <div className="popup-buttons">
+
+                <button
+                  type="button"
+                  onClick={
+                    closeItemPopup
+                  }
+                >
+
+                  Cancel
+
+                </button>
+
+
+                <button
+                  type="button"
+                  onClick={
+                    handleItemSubmit
+                  }
+                >
+
+                  Save changes
+
+                </button>
+
               </div>
 
-            </div>
-
-
-            <div className="popup-buttons">
-
-              <button
-                type="button"
-                onClick={closeItemPopup}
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={handleItemSubmit}
-              >
-                Save changes
-              </button>
 
             </div>
 
           </div>
 
-        </div>
-      )}
+        )}
 
     </main>
+
   );
+
 };
 
 

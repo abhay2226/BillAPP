@@ -798,6 +798,71 @@
 
 
 /* ============================================================
+   TABLE / CARD QUANTITY STEPPER
+   (inline +/- qty control used in the desktop table rows
+   and the mobile bill cards — distinct from the larger
+   .qty-selector used inside the edit-item popup)
+   ============================================================ */
+
+.table-qty-selector {
+  display: inline-flex;
+  align-items: center;
+
+  background-color: #ffffff;
+  border: 0.0625rem solid #dfe5e2;
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+
+.table-qty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+
+  color: #22272b;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1;
+
+  background-color: #f8faf9;
+  border: none;
+  cursor: pointer;
+
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.table-qty-btn:hover:not(:disabled) {
+  background-color: #0b8a6a;
+  color: #ffffff;
+}
+
+.table-qty-btn:active:not(:disabled) {
+  background-color: #064f3c;
+}
+
+.table-qty-btn:disabled {
+  color: #b6bcb8;
+  background-color: #f3f5f4;
+  cursor: not-allowed;
+}
+
+.table-qty-value {
+  min-width: 1.6rem;
+
+  padding: 0 0.3rem;
+
+  color: #22272b;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+
+/* ============================================================
    MOBILE BILL CARDS
    ============================================================ */
 
@@ -1139,6 +1204,7 @@
 
 /* ============================================================
    QUANTITY SELECTOR
+   (used inside the edit-item popup)
    ============================================================ */
 
 .qty-selector {
@@ -1171,13 +1237,19 @@
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.qty-btn:hover {
+.qty-btn:hover:not(:disabled) {
   background-color: #0b8a6a;
   color: #ffffff;
 }
 
-.qty-btn:active {
+.qty-btn:active:not(:disabled) {
   background-color: #064f3c;
+}
+
+.qty-btn:disabled {
+  color: #b6bcb8;
+  background-color: #f3f5f4;
+  cursor: not-allowed;
 }
 
 .qty-input {
