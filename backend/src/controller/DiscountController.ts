@@ -56,8 +56,9 @@ export async function getDiscountTypeByCodeController(req:Request,res:Response){
 export async function createDiscountController(req: Request, res: Response) {
   try {
     const actingUserId = req.auth.userId;
+    const sessionId=req.auth.sessionId;
 
-    const discount = await createDiscountService(req.body, actingUserId);
+    const discount = await createDiscountService(req.body, actingUserId,sessionId);
     return res.status(201).json({ success: true, message: "Discount created.", data: discount });
   } catch (error) {
     console.error("Create discount error:", error);
@@ -80,8 +81,21 @@ export async function getActiveDiscountsController(req: Request, res: Response) 
 
 export async function getAllDiscountsController(req: Request, res: Response) {
   try {
-    getAuthUser(req); // require login; no role/store restriction beyond auth for now
-    const discounts = await getAllDiscountsForStoreService(Number(req.params.storeId));
+    getAuthUser(req);
+
+    const statusParam = String(req.query.status ?? "ALL").toUpperCase();
+    const isActive =
+      statusParam === "ACTIVE" ? true :
+      statusParam === "INACTIVE" ? false :
+      undefined;
+
+    const search = req.query.search ? String(req.query.search) : undefined;
+
+    const discounts = await getAllDiscountsForStoreService(
+      Number(req.params.storeId),
+      isActive,
+      search
+    );
     return res.status(200).json({ success: true, data: discounts });
   } catch (error) {
     console.error("Get all discounts error:", error);
@@ -132,8 +146,9 @@ export async function updateDiscountController(req: Request, res: Response) {
   try {
 
     const actingUserId = req.auth.userId;
+    const sessionId=req.auth.sessionId;
 
-    const discount = await updateDiscountService(Number(req.params.id), req.body, actingUserId);
+    const discount = await updateDiscountService(Number(req.params.id), req.body, actingUserId,sessionId);
     return res.status(200).json({ success: true, message: "Discount updated.", data: discount });
   } catch (error) {
     console.error("Update discount error:", error);
@@ -146,8 +161,9 @@ export async function setDiscountActiveController(req: Request, res: Response) {
   try {
 
     const actingUserId = req.auth.userId;
+    const sessionId=req.auth.sessionId;
 
-    const discount = await setDiscountActiveService(Number(req.params.id), Boolean(req.body.is_active), actingUserId);
+    const discount = await setDiscountActiveService(Number(req.params.id), Boolean(req.body.is_active), actingUserId,sessionId);
     return res.status(200).json({ success: true, message: req.body.is_active ? "Discount activated." : "Discount deactivated.", data: discount });
   } catch (error) {
     console.error("Set discount active error:", error);

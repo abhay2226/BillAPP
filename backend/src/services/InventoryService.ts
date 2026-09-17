@@ -6,6 +6,7 @@ import {Audit} from "../entity/TransactionsAudit.js";
 
 import { MovementType } from "../entity/MasterMovementType.js";
 import { createAuditRecordService } from "./AuditServices.js";
+import { DamagedGoods } from "../entity/TransactionsDamagedGoods.js";
 
 const inventoryRepository = AppDataSource.getRepository(Inventory);
 
@@ -427,7 +428,9 @@ export const updatePricingService = async (
     costPrice: number | null,
     sellingPrice: number,
     userId: number,
-    callerStoreId: number 
+    callerStoreId: number,
+    sessionId: number,
+    ipAddress?: string | null
 ) => {
     const inventory = await inventoryRepository.findOne({
         where: {
@@ -468,6 +471,24 @@ export const updatePricingService = async (
     inventory.updated_by = userId;
     inventory.updated_at = new Date();
 
+    const updatedInventory = await inventoryRepository.save(
+        inventory
+    );
+
+    await createAuditRecordService(
+        AppDataSource.manager,
+        {
+            tableName: "transactions_inventory",
+            recordId: updatedInventory.inventory_id,
+            actionTypeName: "UPDATE",
+            userId: userId,
+            storeId: updatedInventory.store_id,
+            sessionId: sessionId,
+            ipAddress: ipAddress ?? null
+        }
+    );
+
+
     return await inventoryRepository.save(
         inventory
     );
@@ -480,7 +501,8 @@ export const updateInventoryQuantityService = async (
     referenceTypeCode: string = "ADJ",
     referenceId: number | undefined,
     userId: number,
-    callerStoreId: number 
+    callerStoreId: number,
+    sessionId:number,
 ) => {
     if (
         !Number.isInteger(quantityChange) ||
@@ -561,6 +583,19 @@ export const updateInventoryQuantityService = async (
                 inventory
             );
 
+         await createAuditRecordService(
+            queryRunner.manager,
+            {
+                tableName: "transactions_inventory",
+                recordId: updatedInventory.inventory_id,
+                actionTypeName: "UPDATE",
+                userId: userId,
+                storeId: updatedInventory.store_id,
+                sessionId: sessionId
+            }
+        );
+
+
         const stockMovement =
             stockMovementRepo.create({
                 inventory_id: inventoryId,
@@ -589,9 +624,22 @@ export const updateInventoryQuantityService = async (
                 updated_by: userId
             });
 
-        await stockMovementRepo.save(
+        const stock=await stockMovementRepo.save(
             stockMovement
         );
+
+         await createAuditRecordService(
+            queryRunner.manager,
+            {
+                tableName: "transactions_stock_movement",
+                recordId: stock.movement_id,
+                actionTypeName: "INSERT",
+                userId: userId,
+                storeId: updatedInventory.store_id,
+                sessionId: sessionId
+            }
+        );
+
 
         await queryRunner.commitTransaction();
 
@@ -607,7 +655,8 @@ export const updateInventoryQuantityService = async (
 export const deactivateInventoryService = async (
     inventoryId: number,
     userId: number,
-    callerStoreId: number
+    callerStoreId: number,
+    sessionId: number
 ) => {
     const queryRunner =
         AppDataSource.createQueryRunner();
@@ -617,9 +666,10 @@ export const deactivateInventoryService = async (
 
     try {
         const inventoryRepo =
-            queryRunner.manager.getRepository(
-                Inventory
-            );
+            queryRunner.manager.getRepository(Inventory);
+
+        const damageRepo =
+            queryRunner.manager.getRepository(DamagedGoods);
 
         const inventory =
             await inventoryRepo.findOne({
@@ -637,21 +687,113 @@ export const deactivateInventoryService = async (
             throw new Error("STORE_MISMATCH");
         }
 
-
         if (inventory.qty > 0) {
             throw new Error(
                 "Cannot delete inventory with available stock"
             );
         }
 
+        const now = new Date();
+
+        // ==============================================
+        // CASCADE: DEACTIVATE LINKED DAMAGED GOODS
+        // ==============================================
+
+        const activeDamagedGoods =
+            await damageRepo.find({
+                where: {
+                    inventory_id: inventoryId,
+                    is_active: true
+                }
+            });
+
+        for (const damage of activeDamagedGoods) {
+            damage.is_active = false;
+            damage.updated_at = now;
+            damage.updated_by = userId;
+
+            await damageRepo.save(damage);
+
+            await createAuditRecordService(
+                queryRunner.manager,
+                {
+                    tableName: "transactions_damaged_goods",
+                    recordId: damage.damage_id,
+                    actionTypeName: "DELETE",
+                    userId,
+                    storeId: inventory.store_id,
+                    sessionId
+                }
+            );
+        }
+
+        // ==============================================
+        // DEACTIVATE INVENTORY
+        // ==============================================
+
         inventory.is_active = false;
         inventory.updated_by = userId;
-        inventory.updated_at = new Date();
+        inventory.updated_at = now;
 
         const updatedInventory =
             await inventoryRepo.save(
                 inventory
             );
+
+        await createAuditRecordService(
+            queryRunner.manager,
+            {
+                tableName: "transactions_inventory",
+                recordId: updatedInventory.inventory_id,
+                actionTypeName: "DELETE",
+                userId,
+                storeId: updatedInventory.store_id,
+                sessionId
+            }
+        );
+
+        // ==============================================
+        // STOCK MOVEMENT: INVENTORY DELETED
+        // ==============================================
+
+        const movementType =
+            await getMovementType(queryRunner.manager, "DELETE");
+
+        const referenceType =
+            await getReferenceType(queryRunner.manager, "INVDEL");
+
+        // const stockMovementRepo =
+        //     queryRunner.manager.getRepository(StockMovement);
+
+        // const stockMovement =
+        //     stockMovementRepo.create({
+        //         inventory_id: updatedInventory.inventory_id,
+        //         movement_type_id: movementType.movement_type_id,
+        //         reference_type_id: referenceType.reference_type_id,
+        //         referenceType,
+        //         quantity_change: 0,
+        //         reference_id: updatedInventory.inventory_id,
+        //         is_active: true,
+        //         created_at: now,
+        //         created_by: userId,
+        //         updated_at: now,
+        //         updated_by: userId
+        //     });
+
+        // const savedMovement =
+        //     await stockMovementRepo.save(stockMovement);
+
+        // await createAuditRecordService(
+        //     queryRunner.manager,
+        //     {
+        //         tableName: "transactions_stock_movement",
+        //         recordId: savedMovement.movement_id,
+        //         actionTypeName: "INSERT",
+        //         userId,
+        //         storeId: updatedInventory.store_id,
+        //         sessionId
+        //     }
+        // );
 
         await queryRunner.commitTransaction();
 
@@ -663,5 +805,6 @@ export const deactivateInventoryService = async (
         await queryRunner.release();
     }
 };
+
 
 

@@ -2,9 +2,11 @@ import { AppDataSource } from "../datasource.js";
 import { Discount } from "../entity/TransactionsDiscount.js";
 import { DiscountType } from "../entity/MasterDiscountType.js";
 import { Store } from "../entity/TransactionsStore.js";
-import { getDiscountTypeById } from "./DiscountTypeServices.js";
-import { isUniqueConstraintError } from "./Errors.js";
 
+import { createAuditRecordService } from "./AuditServices.js";
+import { getDiscountTypeById } from "./DiscountTypeServices.js";
+import {isUniqueConstraintError} from "./Errors.js"
+import { Inventory } from "../entity/TransactionsInventory.js";
 
 const discountRepo = AppDataSource.getRepository(Discount);
 const discountTypeRepo = AppDataSource.getRepository(DiscountType);
@@ -14,7 +16,7 @@ export interface DiscountInput {
   discount_name: string;
   discount_value: number;
   min_bill_amount: number;
-  max_discount_amount: number;
+  max_discount_amount: number | null;
   discount_from: Date;
   discount_to?: Date | null;
   description: string;
@@ -25,7 +27,7 @@ export interface DiscountInput {
 // ======================================================
 // CREATE DISCOUNT
 // ======================================================
-export const createDiscountService = async (data: DiscountInput, userId: number) => {
+export const createDiscountService = async (data: DiscountInput, userId: number ,sessionId:number) => {
   const discountName = data.discount_name?.trim();
   if (!discountName) {
     throw new Error("Discount name is required.");
@@ -48,37 +50,55 @@ export const createDiscountService = async (data: DiscountInput, userId: number)
   if (!Number.isFinite(data.min_bill_amount) || data.min_bill_amount < 0) {
     throw new Error("Minimum bill amount cannot be negative.");
   }
-  if (!Number.isFinite(data.max_discount_amount) || data.max_discount_amount <= 0) {
-    throw new Error("Maximum discount amount must be a positive number.");
+  
+  if (
+    data.max_discount_amount !== undefined &&
+    data.max_discount_amount !== null &&
+    (!Number.isFinite(data.max_discount_amount) || data.max_discount_amount <= 0)
+  ) {
+    throw new Error("Maximum discount amount must be a positive number when provided.");
   }
+
   if (!data.discount_from) {
     throw new Error("Discount start date is required.");
   }
 
-  const discount = discountRepo.create({
-    discount_name: discountName,
-    discount_value: data.discount_value,
-    min_bill_amount: data.min_bill_amount,
-    max_discount_amount: data.max_discount_amount,
-    discount_from: data.discount_from,
-    discount_to: data.discount_to ?? null,
-    description: data.description,
-    is_active: true,
-    created_at: new Date(),
-    created_by: userId,
-    updated_at: null,
-    store_id: data.store_id,
-    discount_type_id: data.discount_type_id,
-  });
+  return await AppDataSource.manager.transaction(async (manager) => {
+    const discount = manager.create(Discount, {
+      discount_name: discountName,
+      discount_value: data.discount_value,
+      min_bill_amount: data.min_bill_amount,
+      discount_from: data.discount_from,
+      discount_to: data.discount_to ?? null,
+      description: data.description,
+      is_active: true,
+      created_at: new Date(),
+      created_by: userId,
+      updated_at: null,
+      store_id: data.store_id,
+      discount_type_id: data.discount_type_id,
+    });
 
-  try {
-    return await discountRepo.save(discount);
-  } catch (err) {
-    if (isUniqueConstraintError(err)) {
-      throw new Error("A discount with this name already exists for this store.");
+    try {
+      const savedDiscount = await manager.save(Discount, discount);
+
+      await createAuditRecordService(manager, {
+        tableName: "transaction_discount",
+        recordId: savedDiscount.discount_id,
+        actionTypeName: "INSERT",
+        userId,
+        storeId: savedDiscount.store_id,
+        sessionId
+      });
+
+      return savedDiscount;
+    } catch (err) {
+      if (isUniqueConstraintError(err)) {
+        throw new Error("A discount with this name already exists for this store.");
+      }
+      throw err;
     }
-    throw err;
-  }
+  });
 };
 
 // ======================================================
@@ -95,17 +115,6 @@ export const getActiveDiscountsForStoreService = async (store_id: number) => {
     .andWhere("(discount.discount_to IS NULL OR discount.discount_to >= :now)", { now })
     .orderBy("discount.discount_id", "DESC")
     .getMany();
-};
-
-// ======================================================
-// GET ALL DISCOUNTS FOR A STORE (active + inactive)
-// ======================================================
-export const getAllDiscountsForStoreService = async (store_id: number) => {
-  return await discountRepo.find({
-    where: { store_id },
-    relations: ["discountType", "store"],
-    order: { discount_id: "DESC" },
-  });
 };
 
 // ======================================================
@@ -170,72 +179,139 @@ export const getDiscountByNameForStore = async (discount_name: string,store_id: 
 // UPDATE DISCOUNT
 // ======================================================
 
-export const updateDiscountService = async (discount_id: number, data: Partial<DiscountInput>, userId: number) => {
-  const discount = await discountRepo.findOne({
-    where: { discount_id },
-    relations: ["discountType"],
+export const updateDiscountService = async (
+  discountId: number, 
+  data: Partial<DiscountInput>, 
+  userId: number, 
+  // storeId:number,
+  sessionId:number,
+  callerStoreId?: number
+) => {
+
+  return await AppDataSource.manager.transaction(async (manager) => {
+    try {
+
+      const discount =
+                      await manager.findOne(
+                          Discount,
+                          {
+                              where: {
+                                  discount_id:
+                                      discountId,
+      
+                                  is_active:
+                                      true
+                              }
+                          }
+                      );
+       
+        if (!discount) {
+            return null;
+        }
+        if (
+            callerStoreId !== undefined &&
+            discount.store_id !== callerStoreId
+        ) {
+            throw new Error("STORE_MISMATCH");
+        }
+      
+      if (data.discount_value !== undefined) {
+        if (!Number.isFinite(data.discount_value) || data.discount_value <= 0) {
+          throw new Error("Discount value must be a positive number.");
+        }
+        if (discount.discountType.code === "PERCENT" && data.discount_value > 100) {
+          throw new Error("Percentage discount value cannot exceed 100.");
+        }
+        discount.discount_value = data.discount_value;
+      }
+      if (data.min_bill_amount !== undefined) discount.min_bill_amount = data.min_bill_amount;
+        if (data.max_discount_amount !== undefined) {
+        if (
+          data.max_discount_amount !== null &&
+          (!Number.isFinite(data.max_discount_amount) || data.max_discount_amount <= 0)
+        ) {
+          throw new Error("Maximum discount amount must be a positive number when provided.");
+        }
+        discount.max_discount_amount = data.max_discount_amount;
+      }
+      if (data.discount_from !== undefined) discount.discount_from = data.discount_from;
+      if (data.discount_to !== undefined) discount.discount_to = data.discount_to;
+      if (data.description !== undefined) discount.description = data.description;
+    
+      discount.updated_at = new Date();
+      discount.updated_by = userId;
+      const updatedDiscount = await manager.save(Discount, discount);
+
+      await createAuditRecordService(manager, {
+        tableName: "transaction_discount",
+        recordId: updatedDiscount.discount_id,
+        actionTypeName: "UPDATE",
+        userId,
+        storeId: updatedDiscount.store_id,
+        sessionId
+      });
+
+      return updatedDiscount;
+    } catch (err) {
+      if (isUniqueConstraintError(err)) {
+        throw new Error("A discount with this name already exists for this store.");
+      }
+      throw err;
+    }
   });
-  if (!discount) {
-    throw new Error("Discount not found.");
-  }
-
-  if (data.discount_name !== undefined) {
-    const discountName = data.discount_name.trim();
-    if (!discountName) {
-      throw new Error("Discount name is required.");
-    }
-    discount.discount_name = discountName;
-  }
-
-  if (data.discount_type_id !== undefined && data.discount_type_id !== discount.discount_type_id) {
-    discount.discountType = await getDiscountTypeById(data.discount_type_id);
-    discount.discount_type_id = data.discount_type_id;
-  }
-
-  if (data.discount_value !== undefined) {
-    if (!Number.isFinite(data.discount_value) || data.discount_value <= 0) {
-      throw new Error("Discount value must be a positive number.");
-    }
-    discount.discount_value = data.discount_value;
-  }
-  if (discount.discountType.code === "PERCENT" && Number(discount.discount_value) > 100) {
-    throw new Error("Percentage discount value cannot exceed 100.");
-  }
-  if (data.min_bill_amount !== undefined) discount.min_bill_amount = data.min_bill_amount;
-  if (data.max_discount_amount !== undefined) discount.max_discount_amount = data.max_discount_amount;
-  if (data.discount_from !== undefined) discount.discount_from = data.discount_from;
-  if (data.discount_to !== undefined) discount.discount_to = data.discount_to;
-  if (data.description !== undefined) discount.description = data.description;
-
-  discount.updated_at = new Date();
-  discount.updated_by = userId;
-
-  try {
-    return await discountRepo.save(discount);
-  } catch (err) {
-    if (isUniqueConstraintError(err)) {
-      throw new Error("A discount with this name already exists for this store.");
-    }
-    throw err;
-  }
+  
 };
 
 // ======================================================
 // deactivatediscounts
 // ======================================================
 export const setDiscountActiveService = async (
-  discount_id: number,
+  discountId: number,
   is_active: boolean,
-  userId: number
+  userId: number,
+  sessionId:number
 ) => {
-  const discount = await discountRepo.findOne({ where: { discount_id } });
-  if (!discount) {
-    throw new Error("Discount not found.");
-  }
-  discount.is_active = is_active;
-  discount.updated_at = new Date();
-  discount.updated_by = userId;
-  return await discountRepo.save(discount);
+
+  return await AppDataSource.manager.transaction(async (manager) => {
+    try {
+
+      const discount =
+                      await manager.findOne(
+                          Discount,
+                          {
+                              where: {
+                                  discount_id:
+                                      discountId,
+
+                              }
+                          }
+                      );
+       
+        if (!discount) {
+          throw new Error("Discount not found.");
+        }
+        discount.is_active = is_active;
+        discount.updated_at = new Date();
+        discount.updated_by = userId;
+        const savedDiscount= await manager.save(discount);
+        
+      await createAuditRecordService(manager, {
+        tableName: "transaction_discount",
+        recordId: savedDiscount.discount_id,
+        actionTypeName: is_active ? "UPDATE" : "DELETE",
+        userId,
+        storeId: savedDiscount.store_id,
+        sessionId
+      });
+
+      return savedDiscount;
+    } catch (err) {
+      if (isUniqueConstraintError(err)) {
+        throw new Error("A discount with this name already exists for this store.");
+      }
+      throw err;
+    }
+  });
 };
 
 // ======================================================
@@ -270,7 +346,44 @@ export const resolveDiscountAmount = async (
     raw = Number(discount.discount_value);
   }
 
-  const capped = Math.min(raw, Number(discount.max_discount_amount), subtotal);
-  return Math.round(capped * 100) / 100;
+  const cappedByMax =
+    discount.max_discount_amount !== null && discount.max_discount_amount !== undefined
+      ? Math.min(raw, Number(discount.max_discount_amount))
+      : raw;
+
+  return Math.round(cappedByMax * 100) / 100;
 };
 
+
+
+//===============================================================================
+//get all discount under the store
+//===============================================================================
+
+export const getAllDiscountsForStoreService = async (
+  store_id: number,
+  isActive?: boolean,
+  search?: string
+) => {
+  const query = discountRepo
+    .createQueryBuilder("discount")
+    .leftJoinAndSelect("discount.discountType", "discountType")
+    .leftJoinAndSelect("discount.store", "store")
+    .where("discount.store_id = :store_id", { store_id });
+
+  if (isActive !== undefined) {
+    query.andWhere("discount.is_active = :isActive", { isActive });
+  }
+
+  if (search !== undefined && search.trim() !== "") {
+    const term = `%${search.trim()}%`;
+    query.andWhere(
+      "(LOWER(discount.discount_name) LIKE LOWER(:term) OR CAST(discount.discount_value AS TEXT) LIKE :term)",
+      { term }
+    );
+  }
+
+  return await query
+    .orderBy("discount.discount_id", "DESC")
+    .getMany();
+};
