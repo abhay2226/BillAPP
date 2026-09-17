@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import discountServices from "../../services/discountService";
+import * as discountServices from "../../services/discountService";
 import { getCurrentStoreId } from "../../services/api";
 import "./Discounts.css";
+
 
 export default function Discounts() {
   // ======================================================
