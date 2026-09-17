@@ -172,7 +172,7 @@ export async function getSignupStores(search = "") {
  * Authorization: Bearer <token>
  */
 export async function logout() {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const response = await fetch(`${API_URL}/auth/logout`, {
     method: "POST",

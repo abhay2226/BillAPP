@@ -12,7 +12,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = sessionStorage.getItem("user");
 
     try {
       return savedUser ? JSON.parse(savedUser) : null;
@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
   });
 
   const [token, setToken] = useState(() => {
-    return localStorage.getItem("token");
+    return sessionStorage.getItem("token");
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -46,12 +46,12 @@ export function AuthProvider({ children }) {
       setToken(authToken);
 
       // Save authentication so refresh does not log the user out
-      localStorage.setItem(
+      sessionStorage.setItem(
         "user",
         JSON.stringify(loggedInUser)
       );
 
-      localStorage.setItem("token", authToken);
+      sessionStorage.setItem("token", authToken);
 
       return loggedInUser;
     } finally {
@@ -97,12 +97,12 @@ export function AuthProvider({ children }) {
 
         // Backend signup also returns a JWT,
         // so the user is immediately authenticated.
-        localStorage.setItem(
+        sessionStorage.setItem(
           "user",
           JSON.stringify(createdUser)
         );
 
-        localStorage.setItem("token", authToken);
+        sessionStorage.setItem("token", authToken);
 
         return createdUser;
       } finally {
@@ -135,7 +135,7 @@ export function AuthProvider({ children }) {
       };
 
       setUser(mergedUser);
-      localStorage.setItem("user", JSON.stringify(mergedUser));
+      sessionStorage.setItem("user", JSON.stringify(mergedUser));
 
       return mergedUser;
     },
@@ -156,8 +156,8 @@ export function AuthProvider({ children }) {
       setUser(null);
       setToken(null);
 
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("token");
 
       setIsLoading(false);
     }
