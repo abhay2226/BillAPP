@@ -1,50 +1,52 @@
-import React, { useCallback,useEffect, useState } from "react";
-import "./Discounts.css";
+import React, { useCallback, useEffect, useState } from "react";
 import * as discountServices from "../../services/discountService";
 import { getCurrentStoreId } from "../../services/api";
+import "./Discounts.css";
+
 
 export default function Discounts() {
-  // ============================================================
+  // ======================================================
   // STATE
-  // ============================================================
+  // ======================================================
 
   const [discounts, setDiscounts] = useState([]);
   const [discountTypes, setDiscountTypes] = useState([]);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
 
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [showForm, setShowForm] = useState(false);
+  const [editingDiscount, setEditingDiscount] = useState(null);
+
   const [formData, setFormData] = useState({
     discount_name: "",
+    discount_type_id: "",
     discount_value: "",
     min_bill_amount: "",
     max_discount_amount: "",
     discount_from: "",
     discount_to: "",
     description: "",
-    discount_type_id: "",
   });
 
-  // ============================================================
+  const storeId = getCurrentStoreId();
+
+  // ======================================================
   // LOAD DISCOUNTS
-  // ============================================================
+  // ======================================================
 
   const loadDiscounts = useCallback(async () => {
-  try {
-    setIsLoading(true);
-    setErrorMessage("");
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
 
-    const data = await discountServices.getAllDiscounts(
-      statusFilter,
-      searchTerm
-    );
+      const data = await discountServices.getAllDiscounts(
+        statusFilter,
+        searchTerm
+      );
 
     setDiscounts(Array.isArray(data) ? data : []);
   } catch (error) {
@@ -54,17 +56,17 @@ export default function Discounts() {
       error?.message || "Unable to load discounts."
     );
 
-    setDiscounts([]);
-  } finally {
-    setIsLoading(false);
-  }
-}, [statusFilter, searchTerm]);
+      setDiscounts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [statusFilter, searchTerm]);
 
-  // ============================================================
+  // ======================================================
   // LOAD DISCOUNT TYPES
-  // ============================================================
+  // ======================================================
 
-  const loadDiscountTypes = async () => {
+  const loadDiscountTypes = useCallback(async () => {
     try {
       const data = await discountServices.getDiscountTypes();
 
@@ -74,236 +76,164 @@ export default function Discounts() {
 
       setDiscountTypes([]);
     }
-  };
+  }, []);
 
-  // ============================================================
-  // PAGE LOAD
-  // ============================================================
+  // ======================================================
+  // EFFECTS
+  // ======================================================
 
   useEffect(() => {
-  loadDiscounts();
-}, [loadDiscounts]);
+    loadDiscountTypes();
+  }, [loadDiscountTypes]);
 
-  // ============================================================
-  // FORM
-  // ============================================================
+  useEffect(() => {
+    loadDiscounts();
+  }, [loadDiscounts]);
 
-  const resetForm = () => {
-    setFormData({
-      discount_name: "",
-      discount_value: "",
-      min_bill_amount: "",
-      max_discount_amount: "",
-      discount_from: "",
-      discount_to: "",
-      description: "",
-      discount_type_id: "",
-    });
+  // ======================================================
+  // FORM HANDLERS
+  // ======================================================
 
-    setEditingDiscount(null);
-  };
-
-  const handleInputChange = (event) => {
+  function handleInputChange(event) {
     const { name, value } = event.target;
 
     setFormData((previous) => ({
       ...previous,
       [name]: value,
     }));
-  };
+  }
 
-  const handleAddDiscount = () => {
-    resetForm();
+  // ======================================================
+  // OPEN ADD FORM
+  // ======================================================
+
+  function handleAddDiscount() {
+    setEditingDiscount(null);
+
+    setFormData({
+      discount_name: "",
+      discount_type_id: "",
+      discount_value: "",
+      min_bill_amount: "",
+      max_discount_amount: "",
+      discount_from: "",
+      discount_to: "",
+      description: "",
+    });
+
     setShowForm(true);
-  };
+  }
 
-  // ============================================================
-  // DATE HELPERS
-  // ============================================================
+  // ======================================================
+  // OPEN EDIT FORM
+  // ======================================================
 
-  const formatDateForInput = (dateValue) => {
-    if (!dateValue) {
-      return "";
-    }
-
-    const date = new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-      return "";
-    }
-
-    const year = date.getFullYear();
-
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-
-    const day = String(date.getDate()).padStart(2, "0");
-
-    const hours = String(date.getHours()).padStart(2, "0");
-
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
-  const formatDate = (dateValue) => {
-    if (!dateValue) {
-      return "No expiry";
-    }
-
-    const date = new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-      return "-";
-    }
-
-    return date.toLocaleDateString();
-  };
-
-  // ============================================================
-  // EDIT
-  // ============================================================
-
-  const handleEdit = (discount) => {
+  function handleEditDiscount(discount) {
     setEditingDiscount(discount);
 
     setFormData({
       discount_name: discount.discount_name || "",
-
+      discount_type_id: discount.discount_type_id || "",
       discount_value: discount.discount_value ?? "",
-
       min_bill_amount: discount.min_bill_amount ?? "",
-
       max_discount_amount: discount.max_discount_amount ?? "",
-
-      discount_from: formatDateForInput(
-        discount.discount_from
-      ),
-
-      discount_to: formatDateForInput(
-        discount.discount_to
-      ),
-
+      discount_from: discount.discount_from
+        ? discount.discount_from.slice(0, 16)
+        : "",
+      discount_to: discount.discount_to
+        ? discount.discount_to.slice(0, 16)
+        : "",
       description: discount.description || "",
-
-      discount_type_id: discount.discount_type_id ?? "",
     });
 
     setShowForm(true);
-  };
+  }
 
-  // ============================================================
+  // ======================================================
   // CLOSE FORM
-  // ============================================================
+  // ======================================================
 
-  const handleCloseForm = () => {
-    if (isSaving) {
-      return;
-    }
-
+  function handleCloseForm() {
     setShowForm(false);
-    resetForm();
-  };
+    setEditingDiscount(null);
+  }
 
-  // ============================================================
-  // CREATE / UPDATE
-  // ============================================================
+  // ======================================================
+  // SUBMIT CREATE / UPDATE
+  // ======================================================
 
-  const handleSubmit = async (event) => {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    const storeId = getCurrentStoreId();
-
-    if (!storeId) {
-      alert("No store selected.");
-      return;
-    }
-
-    if (!formData.discount_name.trim()) {
-      alert("Discount name is required.");
-      return;
-    }
-
-    if (!formData.discount_type_id) {
-      alert("Please select a discount type.");
-      return;
-    }
-
-    const discountValue = Number(formData.discount_value);
-
-    const minBillAmount = Number(formData.min_bill_amount);
-
-    const maxDiscountAmount =
-      formData.max_discount_amount.trim() === ""
-        ? null
-        : Number(formData.max_discount_amount);
-
-    // ----------------------------------------------------------
-    // VALIDATION
-    // ----------------------------------------------------------
-
-    if (
-      !Number.isFinite(discountValue) ||
-      discountValue <= 0
-    ) {
-      alert("Discount value must be greater than 0.");
-      return;
-    }
-
-    if (
-      !Number.isFinite(minBillAmount) ||
-      minBillAmount < 0
-    ) {
-      alert("Minimum bill amount cannot be negative.");
-      return;
-    }
-
-    if (
-      maxDiscountAmount !== null &&
-      (!Number.isFinite(maxDiscountAmount) ||
-        maxDiscountAmount <= 0)
-    ) {
-      alert(
-        "Maximum discount amount must be greater than 0 if provided."
-      );
-      return;
-    }
-
-    if (!formData.discount_from) {
-      alert("Discount start date is required.");
-      return;
-    }
-
-    const startDate = new Date(formData.discount_from);
-
-    if (Number.isNaN(startDate.getTime())) {
-      alert("Invalid discount start date.");
-      return;
-    }
-
-    let endDate = null;
-
-    if (formData.discount_to) {
-      endDate = new Date(formData.discount_to);
-
-      if (Number.isNaN(endDate.getTime())) {
-        alert("Invalid discount end date.");
-        return;
-      }
-
-      if (endDate < startDate) {
-        alert(
-          "Discount end date cannot be before the start date."
-        );
-        return;
-      }
-    }
-
-    // ==========================================================
-    // SAVE
-    // ==========================================================
-
     try {
-      setIsSaving(true);
+      setErrorMessage("");
+
+      if (!storeId) {
+        throw new Error("Store ID is missing.");
+      }
+
+      if (!formData.discount_name.trim()) {
+        throw new Error("Discount name is required.");
+      }
+
+      if (!formData.discount_type_id) {
+        throw new Error("Discount type is required.");
+      }
+
+      if (formData.discount_value === "") {
+        throw new Error("Discount value is required.");
+      }
+
+      const discountValue = Number(formData.discount_value);
+      const minBillAmount =
+        formData.min_bill_amount === ""
+          ? 0
+          : Number(formData.min_bill_amount);
+
+      const maxDiscountAmount =
+        formData.max_discount_amount === ""
+          ? null
+          : Number(formData.max_discount_amount);
+
+      if (Number.isNaN(discountValue) || discountValue < 0) {
+        throw new Error("Discount value must be a valid positive number.");
+      }
+
+      if (Number.isNaN(minBillAmount) || minBillAmount < 0) {
+        throw new Error("Minimum bill amount must be valid.");
+      }
+
+      if (
+        maxDiscountAmount !== null &&
+        (Number.isNaN(maxDiscountAmount) || maxDiscountAmount < 0)
+      ) {
+        throw new Error("Maximum discount amount must be valid.");
+      }
+
+      let startDate = null;
+      let endDate = null;
+
+      if (formData.discount_from) {
+        startDate = new Date(formData.discount_from);
+
+        if (Number.isNaN(startDate.getTime())) {
+          throw new Error("Invalid start date.");
+        }
+      }
+
+      if (formData.discount_to) {
+        endDate = new Date(formData.discount_to);
+
+        if (Number.isNaN(endDate.getTime())) {
+          throw new Error("Invalid end date.");
+        }
+
+        if (startDate && endDate < startDate) {
+          throw new Error(
+            "Discount end date cannot be before the start date."
+          );
+        }
+      }
 
       const data = {
         discount_name: formData.discount_name.trim(),
@@ -314,7 +244,9 @@ export default function Discounts() {
 
         max_discount_amount: maxDiscountAmount,
 
-        discount_from: startDate.toISOString(),
+        discount_from: startDate
+          ? startDate.toISOString()
+          : null,
 
         discount_to: endDate
           ? endDate.toISOString()
@@ -322,9 +254,7 @@ export default function Discounts() {
 
         description: formData.description.trim(),
 
-        discount_type_id: Number(
-          formData.discount_type_id
-        ),
+        discount_type_id: Number(formData.discount_type_id),
 
         store_id: Number(storeId),
       };
@@ -334,47 +264,30 @@ export default function Discounts() {
           editingDiscount.discount_id,
           data
         );
-
-        alert("Discount updated successfully.");
       } else {
         await discountServices.createDiscount(data);
-
-        alert("Discount created successfully.");
       }
 
-      setShowForm(false);
-      resetForm();
+      handleCloseForm();
 
       await loadDiscounts();
     } catch (error) {
-      console.error("Discount save error:", error);
+      console.error("Unable to save discount:", error);
 
-      alert(
+      setErrorMessage(
         error?.message || "Unable to save discount."
       );
-    } finally {
-      setIsSaving(false);
     }
-  };
+  }
 
-  // ============================================================
+  // ======================================================
   // ACTIVATE / DEACTIVATE
-  // ============================================================
+  // ======================================================
 
-  const handleDeactivate = async (discount) => {
-    const action = discount.is_active
-      ? "deactivate"
-      : "activate";
-
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} "${discount.discount_name}"?`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
+  async function handleToggleActive(discount) {
     try {
+      setErrorMessage("");
+
       await discountServices.setDiscountActive(
         discount.discount_id,
         !discount.is_active
@@ -382,49 +295,66 @@ export default function Discounts() {
 
       await loadDiscounts();
     } catch (error) {
-      console.error(
-        "Unable to change discount status:",
-        error
-      );
+      console.error("Unable to update discount status:", error);
 
-      alert(
-        error?.message ||
-          "Unable to update discount status."
+      setErrorMessage(
+        error?.message || "Unable to update discount status."
       );
     }
-  };
-
-  // ============================================================
-  // LOADING
-  // ============================================================
-
-  if (isLoading) {
-    return (
-      <div className="discounts-page">
-        <div className="discounts-header">
-          <h2>DISCOUNTS</h2>
-        </div>
-
-        <div className="discount-card">
-          Loading discounts...
-        </div>
-      </div>
-    );
   }
 
-  // ============================================================
-  // PAGE
-  // ============================================================
+  // ======================================================
+  // FORMAT DATE
+  // ======================================================
+
+  function formatDate(dateValue) {
+    if (!dateValue) {
+      return "No date";
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Invalid date";
+    }
+
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  }
+
+  // ======================================================
+  // GET DISCOUNT TYPE NAME
+  // ======================================================
+
+  function getDiscountTypeName(discount) {
+    if (discount.discount_type_name) {
+      return discount.discount_type_name;
+    }
+
+    const type = discountTypes.find(
+      (item) =>
+        Number(item.discount_type_id) ===
+        Number(discount.discount_type_id)
+    );
+
+    return type?.type_name || type?.discount_type_name || "Discount";
+  }
+
+  // ======================================================
+  // RENDER
+  // ======================================================
 
   return (
     <div className="discounts-page">
 
-      {/* ======================================================
+      {/* ==================================================
           HEADER
-      ====================================================== */}
+      ================================================== */}
 
       <div className="discounts-header">
-
         <h2>DISCOUNTS</h2>
 
         <button
@@ -434,19 +364,18 @@ export default function Discounts() {
           <span className="plus-icon">+</span>
           Add discount
         </button>
-
       </div>
 
-      {/* ======================================================
+      {/* ==================================================
           FILTERS
-      ====================================================== */}
+      ================================================== */}
 
       <div className="discounts-filters">
 
         <select
           value={statusFilter}
-          onChange={(e) =>
-            setStatusFilter(e.target.value)
+          onChange={(event) =>
+            setStatusFilter(event.target.value)
           }
         >
           <option value="ALL">
@@ -466,255 +395,219 @@ export default function Discounts() {
           type="text"
           placeholder="Search by name or value..."
           value={searchTerm}
-          onChange={(e) =>
-            setSearchTerm(e.target.value)
+          onChange={(event) =>
+            setSearchTerm(event.target.value)
           }
         />
 
       </div>
 
-      {/* ======================================================
+      {/* ==================================================
           ERROR
-      ====================================================== */}
+      ================================================== */}
 
       {errorMessage && (
-        <div className="discount-card">
+        <div className="discount-error">
           {errorMessage}
         </div>
       )}
 
-      {/* ======================================================
-          DISCOUNTS GRID
-      ====================================================== */}
+      {/* ==================================================
+          LOADING
+      ================================================== */}
 
-      <div className="discounts-grid">
+      {isLoading ? (
+        <div className="discount-loading">
+          Loading discounts...
+        </div>
+      ) : discounts.length === 0 ? (
+        <div className="discount-empty">
+          No discounts found.
+        </div>
+      ) : (
+        <div className="discounts-grid">
 
-        {discounts.length === 0 ? (
+          {discounts.map((discount) => (
 
-          <div className="discount-card">
+            <div
+              className={`discount-card ${
+                discount.is_active
+                  ? "active-discount"
+                  : "inactive-discount"
+              }`}
+              key={discount.discount_id}
+            >
 
-            <div className="discount-name">
-              {statusFilter === "ACTIVE"
-                ? "No active discounts found."
-                : statusFilter === "INACTIVE"
-                  ? "No deactivated discounts found."
-                  : "No discounts found."}
-            </div>
+              {/* CARD HEADER */}
 
-          </div>
+              <div className="discount-card-header">
 
-        ) : (
+                <div>
+                  <h3>
+                    {discount.discount_name}
+                  </h3>
 
-          discounts.map((discount) => {
-
-            const isPercentage =
-              discount.discountType?.code === "PERCENT";
-
-            return (
-
-              <div
-                className="discount-card"
-                key={discount.discount_id}
-              >
-
-                {/* ==================================================
-                    CARD TOP
-                ================================================== */}
-
-                <div className="discount-card-top">
-
-                  <div className="discount-name">
-
-                    <span className="discount-ticket">
-                      ♧
-                    </span>
-
-                    <span>
-                      {discount.discount_name}
-                    </span>
-
-                  </div>
-
-                  {discount.is_active && (
-                    <div className="active-status">
-
-                      <span className="active-dot"></span>
-
-                      Active
-
-                    </div>
-                  )}
-
-                  {!discount.is_active && (
-                    <div className="inactive-status">
-                      Deactivated
-                    </div>
-                  )}
-
-                </div>
-
-                {/* ==================================================
-                    DISCOUNT VALUE
-                ================================================== */}
-
-                <div className="discount-value-row">
-
-                  <span className="discount-value">
-                    {Number(
-                      discount.discount_value
-                    ).toFixed(2)}
+                  <span className="discount-type">
+                    {getDiscountTypeName(discount)}
                   </span>
-
-                  {isPercentage ? (
-
-                    <span className="discount-type-pill percentage-pill">
-                      %
-                    </span>
-
-                  ) : (
-
-                    <span className="discount-type-pill flat-pill">
-                      FLAT
-                    </span>
-
-                  )}
-
                 </div>
 
-                {/* ==================================================
-                    DETAILS
-                ================================================== */}
+                <span
+                  className={
+                    discount.is_active
+                      ? "active-status"
+                      : "inactive-status"
+                  }
+                >
+                  {discount.is_active
+                    ? "Active"
+                    : "Deactivated"}
+                </span>
 
-                <div className="discount-details">
+              </div>
 
-                  <div className="detail-row">
+              {/* DISCOUNT VALUE */}
 
-                    <span className="detail-label">
-                      Min bill
-                    </span>
+              <div className="discount-value">
 
-                    <span className="detail-value">
-                      ₹
-                      {Number(
-                        discount.min_bill_amount
-                      ).toFixed(2)}
-                    </span>
+                {getDiscountTypeName(discount)
+                  .toLowerCase()
+                  .includes("percent")
+                  ? `${discount.discount_value}%`
+                  : `₹${Number(
+                      discount.discount_value || 0
+                    ).toFixed(2)}`}
 
-                  </div>
+              </div>
 
-                  <div className="detail-row">
+              {/* DETAILS */}
 
-                    <span className="detail-label">
-                      Max discount
-                    </span>
+              <div className="discount-details">
 
-                    <span className="detail-value">
+                <div>
+                  <span>Minimum bill</span>
 
-                      {discount.max_discount_amount != null
-                        ? `₹${Number(
-                            discount.max_discount_amount
-                          ).toFixed(2)}`
-                        : "No cap"}
-
-                    </span>
-
-                  </div>
-
-                  <div className="detail-row">
-
-                    <span className="detail-label">
-                      Valid
-                    </span>
-
-                    <span className="detail-value">
-
-                      {formatDate(
-                        discount.discount_from
-                      )}
-
-                      {" - "}
-
-                      {formatDate(
-                        discount.discount_to
-                      )}
-
-                    </span>
-
-                  </div>
-
-                  <div className="detail-row">
-
-                    <span className="detail-label">
-                      Store
-                    </span>
-
-                    <span className="detail-value">
-
-                      {discount.store?.store_name ||
-                        discount.store_id}
-
-                    </span>
-
-                  </div>
-
+                  <strong>
+                    ₹
+                    {Number(
+                      discount.min_bill_amount || 0
+                    ).toFixed(2)}
+                  </strong>
                 </div>
 
-                {/* ==================================================
-                    BUTTONS
-                ================================================== */}
+                <div>
+                  <span>Maximum discount</span>
 
-                <div className="discount-actions">
+                  <strong>
+                    {discount.max_discount_amount != null
+                      ? `₹${Number(
+                          discount.max_discount_amount
+                        ).toFixed(2)}`
+                      : "No limit"}
+                  </strong>
+                </div>
 
-                  <button
-                    className="edit-button"
-                    onClick={() =>
-                      handleEdit(discount)
-                    }
-                  >
-                    Edit
-                  </button>
+                <div>
+                  <span>Valid from</span>
 
-                  <button
-                    className="deactivate-button"
-                    onClick={() =>
-                      handleDeactivate(discount)
-                    }
-                  >
-                    {discount.is_active
-                      ? "Deactivate"
-                      : "Activate"}
-                  </button>
+                  <strong>
+                    {formatDate(
+                      discount.discount_from
+                    )}
+                  </strong>
+                </div>
 
+                <div>
+                  <span>Valid until</span>
+
+                  <strong>
+                    {discount.discount_to
+                      ? formatDate(
+                          discount.discount_to
+                        )
+                      : "No expiry"}
+                  </strong>
                 </div>
 
               </div>
-            );
-          })
-        )}
 
-      </div>
+              {/* DESCRIPTION */}
 
-      {/* ======================================================
+              {discount.description && (
+                <p className="discount-description">
+                  {discount.description}
+                </p>
+              )}
+
+              {/* ACTIONS */}
+
+              <div className="discount-actions">
+
+                <button
+                  className="edit-discount-button"
+                  onClick={() =>
+                    handleEditDiscount(discount)
+                  }
+                >
+                  Edit
+                </button>
+
+                <button
+                  className={
+                    discount.is_active
+                      ? "deactivate-discount-button"
+                      : "activate-discount-button"
+                  }
+                  onClick={() =>
+                    handleToggleActive(discount)
+                  }
+                >
+                  {discount.is_active
+                    ? "Deactivate"
+                    : "Activate"}
+                </button>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+      )}
+
+      {/* ==================================================
           ADD / EDIT POPUP
-      ====================================================== */}
+      ================================================== */}
 
       {showForm && (
+        <div className="discount-modal-overlay">
 
-        <div className="discount-popup-overlay">
+          <div className="discount-modal">
 
-          <div className="discount-popup">
+            <div className="discount-modal-header">
 
-            <h2>
-              {editingDiscount
-                ? "Edit discount"
-                : "Add discount"}
-            </h2>
+              <h2>
+                {editingDiscount
+                  ? "Edit Discount"
+                  : "Add Discount"}
+              </h2>
+
+              <button
+                className="close-modal-button"
+                onClick={handleCloseForm}
+                type="button"
+              >
+                ×
+              </button>
+
+            </div>
 
             <form onSubmit={handleSubmit}>
 
-              {/* Discount name */}
+              {/* DISCOUNT NAME */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
                   Discount name
@@ -725,13 +618,15 @@ export default function Discounts() {
                   name="discount_name"
                   value={formData.discount_name}
                   onChange={handleInputChange}
+                  placeholder="Example: Summer Sale"
+                  required
                 />
 
               </div>
 
-              {/* Discount type */}
+              {/* DISCOUNT TYPE */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
                   Discount type
@@ -741,8 +636,8 @@ export default function Discounts() {
                   name="discount_type_id"
                   value={formData.discount_type_id}
                   onChange={handleInputChange}
+                  required
                 >
-
                   <option value="">
                     Select discount type
                   </option>
@@ -753,9 +648,8 @@ export default function Discounts() {
                       key={type.discount_type_id}
                       value={type.discount_type_id}
                     >
-                      {type.code}
-                      {" - "}
-                      {type.description}
+                      {type.type_name ||
+                        type.discount_type_name}
                     </option>
 
                   ))}
@@ -764,9 +658,9 @@ export default function Discounts() {
 
               </div>
 
-              {/* Discount value */}
+              {/* DISCOUNT VALUE */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
                   Discount value
@@ -775,17 +669,19 @@ export default function Discounts() {
                 <input
                   type="number"
                   name="discount_value"
-                  min="0"
-                  step="0.01"
                   value={formData.discount_value}
                   onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  placeholder="Example: 10"
+                  required
                 />
 
               </div>
 
-              {/* Minimum bill */}
+              {/* MINIMUM BILL */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
                   Minimum bill amount
@@ -794,36 +690,38 @@ export default function Discounts() {
                 <input
                   type="number"
                   name="min_bill_amount"
-                  min="0"
-                  step="0.01"
                   value={formData.min_bill_amount}
                   onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  placeholder="Example: 500"
                 />
 
               </div>
 
-              {/* Maximum discount */}
+              {/* MAXIMUM DISCOUNT */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
-                  Maximum discount amount (optional)
+                  Maximum discount amount
                 </label>
 
                 <input
                   type="number"
                   name="max_discount_amount"
-                  min="0"
-                  step="0.01"
                   value={formData.max_discount_amount}
                   onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  placeholder="Leave empty for no limit"
                 />
 
               </div>
 
-              {/* Valid from */}
+              {/* VALID FROM */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
                   Valid from
@@ -838,9 +736,9 @@ export default function Discounts() {
 
               </div>
 
-              {/* Valid until */}
+              {/* VALID TO */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
                   Valid until
@@ -855,9 +753,9 @@ export default function Discounts() {
 
               </div>
 
-              {/* Description */}
+              {/* DESCRIPTION */}
 
-              <div className="popup-field">
+              <div className="form-group">
 
                 <label>
                   Description
@@ -867,32 +765,31 @@ export default function Discounts() {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
+                  placeholder="Optional description"
                   rows="3"
                 />
 
               </div>
 
-              {/* Buttons */}
+              {/* FORM ACTIONS */}
 
-              <div className="popup-buttons">
+              <div className="discount-form-actions">
 
                 <button
                   type="button"
+                  className="cancel-discount-button"
                   onClick={handleCloseForm}
-                  disabled={isSaving}
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  disabled={isSaving}
+                  className="save-discount-button"
                 >
-                  {isSaving
-                    ? "Saving..."
-                    : editingDiscount
-                      ? "Save changes"
-                      : "Create discount"}
+                  {editingDiscount
+                    ? "Update Discount"
+                    : "Create Discount"}
                 </button>
 
               </div>
@@ -902,9 +799,9 @@ export default function Discounts() {
           </div>
 
         </div>
-
       )}
 
     </div>
   );
 }
+
