@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createDiscountController,
   getActiveDiscountsController,
+  getAllDiscountsController,
   getDiscountByIdController,
   getDiscountByNameController,
   updateDiscountController,
@@ -57,6 +58,13 @@ discountRouter.get(
   authorize("OWNER", "STAFF"),
   requireStoreAccess("params", "storeId"),
   getActiveDiscountsController
+);
+
+discountRouter.get(
+  "/store/:storeId/all",
+  authorize("OWNER", "STAFF"),
+  requireStoreAccess("params", "storeId"),
+  getAllDiscountsController
 );
 
 discountRouter.get(

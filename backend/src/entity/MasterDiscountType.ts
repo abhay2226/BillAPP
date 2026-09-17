@@ -50,7 +50,7 @@ export class DiscountType{
     updated_at!: Date | null;
 
 
-    @OneToMany(() => Discount, (discount) => discount.discount_type_id)
+    @OneToMany(() => Discount, (discount) => discount.discountType)
     discounts!: Discount[];
 
 }

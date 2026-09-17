@@ -4,7 +4,8 @@ import {
     Column,
     ManyToOne,
     OneToMany,
-    JoinColumn
+    JoinColumn,
+    Unique
 } from "typeorm";
 
 import { DiscountType } from "./MasterDiscountType.js"
@@ -12,6 +13,10 @@ import { Bill } from "./TransactionsBill.js"
 import { Store } from "./TransactionsStore.js"
 
 @Entity({name:"transaction_discount"})
+@Unique(
+    "UQ_discount_store_id_discount_name",
+    ["store_id", "discount_name"]
+)
 
 export class Discount{
     @PrimaryGeneratedColumn({name:"discount_id"})
@@ -34,8 +39,7 @@ export class Discount{
     @Column({
         name:"discount_name",
         type: "varchar",
-        nullable: false,
-        unique: true
+        nullable: false
     })
     discount_name!: string;
 

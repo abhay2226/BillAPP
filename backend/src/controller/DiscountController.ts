@@ -3,6 +3,7 @@ import { verifyToken } from  "../utils/jwt.js"; // adjust path if verifyToken li
 import {
   createDiscountService,
   getActiveDiscountsForStoreService,
+  getAllDiscountsForStoreService,
   getDiscountByIdService,
   getDiscountByNameForStore,
   updateDiscountService,
@@ -72,6 +73,18 @@ export async function getActiveDiscountsController(req: Request, res: Response) 
     return res.status(200).json({ success: true, data: discounts });
   } catch (error) {
     console.error("Get active discounts error:", error);
+    const status = (error as any)?.status ?? 400;
+    return res.status(status).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch discounts." });
+  }
+}
+
+export async function getAllDiscountsController(req: Request, res: Response) {
+  try {
+    getAuthUser(req); // require login; no role/store restriction beyond auth for now
+    const discounts = await getAllDiscountsForStoreService(Number(req.params.storeId));
+    return res.status(200).json({ success: true, data: discounts });
+  } catch (error) {
+    console.error("Get all discounts error:", error);
     const status = (error as any)?.status ?? 400;
     return res.status(status).json({ success: false, message: error instanceof Error ? error.message : "Failed to fetch discounts." });
   }
