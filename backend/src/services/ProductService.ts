@@ -2,6 +2,7 @@ import { AppDataSource } from "../datasource.js";
 import { Product } from "../entity/TransactionsProduct.js";
 import { Type } from "../entity/MasterProductType.js";
 import { Brand } from "../entity/MasterProductBrand.js";
+import {Inventory} from "../entity/TransactionsInventory.js"
 
 import { createAuditRecordService } from "./AuditServices.js";
 
@@ -1203,6 +1204,40 @@ export const deleteProductService = async (
                         clientIpAddress
                 }
             );
+                        // ==============================================
+            // DEACTIVATE LINKED INVENTORY
+            // ==============================================
+
+            const linkedInventory =
+                await manager.findOne(
+                    Inventory,
+                    {
+                        where: {
+                            product_id:
+                                productId,
+
+                            is_active:
+                                true
+                        }
+                    }
+                );
+
+            if (linkedInventory) {
+
+                linkedInventory.is_active =
+                    false;
+
+                linkedInventory.updated_at =
+                    new Date();
+
+                linkedInventory.updated_by =
+                    actingUserId;
+
+                await manager.save(
+                    Inventory,
+                    linkedInventory
+                );
+            }
 
 
             return deletedProduct;

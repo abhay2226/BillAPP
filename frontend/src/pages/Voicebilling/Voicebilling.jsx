@@ -269,8 +269,7 @@ const Billing = () => {
   ]);
 
 
-  const discountAmount = useMemo(() => {
-
+    const discountAmount = useMemo(() => {
     if (!selectedDiscount) {
       return 0;
     }
@@ -296,21 +295,16 @@ const Billing = () => {
           selectedDiscount.discount_value
         );
 
-    const maxDiscount =
-      Number(
-        selectedDiscount.max_discount_amount || 0
-      );
+    const hasMaxCap =
+      selectedDiscount.max_discount_amount !== null &&
+      selectedDiscount.max_discount_amount !== undefined;
 
-    return Math.min(
-      rawDiscount,
-      maxDiscount,
-      subtotal
-    );
+    const cappedByMax = hasMaxCap
+      ? Math.min(rawDiscount, Number(selectedDiscount.max_discount_amount))
+      : rawDiscount;
 
-  }, [
-    selectedDiscount,
-    subtotal,
-  ]);
+    return Math.min(cappedByMax, subtotal);
+  }, [selectedDiscount, subtotal]);
 
 
   const grandTotal = useMemo(() => {

@@ -266,17 +266,30 @@ export async function setDiscountActive(id, isActive) {
 // GET ALL DISCOUNTS FOR CURRENT STORE
 // Used by Discounts.jsx
 // ============================================================
-
-export async function getAllDiscounts() {
+export async function getAllDiscounts(status = "ALL", search = "") {
   const storeId = getCurrentStoreId();
 
   if (!storeId) {
     return [];
   }
 
+  const params = new URLSearchParams();
+  if (status && status !== "ALL") params.set("status", status);
+  if (search && search.trim()) params.set("search", search.trim());
+
+  const query = params.toString();
+
   const result = await apiRequest(
-    `/discounts/store/${storeId}/all`
+    `/discounts/store/${storeId}/all${query ? `?${query}` : ""}`
   );
 
   return result.data || [];
 }
+
+
+// export async function resolveDiscount(){
+//   const storeId = getCurrentStoreId();
+//   if(!storeId){
+
+//   }
+// }
