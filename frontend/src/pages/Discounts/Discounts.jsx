@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback,useEffect, useState } from "react";
 import "./Discounts.css";
 import * as discountServices from "../../services/discountService";
 import { getCurrentStoreId } from "../../services/api";
@@ -36,57 +36,56 @@ export default function Discounts() {
   // LOAD DISCOUNTS
   // ============================================================
 
-  const loadDiscounts = async () => {
-    try {
-      setIsLoading(true);
-      setErrorMessage("");
+  const loadDiscounts = useCallback(async () => {
+  try {
+    setIsLoading(true);
+    setErrorMessage("");
 
-      const data = await discountServices.getAllDiscounts(
-        statusFilter,
-        searchTerm
-      );
+    const data = await discountServices.getAllDiscounts(
+      statusFilter,
+      searchTerm
+    );
 
-      setDiscounts(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Unable to load discounts:", error);
+    setDiscounts(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Unable to load discounts:", error);
 
-      setErrorMessage(
-        error?.message || "Unable to load discounts."
-      );
+    setErrorMessage(
+      error?.message || "Unable to load discounts."
+    );
 
-      setDiscounts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setDiscounts([]);
+  } finally {
+    setIsLoading(false);
+  }
+}, [statusFilter, searchTerm]);
 
   // ============================================================
   // LOAD DISCOUNT TYPES
   // ============================================================
 
-  const loadDiscountTypes = async () => {
-    try {
-      const data = await discountServices.getDiscountTypes();
+  const loadDiscountTypes = useCallback(async () => {
+  try {
+    const data = await discountServices.getDiscountTypes();
 
-      setDiscountTypes(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Unable to load discount types:", error);
+    setDiscountTypes(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Unable to load discount types:", error);
 
-      setDiscountTypes([]);
-    }
-  };
-
+    setDiscountTypes([]);
+  }
+}, []);
   // ============================================================
   // PAGE LOAD
   // ============================================================
 
   useEffect(() => {
-    loadDiscountTypes();
-  }, []);
+  loadDiscounts();
+}, [loadDiscounts]);
 
-  useEffect(() => {
-    loadDiscounts();
-  }, [statusFilter, searchTerm]);
+useEffect(() => {
+  loadDiscountTypes();
+}, [loadDiscountTypes]);
 
   // ============================================================
   // FORM
