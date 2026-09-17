@@ -206,4 +206,3 @@ export const resolveDiscountAmount = async (
   return Math.round(capped * 100) / 100;
 };
 
-
