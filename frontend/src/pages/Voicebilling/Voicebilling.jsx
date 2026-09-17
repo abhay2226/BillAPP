@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import BillSuccess from "../../components/BillSuccess";
@@ -664,6 +665,30 @@ const Billing = () => {
 
 
   const editingItem = items.find((item) => item.id === editingItemId);
+
+
+  // ==========================================================
+  // QUANTITY STEPPER (edit item popup)
+  // ==========================================================
+
+  const decrementItemQuantity = () => {
+    setItemQuantity((previousQuantity) => {
+      const currentQuantity = Number(previousQuantity) || 0;
+      const nextQuantity = currentQuantity - 1;
+
+      return nextQuantity < 1 ? 1 : nextQuantity;
+    });
+  };
+
+  const incrementItemQuantity = () => {
+    setItemQuantity((previousQuantity) => {
+      const currentQuantity = Number(previousQuantity) || 0;
+      const maxQuantity = Number(editingItem?.maxQuantity ?? Infinity);
+      const nextQuantity = currentQuantity + 1;
+
+      return nextQuantity > maxQuantity ? maxQuantity : nextQuantity;
+    });
+  };
 
 
   // ==========================================================
@@ -1441,17 +1466,43 @@ const Billing = () => {
                   Quantity
                 </label>
 
-                <input
-                  type="number"
-                  min="1"
-                  max={editingItem.maxQuantity}
-                  value={itemQuantity}
-                  onChange={(event) =>
-                    setItemQuantity(
-                      event.target.value
-                    )
-                  }
-                />
+                <div className="qty-selector">
+
+                  <button
+                    type="button"
+                    className="qty-btn"
+                    onClick={decrementItemQuantity}
+                    disabled={Number(itemQuantity) <= 1}
+                  >
+                    -
+                  </button>
+
+                  <input
+                    type="number"
+                    className="qty-input"
+                    min="1"
+                    max={editingItem.maxQuantity}
+                    value={itemQuantity}
+                    onChange={(event) =>
+                      setItemQuantity(
+                        event.target.value
+                      )
+                    }
+                  />
+
+                  <button
+                    type="button"
+                    className="qty-btn"
+                    onClick={incrementItemQuantity}
+                    disabled={
+                      Number(itemQuantity) >=
+                      Number(editingItem.maxQuantity)
+                    }
+                  >
+                    +
+                  </button>
+
+                </div>
 
               </div>
 

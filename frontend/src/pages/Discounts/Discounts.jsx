@@ -991,4 +991,3 @@ export default function Discounts() {
     </div>
   );
 }
-
