@@ -464,7 +464,8 @@ export const updateInventoryPricing = async (
                 costPrice,
                 sellingPrice,
                 req.auth.userId,
-                req.auth.storeId 
+                req.auth.storeId,
+                req.auth.sessionId
             );
         
         
@@ -635,7 +636,8 @@ export const updateInventoryQuantity = async (
                 referenceTypeCode,
                 referenceId,
                 req.auth.userId,
-                req.auth.storeId
+                req.auth.storeId,
+                req.auth.sessionId
             );
 
         if (!data) {
@@ -691,7 +693,8 @@ export const deactivateInventory = async (
             await deactivateInventoryService(
                 inventoryId,
                 req.auth.userId,
-                req.auth.storeId 
+                req.auth.storeId,
+                req.auth.sessionId
             );
 
         if (!data) {

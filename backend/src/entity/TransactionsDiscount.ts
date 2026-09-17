@@ -66,9 +66,9 @@ export class Discount{
         type: "decimal",
         precision: 12,
         scale: 2,
-        nullable: false
+        nullable: true
     })
-    max_discount_amount!: number;
+    max_discount_amount!: number | null;
 
     @Column({
         name: "discount_from",
