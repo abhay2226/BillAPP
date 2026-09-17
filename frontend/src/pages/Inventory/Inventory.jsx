@@ -48,20 +48,9 @@ function Inventory() {
 
   const rowsPerPage = 6;
 
-  /*
-  ============================================================
-  ADD NEW DROPDOWN STATES (product tab only)
-  ============================================================
-  */
 
   const [addingNewType, setAddingNewType] = useState(false);
   const [addingNewBrand, setAddingNewBrand] = useState(false);
-
-  /*
-  ============================================================
-  FORM DATA
-  ============================================================
-  */
 
   const emptyForm = {
     // product tab
@@ -131,15 +120,9 @@ function Inventory() {
 
   useEffect(() => {
     loadAll();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /*
-  ============================================================
-  HELPERS: CROSS-REFERENCE PRODUCT <-> INVENTORY
-  ============================================================
-  */
+
 
   const inventoryByProductId = useMemo(() => {
     const map = new Map();

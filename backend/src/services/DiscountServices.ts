@@ -2,6 +2,8 @@ import { AppDataSource } from "../datasource.js";
 import { Discount } from "../entity/TransactionsDiscount.js";
 import { DiscountType } from "../entity/MasterDiscountType.js";
 import { Store } from "../entity/TransactionsStore.js";
+import { getDiscountTypeById } from "./DiscountTypeServices.js";
+import { isUniqueConstraintError } from "./Errors.js";
 
 
 const discountRepo = AppDataSource.getRepository(Discount);
@@ -24,10 +26,37 @@ export interface DiscountInput {
 // CREATE DISCOUNT
 // ======================================================
 export const createDiscountService = async (data: DiscountInput, userId: number) => {
-  // ...unchanged validation above...
+  const discountName = data.discount_name?.trim();
+  if (!discountName) {
+    throw new Error("Discount name is required.");
+  }
+  if (!data.store_id) {
+    throw new Error("Store is required.");
+  }
+  if (!data.discount_type_id) {
+    throw new Error("Discount type is required.");
+  }
+
+  const discountType = await getDiscountTypeById(data.discount_type_id);
+
+  if (!Number.isFinite(data.discount_value) || data.discount_value <= 0) {
+    throw new Error("Discount value must be a positive number.");
+  }
+  if (discountType.code === "PERCENT" && data.discount_value > 100) {
+    throw new Error("Percentage discount value cannot exceed 100.");
+  }
+  if (!Number.isFinite(data.min_bill_amount) || data.min_bill_amount < 0) {
+    throw new Error("Minimum bill amount cannot be negative.");
+  }
+  if (!Number.isFinite(data.max_discount_amount) || data.max_discount_amount <= 0) {
+    throw new Error("Maximum discount amount must be a positive number.");
+  }
+  if (!data.discount_from) {
+    throw new Error("Discount start date is required.");
+  }
 
   const discount = discountRepo.create({
-    discount_name: data.discount_name,
+    discount_name: discountName,
     discount_value: data.discount_value,
     min_bill_amount: data.min_bill_amount,
     max_discount_amount: data.max_discount_amount,
@@ -42,7 +71,14 @@ export const createDiscountService = async (data: DiscountInput, userId: number)
     discount_type_id: data.discount_type_id,
   });
 
-  return await discountRepo.save(discount);
+  try {
+    return await discountRepo.save(discount);
+  } catch (err) {
+    if (isUniqueConstraintError(err)) {
+      throw new Error("A discount with this name already exists for this store.");
+    }
+    throw err;
+  }
 };
 
 // ======================================================
@@ -59,6 +95,17 @@ export const getActiveDiscountsForStoreService = async (store_id: number) => {
     .andWhere("(discount.discount_to IS NULL OR discount.discount_to >= :now)", { now })
     .orderBy("discount.discount_id", "DESC")
     .getMany();
+};
+
+// ======================================================
+// GET ALL DISCOUNTS FOR A STORE (active + inactive)
+// ======================================================
+export const getAllDiscountsForStoreService = async (store_id: number) => {
+  return await discountRepo.find({
+    where: { store_id },
+    relations: ["discountType", "store"],
+    order: { discount_id: "DESC" },
+  });
 };
 
 // ======================================================
@@ -132,14 +179,27 @@ export const updateDiscountService = async (discount_id: number, data: Partial<D
     throw new Error("Discount not found.");
   }
 
+  if (data.discount_name !== undefined) {
+    const discountName = data.discount_name.trim();
+    if (!discountName) {
+      throw new Error("Discount name is required.");
+    }
+    discount.discount_name = discountName;
+  }
+
+  if (data.discount_type_id !== undefined && data.discount_type_id !== discount.discount_type_id) {
+    discount.discountType = await getDiscountTypeById(data.discount_type_id);
+    discount.discount_type_id = data.discount_type_id;
+  }
+
   if (data.discount_value !== undefined) {
     if (!Number.isFinite(data.discount_value) || data.discount_value <= 0) {
       throw new Error("Discount value must be a positive number.");
     }
-    if (discount.discountType.code === "PERCENT" && data.discount_value > 100) {
-      throw new Error("Percentage discount value cannot exceed 100.");
-    }
     discount.discount_value = data.discount_value;
+  }
+  if (discount.discountType.code === "PERCENT" && Number(discount.discount_value) > 100) {
+    throw new Error("Percentage discount value cannot exceed 100.");
   }
   if (data.min_bill_amount !== undefined) discount.min_bill_amount = data.min_bill_amount;
   if (data.max_discount_amount !== undefined) discount.max_discount_amount = data.max_discount_amount;
@@ -149,7 +209,15 @@ export const updateDiscountService = async (discount_id: number, data: Partial<D
 
   discount.updated_at = new Date();
   discount.updated_by = userId;
-  return await discountRepo.save(discount);
+
+  try {
+    return await discountRepo.save(discount);
+  } catch (err) {
+    if (isUniqueConstraintError(err)) {
+      throw new Error("A discount with this name already exists for this store.");
+    }
+    throw err;
+  }
 };
 
 // ======================================================
