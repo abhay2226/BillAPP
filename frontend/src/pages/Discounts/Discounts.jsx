@@ -41,9 +41,14 @@ export default function Discounts() {
       setIsLoading(true);
       setErrorMessage("");
 
-      const data = await discountServices.getAllDiscounts(
-        statusFilter,
-        searchTerm
+      const data =
+      await discountServices.getAllDiscounts(statusFilter, searchTerm);
+      
+      setDiscounts(data);
+    } catch (error) {
+      console.error(
+        "Unable to load discounts:",
+        error
       );
 
       setDiscounts(Array.isArray(data) ? data : []);
@@ -81,12 +86,12 @@ export default function Discounts() {
   // ============================================================
 
   useEffect(() => {
-    loadDiscountTypes();
-  }, []);
-
-  useEffect(() => {
     loadDiscounts();
   }, [statusFilter, searchTerm]);
+
+  useEffect(() => {
+    loadDiscountTypes();
+  }, []);
 
   // ============================================================
   // FORM
@@ -241,10 +246,6 @@ export default function Discounts() {
         ? null
         : Number(formData.max_discount_amount);
 
-    // ----------------------------------------------------------
-    // VALIDATION
-    // ----------------------------------------------------------
-
     if (
       !Number.isFinite(discountValue) ||
       discountValue <= 0
@@ -263,12 +264,9 @@ export default function Discounts() {
 
     if (
       maxDiscountAmount !== null &&
-      (!Number.isFinite(maxDiscountAmount) ||
-        maxDiscountAmount <= 0)
+      (!Number.isFinite(maxDiscountAmount) || maxDiscountAmount <= 0)
     ) {
-      alert(
-        "Maximum discount amount must be greater than 0 if provided."
-      );
+      alert("Maximum discount amount must be greater than 0 if provided.");
       return;
     }
 
@@ -398,6 +396,14 @@ export default function Discounts() {
     }
   };
 
+    const discountWarning = useMemo(() => {
+    if (!selectedDiscount) return "";
+    const minBill = Number(selectedDiscount.min_bill_amount || 0);
+    if (subtotal < minBill) {
+      return `This discount needs a minimum bill of ₹${minBill.toFixed(2)} (current: ₹${subtotal.toFixed(2)}).`;
+    }
+    return "";
+  }, [selectedDiscount, subtotal]);
   // ============================================================
   // LOADING
   // ============================================================
@@ -445,35 +451,25 @@ export default function Discounts() {
           FILTERS
       ====================================================== */}
 
-      <div className="discounts-filters">
-
+</div>
+            <div className="discounts-filters">
         <select
           value={statusFilter}
-          onChange={(e) =>
-            setStatusFilter(e.target.value)
-          }
+          onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="ALL">
-            All discounts
-          </option>
-
-          <option value="ACTIVE">
-            Active
-          </option>
-
-          <option value="INACTIVE">
-            Deactivated
-          </option>
+          <option value="ALL">All discounts</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Deactivated</option>
         </select>
 
         <input
           type="text"
           placeholder="Search by name or value..."
           value={searchTerm}
-          onChange={(e) =>
-            setSearchTerm(e.target.value)
-          }
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
+      </div>
+        
 
       </div>
 
@@ -607,21 +603,12 @@ export default function Discounts() {
                   </div>
 
                   <div className="detail-row">
-
-                    <span className="detail-label">
-                      Max discount
-                    </span>
-
+                    <span className="detail-label">Max discount</span>
                     <span className="detail-value">
-
                       {discount.max_discount_amount != null
-                        ? `₹${Number(
-                            discount.max_discount_amount
-                          ).toFixed(2)}`
+                        ? `₹${Number(discount.max_discount_amount).toFixed(2)}`
                         : "No cap"}
-
                     </span>
-
                   </div>
 
                   <div className="detail-row">
@@ -811,7 +798,7 @@ export default function Discounts() {
               <div className="popup-field">
 
                 <label>
-                  Maximum discount amount (optional)
+                  Maximum discount amount(optional)
                 </label>
 
                 <input
