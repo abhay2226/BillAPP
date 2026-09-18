@@ -126,6 +126,7 @@ const Billing = () => {
       setAvailableDiscounts(discounts);
     } catch (error) {
       console.error("Unable to load discounts:", error);
+      setLoadError(error.message || "Unable to load discounts.");
       setAvailableDiscounts([]);
     }
   };
@@ -244,6 +245,21 @@ const Billing = () => {
       : rawDiscount;
 
     return Math.min(cappedByMax, subtotal);
+  }, [selectedDiscount, subtotal]);
+
+
+  const discountWarning = useMemo(() => {
+    if (!selectedDiscount) {
+      return "";
+    }
+
+    const minBill = Number(selectedDiscount.min_bill_amount || 0);
+
+    if (subtotal < minBill) {
+      return `This discount needs a minimum bill of ₹${minBill.toFixed(2)} (current: ₹${subtotal.toFixed(2)}).`;
+    }
+
+    return "";
   }, [selectedDiscount, subtotal]);
 
 
@@ -1398,6 +1414,12 @@ const Billing = () => {
 
               </select>
 
+              {discountWarning && (
+                <div className="discount-warning">
+                  {discountWarning}
+                </div>
+              )}
+
             </div>
 
 
@@ -1427,7 +1449,7 @@ const Billing = () => {
               type="button"
               className="generate-bill-button"
               onClick={generateBill}
-              disabled={isSubmittingBill}
+              disabled={isSubmittingBill || Boolean(discountWarning)}
             >
               {isSubmittingBill ? "Generating..." : "Generate Bill"}
             </button>
