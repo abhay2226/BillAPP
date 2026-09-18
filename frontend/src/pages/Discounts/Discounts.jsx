@@ -48,13 +48,13 @@ export default function Discounts() {
         searchTerm
       );
 
-      setDiscounts(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Unable to load discounts:", error);
+    setDiscounts(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Unable to load discounts:", error);
 
-      setErrorMessage(
-        error?.message || "Unable to load discounts."
-      );
+    setErrorMessage(
+      error?.message || "Unable to load discounts."
+    );
 
       setDiscounts([]);
     } finally {
@@ -378,9 +378,17 @@ export default function Discounts() {
             setStatusFilter(event.target.value)
           }
         >
-          <option value="ALL">All discounts</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Deactivated</option>
+          <option value="ALL">
+            All discounts
+          </option>
+
+          <option value="ACTIVE">
+            Active
+          </option>
+
+          <option value="INACTIVE">
+            Deactivated
+          </option>
         </select>
 
         <input

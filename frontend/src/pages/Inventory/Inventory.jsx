@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import searchIcon from "../../assets/icons/search.png";
 import leftIcon from "../../assets/icons/left.png";
@@ -17,7 +17,185 @@ import * as damageGoodsService from "../../services/damageGoodsService";
 import * as masterDataService from "../../services/masterDataService";
 
 import Discounts from "../Discounts/Discounts";
-const LOW_STOCK_THRESHOLD = 5;
+
+/*
+============================================================
+SEARCHABLE SELECT
+A small reusable combobox: click to open, type to filter,
+click an option to select. Styled inline so no CSS file
+changes are required.
+============================================================
+*/
+
+function SearchableSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+  getOptionLabel,
+  getOptionValue,
+  disabled,
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+        setQuery("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(
+    (option) =>
+      String(getOptionValue(option)) === String(value),
+  );
+
+  const filteredOptions = options.filter((option) =>
+    getOptionLabel(option)
+      .toLowerCase()
+      .includes(query.toLowerCase().trim()),
+  );
+
+  return (
+    <div
+      className="searchable-select"
+      ref={wrapperRef}
+      style={{ position: "relative", width: "100%" }}
+    >
+      <button
+        type="button"
+        onClick={() => {
+          if (disabled) return;
+          setIsOpen((previous) => !previous);
+          setQuery("");
+        }}
+        disabled={disabled}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          padding: "10px 12px",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+          background: disabled ? "#f2f2f2" : "#fff",
+          color: selectedOption ? "#111" : "#888",
+          cursor: disabled ? "not-allowed" : "pointer",
+          fontSize: "14px",
+        }}
+      >
+        {selectedOption
+          ? getOptionLabel(selectedOption)
+          : placeholder}
+      </button>
+
+      {isOpen && !disabled && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 4px)",
+            left: 0,
+            right: 0,
+            zIndex: 50,
+            background: "#fff",
+            border: "1px solid #ccc",
+            borderRadius: "6px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+            maxHeight: "260px",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Search..."
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            autoFocus
+            style={{
+              margin: "8px",
+              padding: "8px 10px",
+              borderRadius: "6px",
+              border: "1px solid #ddd",
+              fontSize: "14px",
+            }}
+          />
+
+          <div
+            style={{
+              overflowY: "auto",
+              maxHeight: "200px",
+              paddingBottom: "4px",
+            }}
+          >
+            {filteredOptions.length === 0 ? (
+              <div
+                style={{
+                  padding: "10px 12px",
+                  color: "#888",
+                  fontSize: "14px",
+                }}
+              >
+                No matches
+              </div>
+            ) : (
+              filteredOptions.map((option) => {
+                const optionValue = getOptionValue(option);
+                const isSelected =
+                  String(optionValue) === String(value);
+
+                return (
+                  <button
+                    type="button"
+                    key={optionValue}
+                    onClick={() => {
+                      onChange(optionValue);
+                      setIsOpen(false);
+                      setQuery("");
+                    }}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "8px 12px",
+                      border: "none",
+                      background: isSelected
+                        ? "#eef4ff"
+                        : "transparent",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      color: "#111",
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.background =
+                        "#f5f5f5";
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.background =
+                        isSelected ? "#eef4ff" : "transparent";
+                    }}
+                  >
+                    {getOptionLabel(option)}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Inventory() {
   const [activeTab, setActiveTab] = useState("product");
@@ -144,34 +322,49 @@ function Inventory() {
     return map;
   }, [inventory]);
 
-  const getProductStatus = (product) => {
-    const inventoryRecord = inventoryByProductId.get(product.product_id);
+  /*
+  ============================================================
+  STATUS — sourced from the backend
 
-    if (!inventoryRecord) {
-      return "Not Stocked";
-    }
+  Assumes the API sends a `status` field on the product record
+  and on the inventory record (e.g. product.status, item.status)
+  with a value like "Available" / "Low Stock" / "Out of Stock"
+  (case/format flexible — see normalizeStatus below).
 
-    if (inventoryRecord.qty <= 0) {
+  If your backend uses a different field name or different value
+  strings, update normalizeStatus / getProductStatus / getInventoryStatus
+  accordingly.
+  ============================================================
+  */
+
+  const normalizeStatus = (rawStatus) => {
+    const value = (rawStatus || "").toString().trim().toLowerCase();
+
+    if (
+      value === "out of stock" ||
+      value === "out_of_stock" ||
+      value === "outofstock"
+    ) {
       return "Out of Stock";
     }
 
-    if (inventoryRecord.qty <= LOW_STOCK_THRESHOLD) {
+    if (
+      value === "low stock" ||
+      value === "low_stock" ||
+      value === "lowstock"
+    ) {
       return "Low Stock";
     }
 
     return "Available";
   };
 
+  const getProductStatus = (product) => {
+    return normalizeStatus(product.status);
+  };
+
   const getInventoryStatus = (item) => {
-    if (item.qty <= 0) {
-      return "Out of Stock";
-    }
-
-    if (item.qty <= LOW_STOCK_THRESHOLD) {
-      return "Low Stock";
-    }
-
-    return "Available";
+    return normalizeStatus(item.status);
   };
 
   /*
@@ -689,9 +882,7 @@ function Inventory() {
       weight: product.unit_quantity,
       status: getProductStatus(product),
     }));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, inventoryByProductId]);
+  }, [products]);
 
   const displayInventory = useMemo(() => {
     return inventory.map((item) => ({
@@ -835,9 +1026,7 @@ function Inventory() {
   ).length;
 
   const outOfStock = displayProducts.filter(
-    (product) =>
-      product.status === "Out of Stock" ||
-      product.status === "Not Stocked",
+    (product) => product.status === "Out of Stock",
   ).length;
 
   let paginationText = "Showing 0 of 0";
@@ -1986,31 +2175,23 @@ function Inventory() {
                 </h2>
 
                 {editingInventoryId === null ? (
-                  <select
-                    name="productId"
+                  <SearchableSelect
+                    options={products}
                     value={formData.productId}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">
-                      Select Product
-                    </option>
-
-                    {products
-                      .filter(
-                        (product) =>
-                          !inventoryByProductId.has(
-                            product.product_id,
-                          ),
-                      )
-                      .map((product) => (
-                        <option
-                          key={product.product_id}
-                          value={product.product_id}
-                        >
-                          {product.product_name}
-                        </option>
-                      ))}
-                  </select>
+                    onChange={(newValue) =>
+                      setFormData((previous) => ({
+                        ...previous,
+                        productId: newValue,
+                      }))
+                    }
+                    placeholder="Select Product"
+                    getOptionLabel={(product) =>
+                      product.product_name
+                    }
+                    getOptionValue={(product) =>
+                      product.product_id
+                    }
+                  />
                 ) : (
                   <input
                     type="text"
@@ -2090,26 +2271,26 @@ function Inventory() {
                 </h2>
 
                 {editingDamageId === null ? (
-                  <select
-                    name="inventoryId"
+                  <SearchableSelect
+                    options={inventory}
                     value={formData.inventoryId}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">
-                      Select Product
-                    </option>
-
-                    {inventory.map((item) => (
-                      <option
-                        key={item.inventory_id}
-                        value={item.inventory_id}
-                      >
-                        {item.product?.product_name ||
-                          `Product #${item.product_id}`}{" "}
-                        ({item.qty} in stock)
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(newValue) =>
+                      setFormData((previous) => ({
+                        ...previous,
+                        inventoryId: newValue,
+                      }))
+                    }
+                    placeholder="Select Product"
+                    getOptionLabel={(item) =>
+                      `${
+                        item.product?.product_name ||
+                        `Product #${item.product_id}`
+                      } (${item.qty} in stock)`
+                    }
+                    getOptionValue={(item) =>
+                      item.inventory_id
+                    }
+                  />
                 ) : (
                   <input
                     type="text"
