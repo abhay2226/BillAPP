@@ -26,7 +26,7 @@ click an option to select. Styled inline so no CSS file
 changes are required.
 ============================================================
 */
-
+const LOW_STOCK_THRESHOLD = 5;
 function SearchableSelect({
   options,
   value,
@@ -366,6 +366,8 @@ function Inventory() {
   const getInventoryStatus = (item) => {
     return normalizeStatus(item.status);
   };
+
+  
 
   /*
   ============================================================
@@ -1017,16 +1019,16 @@ function Inventory() {
   ============================================================
   */
 
-  const itemsIn = displayProducts.filter(
-    (product) => product.status === "Available",
+  const itemsIn = inventory.filter(
+    (item) => item.qty > 5
   ).length;
-
-  const lowStock = displayProducts.filter(
-    (product) => product.status === "Low Stock",
+  
+  const lowStock = inventory.filter(
+    (item) => item.qty > 0 && item.qty <= LOW_STOCK_THRESHOLD
   ).length;
-
-  const outOfStock = displayProducts.filter(
-    (product) => product.status === "Out of Stock",
+  
+  const outOfStock = inventory.filter(
+    (item) => item.qty === 0
   ).length;
 
   let paginationText = "Showing 0 of 0";
