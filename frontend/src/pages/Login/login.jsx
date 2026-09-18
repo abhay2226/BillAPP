@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/layout/AuthContext";
 import { getSignupRoles, getSignupStores } from "../../services/authService";
 import "./Login.css";
-import StoreIcon from "../../assets/icons/store.png";
+
  
 export default function Login() {
   const navigate = useNavigate();
@@ -451,9 +451,9 @@ export default function Login() {
       ====================================================== */}
 
       <div className="auth-header-block">
-        <div className="auth-icon-badge">
+        {/* <div className="auth-icon-badge">
           <StoreIcon />
-        </div>
+        </div> */}
 
         <h1>
           {activeTab === "login"
