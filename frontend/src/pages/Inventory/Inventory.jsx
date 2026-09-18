@@ -1020,7 +1020,7 @@ function Inventory() {
   */
 
   const itemsIn = inventory.filter(
-    (item) => item.qty > 5
+    (item) => item.qty > 0
   ).length;
   
   const lowStock = inventory.filter(
