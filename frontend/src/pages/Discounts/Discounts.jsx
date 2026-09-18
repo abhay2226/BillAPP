@@ -344,6 +344,33 @@ export default function Discounts() {
   }
 
   // ======================================================
+  // GET REAL-TIME STATUS
+  // (is_active flag alone doesn't say whether the discount
+  // is actually usable right now — it could be scheduled
+  // for the future or already past its end date)
+  // ======================================================
+
+  function getDiscountStatus(discount) {
+    if (!discount.is_active) {
+      return { label: "Deactivated", className: "status-deactivated" };
+    }
+
+    const now = new Date();
+    const from = discount.discount_from ? new Date(discount.discount_from) : null;
+    const to = discount.discount_to ? new Date(discount.discount_to) : null;
+
+    if (from && from > now) {
+      return { label: "Scheduled", className: "status-scheduled" };
+    }
+
+    if (to && to < now) {
+      return { label: "Expired", className: "status-expired" };
+    }
+
+    return { label: "Active", className: "status-active" };
+  }
+
+  // ======================================================
   // RENDER
   // ======================================================
 
@@ -427,8 +454,10 @@ export default function Discounts() {
       ) : (
         <div className="discounts-grid">
 
-          {discounts.map((discount) => (
+          {discounts.map((discount) => {
+            const status = getDiscountStatus(discount);
 
+            return (
             <div
               className={`discount-card ${
                 discount.is_active
@@ -452,16 +481,8 @@ export default function Discounts() {
                   </span>
                 </div>
 
-                <span
-                  className={
-                    discount.is_active
-                      ? "active-status"
-                      : "inactive-status"
-                  }
-                >
-                  {discount.is_active
-                    ? "Active"
-                    : "Deactivated"}
+                <span className={status.className}>
+                  {status.label}
                 </span>
 
               </div>
@@ -570,8 +591,8 @@ export default function Discounts() {
               </div>
 
             </div>
-
-          ))}
+            );
+          })}
 
         </div>
       )}

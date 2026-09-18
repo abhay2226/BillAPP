@@ -310,6 +310,52 @@
 
 
 /* ============================================================
+   REAL-TIME DISCOUNT STATUS BADGES
+   (is_active flag alone doesn't say if a discount is
+   currently usable — it may be scheduled or expired)
+============================================================ */
+
+.status-active,
+.status-scheduled,
+.status-expired,
+.status-deactivated {
+  flex-shrink: 0;
+
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.25rem 0.55rem;
+
+  border-radius: 999px;
+
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.status-active {
+  background-color: #e8f7ef;
+  color: #16834d;
+}
+
+.status-scheduled {
+  background-color: #fff4e0;
+  color: #b3760a;
+}
+
+.status-expired {
+  background-color: #f0f0f0;
+  color: #777777;
+}
+
+.status-deactivated {
+  background-color: #fdecea;
+  color: #c0392b;
+}
+
+
+/* ============================================================
    DISCOUNT VALUE
 ============================================================ */
 

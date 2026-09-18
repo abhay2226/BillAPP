@@ -198,13 +198,14 @@ export const updateDiscountService = async (
                               where: {
                                   discount_id:
                                       discountId,
-      
+
                                   is_active:
                                       true
-                              }
+                              },
+                              relations: ["discountType"]
                           }
                       );
-       
+
         if (!discount) {
             return null;
         }
@@ -214,7 +215,23 @@ export const updateDiscountService = async (
         ) {
             throw new Error("STORE_MISMATCH");
         }
-      
+
+      if (data.discount_name !== undefined) {
+        const discountName = data.discount_name.trim();
+        if (!discountName) {
+          throw new Error("Discount name is required.");
+        }
+        discount.discount_name = discountName;
+      }
+
+      if (
+        data.discount_type_id !== undefined &&
+        data.discount_type_id !== discount.discount_type_id
+      ) {
+        discount.discountType = await getDiscountTypeById(data.discount_type_id);
+        discount.discount_type_id = data.discount_type_id;
+      }
+
       if (data.discount_value !== undefined) {
         if (!Number.isFinite(data.discount_value) || data.discount_value <= 0) {
           throw new Error("Discount value must be a positive number.");
@@ -351,7 +368,9 @@ export const resolveDiscountAmount = async (
       ? Math.min(raw, Number(discount.max_discount_amount))
       : raw;
 
-  return Math.round(cappedByMax * 100) / 100;
+  const capped = Math.min(cappedByMax, subtotal);
+
+  return Math.round(capped * 100) / 100;
 };
 
 
