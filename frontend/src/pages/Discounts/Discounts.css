@@ -1,20 +1,21 @@
 /* ======================================================
-   BASE & LAYOUT
+   LAYOUT & CONTAINER
    ====================================================== */
 
-discounts-page {
-  padding: 24px;
+.discounts-page {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  width: 100%;
+  padding: 24px;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  color: #1f2937;
+  color: #1e293b;
 }
 
-
-.discounts-page * {
+.discounts-page *,
+.discounts-page *::before,
+.discounts-page *::after {
   box-sizing: border-box;
 }
 
@@ -31,22 +32,22 @@ discounts-page {
 
 .discounts-header h2 {
   margin: 0;
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  color: #111827;
+  letter-spacing: 0.05em;
+  color: #0f172a;
 }
 
 .add-discount-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color:green;
+  background-color: #008f6b;
   color: #ffffff;
   border: none;
   border-radius: 6px;
   padding: 10px 18px;
-  font-size: 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
@@ -61,7 +62,7 @@ discounts-page {
 }
 
 .plus-icon {
-  font-size: 18px;
+  font-size: 1.1rem;
   line-height: 1;
 }
 
@@ -78,19 +79,27 @@ discounts-page {
 
 .discounts-filters select,
 .discounts-filters input[type="text"] {
-  height: 42px;
-  padding: 0 14px;
-  border: 1px solid #d1d5db;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 0.9rem;
   background-color: #ffffff;
+  color: #334155;
   outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .discounts-filters select {
   min-width: 160px;
   cursor: pointer;
+  border-color: #008f6b;
+  background-color: #f0fdf4;
+  color: #008f6b;
+}
+
+.discounts-filters select:hover {
+  border-color: #008f6b;
+  background-color: #dcfce7;
 }
 
 .discounts-filters input[type="text"] {
@@ -105,7 +114,7 @@ discounts-page {
 }
 
 /* ======================================================
-   FEEDBACK STATES
+   FEEDBACK STATES (ERROR, LOADING, EMPTY)
    ====================================================== */
 
 .discount-error {
@@ -114,19 +123,19 @@ discounts-page {
   color: #dc2626;
   padding: 12px 16px;
   border-radius: 6px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
 }
 
 .discount-loading,
 .discount-empty {
   text-align: center;
-  padding: 48px 0;
-  color: #6b7280;
-  font-size: 16px;
-  background: #f9fafb;
+  padding: 48px 16px;
+  background-color: #f8fafc;
+  border: 1px dashed #cbd5e1;
   border-radius: 8px;
-  border: 1px dashed #e5e7eb;
+  color: #64748b;
+  font-size: 1rem;
 }
 
 /* ======================================================
@@ -137,177 +146,149 @@ discounts-page {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
+  justify-content: center;
 }
 
 .discount-card {
   background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 20px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .discount-card:hover {
+  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.active-discount {
-  border-top: 4px solid #10b981;
+.discount-card.inactive-discount {
+  background-color: #f8fafc;
+  opacity: 0.85;
 }
 
-.inactive-discount {
-  border-top: 4px solid #9ca3af;
-  background-color: #f9fafb;
-}
-
-/* Card Header */
+/* CARD HEADER */
 
 .discount-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
 .discount-card-header h3 {
   margin: 0 0 4px 0;
-  font-size: 18px;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: #008f6b;
+  word-break: break-word;
 }
 
 .discount-type {
-  font-size: 12px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
-.active-status,
-.inactive-status {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+  display: inline-block;
+  font-size: 0.75rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #008f6b;
+  background-color: #dcfce7;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
-.active-dot {
-  width: 0.42rem;
-  height: 0.42rem;
-
-  border-radius: 50%;
-
-  background-color: #20a45a;
-}
-
-
-/* ============================================================
-   REAL-TIME DISCOUNT STATUS BADGES
-   (is_active flag alone doesn't say if a discount is
-   currently usable — it may be scheduled or expired)
-============================================================ */
+/* STATUS BADGES */
 
 .status-active,
 .status-scheduled,
 .status-expired,
-.status-deactivated {
-  flex-shrink: 0;
-
-  display: inline-flex;
-  align-items: center;
-
-  padding: 0.25rem 0.55rem;
-
-  border-radius: 999px;
-
-  font-size: 0.7rem;
+.status-deactivated,
+.active-status,
+.inactive-status {
+  font-size: 0.75rem;
   font-weight: 600;
-
+  padding: 4px 10px;
+  border-radius: 12px;
   white-space: nowrap;
 }
 
-.status-active {
-  background-color: #e8f7ef;
-  color: #16834d;
+.status-active,
+.active-status {
+  background-color: #dcfce7;
+  color: #008f6b;
 }
 
 .status-scheduled {
-  background-color: #fff4e0;
-  color: #b3760a;
+  background-color: #e0f2fe;
+  color: #008f6b;
 }
 
 .status-expired {
-  background-color: #f0f0f0;
-  color: #777777;
+  background-color: #fef3c7;
+  color: #b45309;
 }
 
-.status-deactivated {
-  background-color: #fdecea;
-  color: #c0392b;
+.status-deactivated,
+.inactive-status {
+  background-color: #f1f5f9;
+  color: #64748b;
 }
 
-
-/* ============================================================
-   DISCOUNT VALUE
-============================================================ */
-
-.discount-value-row {
-  display: flex;
-  align-items: center;
-
-  gap: 0.55rem;
-
-  margin-bottom: 0.9rem;
-}
+/* DISCOUNT VALUE DISPLAY */
 
 .discount-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: #2563eb;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
   margin-bottom: 16px;
 }
 
-/* Details List */
+/* DETAILS SECTION */
 
 .discount-details {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px 16px;
   padding: 12px 0;
-  border-top: 1px solid #f3f4f6;
-  border-bottom: 1px solid #f3f4f6;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
   margin-bottom: 12px;
 }
 
 .discount-details div {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .discount-details span {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 2px;
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .discount-details strong {
-  font-size: 13px;
-  color: #374151;
+  font-size: 0.875rem;
+  color: #334155;
   font-weight: 600;
 }
 
+/* DESCRIPTION */
+
 .discount-description {
-  font-size: 13px;
-  color: #4b5563;
+  font-size: 0.85rem;
+  color: #64748b;
   margin: 0 0 16px 0;
   line-height: 1.4;
+  word-break: break-word;
 }
 
-/* Actions */
+/* CARD ACTIONS */
 
 .discount-actions {
   display: flex;
@@ -320,47 +301,50 @@ discounts-page {
 .activate-discount-button,
 .deactivate-discount-button {
   flex: 1;
-  height: 36px;
+  padding: 8px 12px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .edit-discount-button {
-  background-color: #ffffff;
-  border-color: #d1d5db;
-  color: #374151;
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #008f6b;
 }
 
 .edit-discount-button:hover {
-  background-color: #f3f4f6;
+  background-color: #dcfce7;
+  border-color: #008f6b;
+}
+
+.activate-discount-button {
+  background-color: #008f6b;
+  border-color: #008f6b;
+  color: #ffffff;
+}
+
+.activate-discount-button:hover {
+  background-color: #007558;
+  border-color: #007558;
 }
 
 .deactivate-discount-button {
   background-color: #fef2f2;
   border-color: #fecaca;
-  color: #dc2626;
+  color: #991b1b;
 }
 
 .deactivate-discount-button:hover {
   background-color: #fee2e2;
-}
-
-.activate-discount-button {
-  background-color: #ecfdf5;
-  border-color: #a7f3d0;
-  color: #059669;
-}
-
-.activate-discount-button:hover {
-  background-color: #d1fae5;
+  border-color: #fca5a5;
 }
 
 /* ======================================================
-   MODAL / POPUP FORM
+   MODAL OVERLAY & POPUP
    ====================================================== */
 
 .discount-modal-overlay {
@@ -369,12 +353,13 @@ discounts-page {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(15, 23, 42, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
   padding: 16px;
+  backdrop-filter: blur(2px);
 }
 
 .discount-modal {
@@ -386,6 +371,8 @@ discounts-page {
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
 }
 
 .discount-modal-header {
@@ -393,31 +380,32 @@ discounts-page {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .discount-modal-header h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #0f172a;
 }
 
 .close-modal-button {
   background: none;
   border: none;
-  font-size: 24px;
-  color: #9ca3af;
+  font-size: 1.5rem;
+  color: #94a3b8;
   cursor: pointer;
-  line-height: 1;
   padding: 0;
+  line-height: 1;
+  transition: color 0.2s ease;
 }
 
 .close-modal-button:hover {
-  color: #374151;
+  color: #008f6b;
 }
 
-/* Form Styling */
+/* FORM STYLES */
 
 .discount-modal form {
   padding: 24px;
@@ -426,29 +414,63 @@ discounts-page {
   gap: 16px;
 }
 
+/* ======================================================
+   FORM GROUP STYLES (GREEN THEME)
+   ====================================================== */
+
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
+/* Label styling */
 .form-group label {
-  font-size: 13px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #374151;
+  color: #166534; /* Dark green label */
 }
 
+/* Base input, select, and textarea styles */
 .form-group input,
 .form-group select,
 .form-group textarea {
-  width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #bbf7d0; /* Soft green border */
   border-radius: 6px;
-  font-size: 14px;
-  outline: none;
+  font-size: 0.9rem;
+  color: #0f172a;
   background-color: #ffffff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+/* Dropdown select custom styling */
+.form-group select {
+  cursor: pointer;
+  background-color: #f0fdf4; /* Very light green tint */
+  color: #166534;
+}
+
+.form-group select:hover {
+  background-color: #dcfce7;
+  border-color: #86efac;
+}
+
+/* Hover state for text inputs & textareas */
+.form-group input[type="text"]:hover,
+.form-group textarea:hover {
+  border-color: #86efac;
+}
+
+/* Focus ring for all form fields */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #16a34a; /* Medium green focus border */
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); /* Soft green glow */
+  background-color: #ffffff;
 }
 
 .form-group textarea {
@@ -468,31 +490,31 @@ discounts-page {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 12px;
   padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #e2e8f0;
 }
 
 .cancel-discount-button,
 .save-discount-button {
-  height: 40px;
-  padding: 0 16px;
+  padding: 10px 18px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .cancel-discount-button {
-  background-color: #ffffff;
-  border-color: #d1d5db;
-  color: #374151;
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #008f6b;
 }
 
 .cancel-discount-button:hover {
-  background-color: #f3f4f6;
+  background-color: #dcfce7;
+  border-color: #008f6b;
 }
 
 .save-discount-button {
@@ -504,11 +526,20 @@ discounts-page {
   background-color: #0b5843;
 }
 
-/* Responsive Overrides */
+/* ======================================================
+   RESPONSIVE ADJUSTMENTS
+   ====================================================== */
 
 @media (max-width: 640px) {
-  .discounts-page {
-    padding: 16px;
+  .discounts-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .add-discount-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .discounts-filters {

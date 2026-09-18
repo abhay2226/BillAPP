@@ -3,19 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/layout/AuthContext";
 import { getSignupRoles, getSignupStores } from "../../services/authService";
 import "./Login.css";
-
-const StoreIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    width="32"
-    height="32"
-    fill="currentColor"
-  >
-    <path d="M3 3h18l-1.5 6H4.5L3 3zm1.5 8h15l-1 8.5c-.06.5-.5.9-1 .9H6.5c-.5 0-.94-.4-1-.9L4.5 11zm3 2v5h2v-5h-2zm4 0v5h2v-5h-2z" />
-  </svg>
-);
-
+import StoreIcon from "../../assets/icons/store.png";
+ 
 export default function Login() {
   const navigate = useNavigate();
 
