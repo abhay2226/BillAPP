@@ -146,7 +146,7 @@
 }
 
 .auth-tab.active {
-  background: #1f7a3d;
+  background:#0b8a6a;
   color: #ffffff;
 }
 
@@ -222,7 +222,7 @@
 
 .auth-input-wrap input:focus,
 .auth-input-wrap select:focus {
-  border-color: #1f7a3d;
+  border-color: #0b8a6a;
   background: #ffffff;
 }
 
@@ -307,7 +307,7 @@
 }
 
 .auth-checkbox-row input {
-  accent-color: #1f7a3d;
+  accent-color: #0b8a6a;
 
   cursor: pointer;
 }
@@ -319,7 +319,7 @@
 
   background: transparent;
 
-  color: #1f7a3d;
+  color: #0b8a6a;
 
   font-size: 13px;
   font-weight: 500;
@@ -360,7 +360,7 @@
 .auth-feedback.success {
   background: #eaf6ec;
 
-  color: #1e7a34;
+  color: #0b8a6a;
 
   border: 1px solid #c9e9cd;
 }
@@ -384,7 +384,7 @@
 
   border-radius: 9px;
 
-  background: #1f7a3d;
+  background: #0b8a6a;
 
   color: #ffffff;
 
@@ -399,7 +399,7 @@
 }
 
 .auth-submit:hover:not(:disabled) {
-  background: #185f30;
+  background: #0b8a6a;
 }
 
 .auth-submit:disabled {
@@ -594,7 +594,7 @@
 }
 
 .popup-input-wrap input:focus {
-  border-color: #1f7a3d;
+  border-color: #0b8a6a;
 
   background: #ffffff;
 }
@@ -696,7 +696,7 @@
 }
 
 .store-search-results button:hover:not(:disabled) {
-  border-color: #1f7a3d;
+  border-color: #0b8a6a;
 
   background: #f7fdf8;
 }
@@ -722,7 +722,7 @@
 
   background: #f0faf7;
 
-  border: 1px solid #1f7a3d;
+  border: 1px solid #0b8a6a;
 
   color: #14321c;
 }
@@ -800,7 +800,7 @@
 .popup-create-button {
   border: none;
 
-  background: #1f7a3d;
+  background: #0b8a6a;
 
   color: #ffffff;
 }
