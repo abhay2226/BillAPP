@@ -4,6 +4,7 @@ import dashboardIcon from "../../assets/icons/dashboard.png";
 import boxIcon from "../../assets/icons/box.png";
 import billIcon from "../../assets/icons/bill.png";
 import userIcon from "../../assets/icons/user.png";
+import historyIcon from "../../assets/icons/history.png";
 
 function Sidebar({ isOpen , onProfileClick}) {
   const routes = [
@@ -35,7 +36,7 @@ function Sidebar({ isOpen , onProfileClick}) {
         id: 5,
         path: "/billhistory",
         label: "Bill History",
-        icon: boxIcon,
+        icon: historyIcon,
       },
   ];
 

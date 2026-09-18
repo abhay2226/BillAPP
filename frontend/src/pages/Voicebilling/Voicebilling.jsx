@@ -32,9 +32,7 @@ const getDiscountTypeName = (discount) => {
     return "";
   }
 
-  if (
-    typeof discount.discount_type === "string"
-  ) {
+  if (typeof discount.discount_type === "string") {
     return discount.discount_type;
   }
 
@@ -59,7 +57,9 @@ const getDiscountTypeName = (discount) => {
 const isPercentageDiscountType = (discount) => {
   const typeValue = String(
     getDiscountTypeName(discount)
-  ).toLowerCase().trim();
+  )
+    .toLowerCase()
+    .trim();
 
   return (
     typeValue.includes("percent") ||
@@ -259,50 +259,51 @@ const Billing = () => {
   const loadDiscounts = async () => {
     try {
       const response =
-        await discountService.getActiveDiscounts();
+        await discountService.getAllDiscounts(
+          "ACTIVE",
+          ""
+        );
 
       let discounts = [];
 
       if (Array.isArray(response)) {
         discounts = response;
-      } else if (
-        Array.isArray(response?.data)
-      ) {
+      } else if (Array.isArray(response?.data)) {
         discounts = response.data;
-      } else if (
-        Array.isArray(response?.discounts)
-      ) {
+      } else if (Array.isArray(response?.discounts)) {
         discounts = response.discounts;
       } else if (
         Array.isArray(response?.data?.discounts)
       ) {
-        discounts =
-          response.data.discounts;
+        discounts = response.data.discounts;
       }
 
       const now = new Date();
 
-      const activeDiscounts =
-        discounts.filter((discount) => {
+      const activeDiscounts = discounts.filter(
+        (discount) => {
           if (!discount) {
             return false;
           }
 
           if (
             discount.is_active === false ||
-            discount.is_active === 0
+            discount.is_active === 0 ||
+            discount.is_active === "0"
           ) {
             return false;
           }
 
           const fromDate =
-            discount.valid_from ||
-            discount.from_date ||
+            discount.discount_from ??
+            discount.valid_from ??
+            discount.from_date ??
             discount.from;
 
           const toDate =
-            discount.valid_to ||
-            discount.to_date ||
+            discount.discount_to ??
+            discount.valid_to ??
+            discount.to_date ??
             discount.to;
 
           if (fromDate) {
@@ -334,7 +335,8 @@ const Billing = () => {
           }
 
           return true;
-        });
+        }
+      );
 
       setAvailableDiscounts(
         activeDiscounts
@@ -482,7 +484,8 @@ const Billing = () => {
 
   const selectedDiscount = useMemo(() => {
     if (
-      selectedDiscountId === "none"
+      selectedDiscountId === "none" ||
+      !selectedDiscountId
     ) {
       return null;
     }
@@ -552,15 +555,13 @@ const Billing = () => {
   // ==========================================================
 
   const discountAmount = useMemo(() => {
-    if (!selectedDiscount) {
+    if (
+      !selectedDiscount ||
+      subtotal <= 0
+    ) {
       return 0;
     }
 
-    if (subtotal <= 0) {
-      return 0;
-    }
-
-    // Discount applies only after minimum bill amount
     if (
       subtotal <
       selectedDiscountMinimum
@@ -568,33 +569,29 @@ const Billing = () => {
       return 0;
     }
 
-    let rawDiscount = 0;
+    let calculatedDiscount = 0;
 
     if (isPercentageDiscount) {
-      rawDiscount =
+      calculatedDiscount =
         (subtotal *
           selectedDiscountValue) /
         100;
     } else {
-      rawDiscount =
+      calculatedDiscount =
         selectedDiscountValue;
     }
 
-    // Prevent negative discount
-    rawDiscount =
-      Math.max(
-        0,
-        rawDiscount
-      );
+    calculatedDiscount = Math.max(
+      0,
+      calculatedDiscount
+    );
 
-    // Apply maximum discount limit
     if (
-      selectedDiscountMaximum !==
-      null
+      selectedDiscountMaximum !== null
     ) {
-      rawDiscount =
+      calculatedDiscount =
         Math.min(
-          rawDiscount,
+          calculatedDiscount,
           Math.max(
             0,
             selectedDiscountMaximum
@@ -602,11 +599,14 @@ const Billing = () => {
         );
     }
 
-    // Discount cannot exceed subtotal
-    return Math.min(
-      rawDiscount,
+    calculatedDiscount = Math.min(
+      calculatedDiscount,
       subtotal
     );
+
+    return Math.round(
+      calculatedDiscount * 100
+    ) / 100;
   }, [
     selectedDiscount,
     subtotal,
@@ -635,11 +635,10 @@ const Billing = () => {
   // ==========================================================
 
   const gst = useMemo(() => {
-    return (
-      (taxableAmount *
-        GST_RATE) /
-      100
-    );
+    return Math.round(
+      ((taxableAmount * GST_RATE) / 100) *
+        100
+    ) / 100;
   }, [taxableAmount]);
 
   // ==========================================================
@@ -647,10 +646,12 @@ const Billing = () => {
   // ==========================================================
 
   const grandTotal = useMemo(() => {
-    return Math.max(
-      0,
-      taxableAmount + gst
-    );
+    return Math.round(
+      Math.max(
+        0,
+        taxableAmount + gst
+      ) * 100
+    ) / 100;
   }, [
     taxableAmount,
     gst,
@@ -663,8 +664,8 @@ const Billing = () => {
   const getItemDiscount = (item) => {
     if (
       !selectedDiscount ||
-      subtotal <= 0 ||
-      discountAmount <= 0
+      discountAmount <= 0 ||
+      subtotal <= 0
     ) {
       return 0;
     }
@@ -672,11 +673,20 @@ const Billing = () => {
     const itemTotal =
       Number(item.total || 0);
 
-    return Math.min(
-      itemTotal,
+    if (itemTotal <= 0) {
+      return 0;
+    }
+
+    const itemDiscount =
       discountAmount *
-        (itemTotal / subtotal)
-    );
+      (itemTotal / subtotal);
+
+    return Math.round(
+      Math.min(
+        itemTotal,
+        itemDiscount
+      ) * 100
+    ) / 100;
   };
 
   // ==========================================================
@@ -2100,6 +2110,10 @@ const Billing = () => {
                   </th>
 
                   <th>
+                    Final
+                  </th>
+
+                  <th>
                     Actions
                   </th>
 
@@ -2114,6 +2128,9 @@ const Billing = () => {
 
                     const itemDiscount =
                       getItemDiscount(item);
+
+                    const itemFinalTotal =
+                      getItemFinalTotal(item);
 
                     return (
                       <tr key={item.id}>
@@ -2215,6 +2232,11 @@ const Billing = () => {
                         </td>
 
                         <td>
+                          ₹
+                          {itemFinalTotal.toFixed(2)}
+                        </td>
+
+                        <td>
 
                           <div className="bill-item-actions">
 
@@ -2257,7 +2279,7 @@ const Billing = () => {
                   <tr>
 
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="bill-empty-row"
                     >
                       No items added to the bill.
