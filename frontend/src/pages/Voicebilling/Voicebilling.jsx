@@ -208,6 +208,9 @@ const Billing = () => {
   const [availableDiscounts, setAvailableDiscounts] =
     useState([]);
 
+  const [discountNotice, setDiscountNotice] =
+    useState("");
+
   const [selectedDiscountId, setSelectedDiscountId] =
     useState("none");
 
@@ -257,6 +260,8 @@ const Billing = () => {
   // ==========================================================
 
   const loadDiscounts = async () => {
+    setDiscountNotice("");
+
     try {
       const response =
         await discountService.getAllDiscounts(
@@ -279,6 +284,9 @@ const Billing = () => {
       }
 
       const now = new Date();
+
+      const notStartedNames = [];
+      const expiredNames = [];
 
       const activeDiscounts = discounts.filter(
         (discount) => {
@@ -316,6 +324,9 @@ const Billing = () => {
               ) &&
               now < startDate
             ) {
+              notStartedNames.push(
+                discount.discount_name || "Discount"
+              );
               return false;
             }
           }
@@ -330,6 +341,9 @@ const Billing = () => {
               ) &&
               now > endDate
             ) {
+              expiredNames.push(
+                discount.discount_name || "Discount"
+              );
               return false;
             }
           }
@@ -341,10 +355,30 @@ const Billing = () => {
       setAvailableDiscounts(
         activeDiscounts
       );
+
+      if (activeDiscounts.length === 0) {
+        if (notStartedNames.length > 0) {
+          setDiscountNotice(
+            `${notStartedNames.join(", ")} ${
+              notStartedNames.length === 1 ? "hasn't" : "haven't"
+            } started yet, so it can't be applied.`
+          );
+        } else if (expiredNames.length > 0) {
+          setDiscountNotice(
+            `${expiredNames.join(", ")} ${
+              expiredNames.length === 1 ? "has" : "have"
+            } expired.`
+          );
+        }
+      }
     } catch (error) {
       console.error(
         "Unable to load discounts:",
         error
+      );
+
+      setDiscountNotice(
+        error.message || "Unable to load discounts."
       );
 
       setAvailableDiscounts([]);
@@ -2575,6 +2609,12 @@ const Billing = () => {
                 )}
 
               </select>
+
+              {!selectedDiscount && discountNotice && (
+                <div className="discount-notice">
+                  {discountNotice}
+                </div>
+              )}
 
               {selectedDiscount && (
                 <div className="selected-discount-info">
