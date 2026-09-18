@@ -54,7 +54,7 @@
 }
 
 .add-discount-button:hover {
-  background-color: #007558;
+  background-color: #0a6754;
 }
 
 .add-discount-button:active {
@@ -109,8 +109,8 @@
 
 .discounts-filters select:focus,
 .discounts-filters input[type="text"]:focus {
-  border-color: #008f6b;
-  box-shadow: 0 0 0 3px rgba(0, 143, 107, 0.2);
+  border-color: #0b5d46;
+  box-shadow: 0 0 0 3px rgba(7, 86, 72, 0.15);
 }
 
 /* ======================================================
@@ -477,7 +477,14 @@
   resize: vertical;
 }
 
-/* FORM ACTIONS */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #08775d;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Form Actions */
 
 .discount-form-actions {
   display: flex;
@@ -511,12 +518,12 @@
 }
 
 .save-discount-button {
-  background-color: #008f6b;
+  background-color: #0b5843;
   color: #ffffff;
 }
 
 .save-discount-button:hover {
-  background-color: #007558;
+  background-color: #0b5843;
 }
 
 /* ======================================================

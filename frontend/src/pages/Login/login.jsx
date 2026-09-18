@@ -587,7 +587,7 @@ export default function Login() {
               }
               disabled={isLoading}
             >
-              {showPassword ? "$" : "S"}
+              {showPassword ? " " : " "}
             </button>
           </div>
 
@@ -629,17 +629,9 @@ export default function Login() {
 
           {activeTab === "login" && (
             <div className="auth-label-row">
-              <label className="auth-checkbox-row">
-                <input type="checkbox" />
-                <span>Remember me</span>
-              </label>
+              
 
-              <button
-                type="button"
-                className="auth-forgot-link"
-              >
-                Forgot password?
-              </button>
+              
             </div>
           )}
 

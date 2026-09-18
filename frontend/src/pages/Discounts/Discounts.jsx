@@ -330,8 +330,8 @@ export default function Discounts() {
   // ======================================================
 
   function getDiscountTypeName(discount) {
-    if (discount.discount_type_name) {
-      return discount.discount_type_name;
+    if (discount.discountType?.code) {
+      return discount.discountType.code;
     }
 
     const type = discountTypes.find(
@@ -340,7 +340,7 @@ export default function Discounts() {
         Number(discount.discount_type_id)
     );
 
-    return type?.type_name || type?.discount_type_name || "Discount";
+    return type?.code || type?.description || "Discount";
   }
 
   // ======================================================
@@ -669,8 +669,10 @@ export default function Discounts() {
                       key={type.discount_type_id}
                       value={type.discount_type_id}
                     >
-                      {type.type_name ||
-                        type.discount_type_name}
+                      {type.code}
+                      {type.description
+                        ? ` - ${type.description}`
+                        : ""}
                     </option>
 
                   ))}
