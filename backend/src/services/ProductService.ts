@@ -3,6 +3,7 @@ import { Product } from "../entity/TransactionsProduct.js";
 import { Type } from "../entity/MasterProductType.js";
 import { Brand } from "../entity/MasterProductBrand.js";
 import {Inventory} from "../entity/TransactionsInventory.js"
+import {DamagedGoods} from "../entity/TransactionsDamagedGoods.js"
 
 import { createAuditRecordService } from "./AuditServices.js";
 
@@ -1204,7 +1205,7 @@ export const deleteProductService = async (
                         clientIpAddress
                 }
             );
-                        // ==============================================
+            // ==============================================
             // DEACTIVATE LINKED INVENTORY
             // ==============================================
 
@@ -1224,6 +1225,67 @@ export const deleteProductService = async (
 
             if (linkedInventory) {
 
+                // ==========================================
+                // CASCADE: DEACTIVATE LINKED DAMAGED GOODS
+                // ==========================================
+
+                const activeDamagedGoods =
+                    await manager.find(
+                        DamagedGoods,
+                        {
+                            where: {
+                                inventory_id:
+                                    linkedInventory.inventory_id,
+
+                                is_active:
+                                    true
+                            }
+                        }
+                    );
+
+                for (const damage of activeDamagedGoods) {
+
+                    damage.is_active =
+                        false;
+
+                    damage.updated_at =
+                        new Date();
+
+                    damage.updated_by =
+                        actingUserId;
+
+                    await manager.save(
+                        DamagedGoods,
+                        damage
+                    );
+
+                    await createAuditRecordService(
+                        manager,
+                        {
+                            tableName:
+                                "transactions_damaged_goods",
+
+                            recordId:
+                                damage.damage_id,
+
+                            actionTypeName:
+                                "DELETE",
+
+                            userId:
+                                actingUserId,
+
+                            storeId:
+                                deletedProduct.store_id,
+
+                            sessionId:
+                                actingSessionId,
+
+                            ipAddress:
+                                clientIpAddress
+                        }
+                    );
+                }
+
                 linkedInventory.is_active =
                     false;
 
@@ -1236,6 +1298,32 @@ export const deleteProductService = async (
                 await manager.save(
                     Inventory,
                     linkedInventory
+                );
+
+                await createAuditRecordService(
+                    manager,
+                    {
+                        tableName:
+                            "transactions_inventory",
+
+                        recordId:
+                            linkedInventory.inventory_id,
+
+                        actionTypeName:
+                            "DELETE",
+
+                        userId:
+                            actingUserId,
+
+                        storeId:
+                            deletedProduct.store_id,
+
+                        sessionId:
+                            actingSessionId,
+
+                        ipAddress:
+                            clientIpAddress
+                    }
                 );
             }
 

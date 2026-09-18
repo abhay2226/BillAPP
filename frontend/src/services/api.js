@@ -69,6 +69,20 @@ export async function apiRequest(path, { method = "GET", body, params } = {}) {
     result = null;
   }
 
+  if (response.status === 401) {
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+
+    if (!window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login?expired=1";
+    }
+
+    throw new Error(
+      (result && (result.message || result.error)) ||
+        "Your session has expired. Please log in again."
+    );
+  }
+
   if (!response.ok || (result && result.success === false)) {
     const message =
       (result && (result.message || result.error)) ||
