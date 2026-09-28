@@ -1016,20 +1016,77 @@ function Inventory() {
   /*
   ============================================================
   CARDS
+
   ============================================================
   */
+  const productsInStock = products.filter((product) => {
+    const linkedInventory = inventoryByProductId.get(
+      product.product_id
+    );
+    return linkedInventory && linkedInventory.qty > 0;
+  }).length;
+
+  const productsLowStock = products.filter((product) => {
+    const linkedInventory = inventoryByProductId.get(
+      product.product_id
+    );
+    return (
+      linkedInventory &&
+      linkedInventory.qty > 0 &&
+      linkedInventory.qty <= LOW_STOCK_THRESHOLD
+    );
+  }).length;
+
+  const productsOutOfStock = products.filter((product) => {
+    const linkedInventory = inventoryByProductId.get(
+      product.product_id
+    );
+    return !linkedInventory || linkedInventory.qty === 0;
+  }).length;
+
+  // inventory
 
   const itemsIn = inventory.filter(
     (item) => item.qty > 0
   ).length;
-  
+
   const lowStock = inventory.filter(
     (item) => item.qty > 0 && item.qty <= LOW_STOCK_THRESHOLD
   ).length;
-  
+
   const outOfStock = inventory.filter(
     (item) => item.qty === 0
   ).length;
+
+  // damaged goods
+  const damageQtyTotal = damageGoods.reduce(
+    (sum, item) => sum + Number(item.qty || 0),
+    0
+  );
+
+  const damageLossValueTotal = damageGoods.reduce(
+    (sum, item) => sum + Number(item.loss_value || 0),
+    0
+  );
+
+  const cardStats =
+    activeTab === "product"
+      ? [
+          { label: "In Stock", value: String(productsInStock).padStart(2, "0") },
+          { label: "Low Stock", value: String(productsLowStock).padStart(2, "0") },
+          { label: "Out of Stock", value: String(productsOutOfStock).padStart(2, "0") },
+        ]
+      : activeTab === "inventory"
+        ? [
+            { label: "Items IN", value: String(itemsIn).padStart(2, "0") },
+            { label: "Low Stock", value: String(lowStock).padStart(2, "0") },
+            { label: "Out of Stock", value: String(outOfStock).padStart(2, "0") },
+          ]
+        : [
+            { label: "Write-Offs", value: String(damageGoods.length).padStart(2, "0") },
+            { label: "Qty Damaged", value: String(damageQtyTotal).padStart(2, "0") },
+            { label: "Loss Value", value: `₹${damageLossValueTotal.toFixed(2)}` },
+          ];
 
   let paginationText = "Showing 0 of 0";
 
@@ -1204,36 +1261,21 @@ function Inventory() {
                 </div>
 
                 <div className="card_section">
-                  <div className="card_box">
-                    <div className="card_box_header">
-                      Items IN
-                    </div>
+                  {cardStats.map((card) => (
+                    <div className="card_box" key={card.label}>
+                      <div className="card_box_header">
+                        {card.label}
+                      </div>
 
-                    <div className="card_box_count">
-                      {String(itemsIn).padStart(2, "0")}
+                      <div className="card_box_count">
+                        {card.value}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="card_box">
-                    <div className="card_box_header">
-                      Low Stock
-                    </div>
-
-                    <div className="card_box_count">
-                      {String(lowStock).padStart(2, "0")}
-                    </div>
-                  </div>
-
-                  <div className="card_box">
-                    <div className="card_box_header">
-                      Out of Stock
-                    </div>
-
-                    <div className="card_box_count">
-                      {String(outOfStock).padStart(2, "0")}
-                    </div>
-                  </div>
+                  ))}
                 </div>
+
+
+                
               </div>
 
               {/* ==================================================
