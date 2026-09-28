@@ -80,7 +80,7 @@
 .discounts-filters select,
 .discounts-filters input[type="text"] {
   padding: 10px 14px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #8bf3d4;
   border-radius: 6px;
   font-size: 0.9rem;
   background-color: #ffffff;
@@ -92,14 +92,14 @@
 .discounts-filters select {
   min-width: 160px;
   cursor: pointer;
-  border-color: #008f6b;
-  background-color: #f0fdf4;
-  color: #008f6b;
+  border-color: #ffffff;
+  background-color: #ffffff;
+  /* color: green; */
 }
 
 .discounts-filters select:hover {
   border-color: #008f6b;
-  background-color: #dcfce7;
+  background-color: #ffffff;
 }
 
 .discounts-filters input[type="text"] {
@@ -455,7 +455,7 @@
 
 .form-group select:hover {
   background-color: #dcfce7;
-  border-color: #86efac;
+  border-color: #dcfce7;
 }
 
 /* Hover state for text inputs & textareas */

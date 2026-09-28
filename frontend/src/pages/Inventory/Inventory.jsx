@@ -1016,20 +1016,51 @@ function Inventory() {
   /*
   ============================================================
   CARDS
+  Product tab   -> status from the PRODUCT table
+  Inventory tab -> status from the INVENTORY table
+  Damage tab    -> only how many damage items
   ============================================================
   */
 
-  const itemsIn = inventory.filter(
-    (item) => item.qty > 0
-  ).length;
-  
-  const lowStock = inventory.filter(
-    (item) => item.qty > 0 && item.qty <= LOW_STOCK_THRESHOLD
-  ).length;
-  
-  const outOfStock = inventory.filter(
-    (item) => item.qty === 0
-  ).length;
+  const countByStatus = (list, getStatus) => {
+    let available = 0;
+    let low = 0;
+    let out = 0;
+
+    list.forEach((entry) => {
+      const status = getStatus(entry);
+
+      if (status === "Available") available += 1;
+      else if (status === "Low Stock") low += 1;
+      else if (status === "Out of Stock") out += 1;
+    });
+
+    return { available, low, out };
+  };
+
+  let cards = [];
+
+  if (activeTab === "product") {
+    const counts = countByStatus(products, getProductStatus);
+
+    cards = [
+      { label: "Items IN", count: counts.available },
+      { label: "Low Stock", count: counts.low },
+      { label: "Out of Stock", count: counts.out },
+    ];
+  } else if (activeTab === "inventory") {
+    const counts = countByStatus(inventory, getInventoryStatus);
+
+    cards = [
+      { label: "Items IN", count: counts.available },
+      { label: "Low Stock", count: counts.low },
+      { label: "Out of Stock", count: counts.out },
+    ];
+  } else if (activeTab === "damage") {
+    cards = [
+      { label: "Damage Items", count: damageGoods.length },
+    ];
+  }
 
   let paginationText = "Showing 0 of 0";
 
@@ -1204,35 +1235,20 @@ function Inventory() {
                 </div>
 
                 <div className="card_section">
-                  <div className="card_box">
-                    <div className="card_box_header">
-                      Items IN
-                    </div>
+                  {cards.map((card) => (
+                    <div
+                      className="card_box"
+                      key={card.label}
+                    >
+                      <div className="card_box_header">
+                        {card.label}
+                      </div>
 
-                    <div className="card_box_count">
-                      {String(itemsIn).padStart(2, "0")}
+                      <div className="card_box_count">
+                        {String(card.count).padStart(2, "0")}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="card_box">
-                    <div className="card_box_header">
-                      Low Stock
-                    </div>
-
-                    <div className="card_box_count">
-                      {String(lowStock).padStart(2, "0")}
-                    </div>
-                  </div>
-
-                  <div className="card_box">
-                    <div className="card_box_header">
-                      Out of Stock
-                    </div>
-
-                    <div className="card_box_count">
-                      {String(outOfStock).padStart(2, "0")}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
