@@ -31,25 +31,7 @@ export async function login({ email, password }) {
  *
  * CREATE NEW STORE:
  *
- * {
- *   firstname,
- *   lastname,
- *   email,
- *   password,
- *   store_name,
- *   gst_no,
- *   location
- * }
  *
- * JOIN EXISTING STORE:
- *
- * {
- *   firstname,
- *   lastname,
- *   email,
- *   password,
- *   store_id
- * }
  */
 export async function signup({
   firstname,

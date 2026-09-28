@@ -95,8 +95,7 @@ export function AuthProvider({ children }) {
         setUser(createdUser);
         setToken(authToken);
 
-        // Backend signup also returns a JWT,
-        // so the user is immediately authenticated.
+
         sessionStorage.setItem(
           "user",
           JSON.stringify(createdUser)
