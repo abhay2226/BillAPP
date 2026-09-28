@@ -1016,51 +1016,77 @@ function Inventory() {
   /*
   ============================================================
   CARDS
-  Product tab   -> status from the PRODUCT table
-  Inventory tab -> status from the INVENTORY table
-  Damage tab    -> only how many damage items
+
   ============================================================
   */
+  const productsInStock = products.filter((product) => {
+    const linkedInventory = inventoryByProductId.get(
+      product.product_id
+    );
+    return linkedInventory && linkedInventory.qty > 0;
+  }).length;
 
-  const countByStatus = (list, getStatus) => {
-    let available = 0;
-    let low = 0;
-    let out = 0;
+  const productsLowStock = products.filter((product) => {
+    const linkedInventory = inventoryByProductId.get(
+      product.product_id
+    );
+    return (
+      linkedInventory &&
+      linkedInventory.qty > 0 &&
+      linkedInventory.qty <= LOW_STOCK_THRESHOLD
+    );
+  }).length;
 
-    list.forEach((entry) => {
-      const status = getStatus(entry);
+  const productsOutOfStock = products.filter((product) => {
+    const linkedInventory = inventoryByProductId.get(
+      product.product_id
+    );
+    return !linkedInventory || linkedInventory.qty === 0;
+  }).length;
 
-      if (status === "Available") available += 1;
-      else if (status === "Low Stock") low += 1;
-      else if (status === "Out of Stock") out += 1;
-    });
+  // inventory
 
-    return { available, low, out };
-  };
+  const itemsIn = inventory.filter(
+    (item) => item.qty > 0
+  ).length;
 
-  let cards = [];
+  const lowStock = inventory.filter(
+    (item) => item.qty > 0 && item.qty <= LOW_STOCK_THRESHOLD
+  ).length;
 
-  if (activeTab === "product") {
-    const counts = countByStatus(products, getProductStatus);
+  const outOfStock = inventory.filter(
+    (item) => item.qty === 0
+  ).length;
 
-    cards = [
-      { label: "Items IN", count: counts.available },
-      { label: "Low Stock", count: counts.low },
-      { label: "Out of Stock", count: counts.out },
-    ];
-  } else if (activeTab === "inventory") {
-    const counts = countByStatus(inventory, getInventoryStatus);
+  // damaged goods
+  const damageQtyTotal = damageGoods.reduce(
+    (sum, item) => sum + Number(item.qty || 0),
+    0
+  );
 
-    cards = [
-      { label: "Items IN", count: counts.available },
-      { label: "Low Stock", count: counts.low },
-      { label: "Out of Stock", count: counts.out },
-    ];
-  } else if (activeTab === "damage") {
-    cards = [
-      { label: "Damage Items", count: damageGoods.length },
-    ];
-  }
+  const damageLossValueTotal = damageGoods.reduce(
+    (sum, item) => sum + Number(item.loss_value || 0),
+    0
+  );
+
+  const cardStats =
+    activeTab === "product"
+      ? [
+          { label: "In Stock", value: String(productsInStock).padStart(2, "0") },
+          { label: "Low Stock", value: String(productsLowStock).padStart(2, "0") },
+          { label: "Out of Stock", value: String(productsOutOfStock).padStart(2, "0") },
+        ]
+      : activeTab === "inventory"
+        ? [
+            { label: "Items IN", value: String(itemsIn).padStart(2, "0") },
+            { label: "Low Stock", value: String(lowStock).padStart(2, "0") },
+            { label: "Out of Stock", value: String(outOfStock).padStart(2, "0") },
+          ]
+        : [
+            { label: "Write-Offs", value: String(damageGoods.length).padStart(2, "0") },
+            { label: "Qty Damaged", value: String(damageQtyTotal).padStart(2, "0") },
+            { label: "Loss Value", value: `₹${damageLossValueTotal.toFixed(2)}` },
+          ];
 
   let paginationText = "Showing 0 of 0";
 
@@ -1235,21 +1261,21 @@ function Inventory() {
                 </div>
 
                 <div className="card_section">
-                  {cards.map((card) => (
-                    <div
-                      className="card_box"
-                      key={card.label}
-                    >
+                  {cardStats.map((card) => (
+                    <div className="card_box" key={card.label}>
                       <div className="card_box_header">
                         {card.label}
                       </div>
 
                       <div className="card_box_count">
-                        {String(card.count).padStart(2, "0")}
+                        {card.value}
                       </div>
                     </div>
                   ))}
                 </div>
+
+
+                
               </div>
 
               {/* ==================================================
