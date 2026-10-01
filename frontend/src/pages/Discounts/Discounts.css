@@ -8,9 +8,8 @@
   padding-top: 24px;
   padding-bottom: 24px;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  color: #0a6754;
+  font-family: var(--font-family-base);
+  color: var(--color-text);
 }
 
 .discounts-page *,
@@ -32,29 +31,29 @@
 
 .discounts-header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   letter-spacing: 0.05em;
-  color: #0a6754;
+  color: var(--color-primary);
 }
 
 .add-discount-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #008f6b;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   padding: 10px 18px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background-color var(--transition-base), transform 0.1s ease;
 }
 
 .add-discount-button:hover {
-  background-color: #0a6754;
+  background-color: var(--color-primary-hover);
 }
 
 .add-discount-button:active {
@@ -77,40 +76,100 @@
   flex-wrap: wrap;
 }
 
-.discounts-filters select,
 .discounts-filters input[type="text"] {
   padding: 10px 14px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  background-color: #ffffff;
-  color: #334155;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  background-color: var(--color-surface);
+  color: var(--color-text);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.discounts-filters select {
-  min-width: 160px;
-  cursor: pointer;
-  border-color: #008f6b;
-  background-color: #f0fdf4;
-  color: #008f6b;
-}
-
-.discounts-filters select:hover {
-  border-color: #008f6b;
-  background-color: #dcfce7;
-}
-
-.discounts-filters input[type="text"] {
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
   flex: 1;
   min-width: 240px;
 }
 
-.discounts-filters select:focus,
 .discounts-filters input[type="text"]:focus {
-  border-color: #0b5d46;
-  box-shadow: 0 0 0 3px rgba(7, 86, 72, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 143, 107, 0.15);
+}
+
+/* ======================================================
+   STATUS FILTER (custom dropdown — a native <select>'s
+   option list can't be given real padding/spacing in most
+   browsers, which is what made it look cramped)
+   ====================================================== */
+
+.status-filter {
+  position: relative;
+  min-width: 180px;
+}
+
+.status-filter-toggle {
+  width: 100%;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-primary-tint);
+  color: var(--color-primary);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.status-filter-toggle:hover {
+  background-color: var(--color-primary-tint-strong);
+}
+
+.status-filter-chevron {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.status-filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+.status-filter-option {
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.status-filter-option:hover {
+  background-color: var(--color-primary-tint);
+}
+
+.status-filter-option.active {
+  background-color: var(--color-primary-tint-strong);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* ======================================================
@@ -118,24 +177,24 @@
    ====================================================== */
 
 .discount-error {
-  background-color: #fef2f2;
+  background-color: var(--color-danger-tint);
   border: 1px solid #fecaca;
-  color: #dc2626;
+  color: var(--color-danger);
   padding: 12px 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   margin-bottom: 24px;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
 }
 
 .discount-loading,
 .discount-empty {
   text-align: center;
   padding: 48px 16px;
-  background-color: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  color: #64748b;
-  font-size: 1rem;
+  background-color: var(--color-surface-alt);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-md);
 }
 
 /* ======================================================
@@ -150,15 +209,15 @@
 }
 
 .discount-card {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .discount-card:hover {
@@ -167,7 +226,7 @@
 }
 
 .discount-card.inactive-discount {
-  background-color: #f8fafc;
+  background-color: var(--color-surface-alt);
   opacity: 0.85;
 }
 
@@ -183,20 +242,20 @@
 
 .discount-card-header h3 {
   margin: 0 0 4px 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #008f6b;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
   word-break: break-word;
 }
 
 .discount-type {
   display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #008f6b;
-  background-color: #dcfce7;
+  color: var(--color-primary);
+  background-color: var(--color-primary-tint-strong);
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -218,32 +277,34 @@
 
 .status-active,
 .active-status {
-  background-color: #dcfce7;
-  color: #008f6b;
+  background-color: var(--color-primary-tint-strong);
+  color: var(--color-primary);
 }
 
+/* Scheduled = not started yet — pending/amber, not green or blue */
 .status-scheduled {
-  background-color: #e0f2fe;
-  color: #008f6b;
+  background-color: #fff4e0;
+  color: #8a5a00;
 }
 
+/* Expired = past, inactive by time — neutral, not amber (that reads as "pending") */
 .status-expired {
-  background-color: #fef3c7;
-  color: #b45309;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-muted);
 }
 
 .status-deactivated,
 .inactive-status {
-  background-color: #f1f5f9;
-  color: #64748b;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-muted);
 }
 
 /* DISCOUNT VALUE DISPLAY */
 
 .discount-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0f172a;
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
   margin-bottom: 16px;
 }
 
@@ -254,8 +315,8 @@
   grid-template-columns: 1fr 1fr;
   gap: 12px 16px;
   padding: 12px 0;
-  border-top: 1px solid #f1f5f9;
-  border-bottom: 1px solid #f1f5f9;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: 12px;
 }
 
@@ -266,25 +327,25 @@
 }
 
 .discount-details span {
-  font-size: 0.75rem;
-  color: #64748b;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .discount-details strong {
-  font-size: 0.875rem;
-  color: #334155;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* DESCRIPTION */
 
 .discount-description {
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
   margin: 0 0 16px 0;
-  line-height: 1.4;
+  line-height: var(--line-height-base);
   word-break: break-word;
 }
 
@@ -302,40 +363,40 @@
 .deactivate-discount-button {
   flex: 1;
   padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .edit-discount-button {
-  background-color: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #008f6b;
+  background-color: var(--color-primary-tint);
+  border-color: var(--color-primary-tint-strong);
+  color: var(--color-primary);
 }
 
 .edit-discount-button:hover {
-  background-color: #dcfce7;
-  border-color: #008f6b;
+  background-color: var(--color-primary-tint-strong);
+  border-color: var(--color-primary);
 }
 
 .activate-discount-button {
-  background-color: #008f6b;
-  border-color: #008f6b;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-surface);
 }
 
 .activate-discount-button:hover {
-  background-color: #007558;
-  border-color: #007558;
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
 }
 
 .deactivate-discount-button {
-  background-color: #fef2f2;
+  background-color: var(--color-danger-tint);
   border-color: #fecaca;
-  color: #991b1b;
+  color: var(--color-danger);
 }
 
 .deactivate-discount-button:hover {
@@ -353,7 +414,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.5);
+  background-color: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -363,8 +424,8 @@
 }
 
 .discount-modal {
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
@@ -380,29 +441,29 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .discount-modal-header h2 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #0f172a;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
 }
 
 .close-modal-button {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  transition: color 0.2s ease;
+  transition: color var(--transition-base);
 }
 
 .close-modal-button:hover {
-  color: #008f6b;
+  color: var(--color-primary);
 }
 
 /* FORM STYLES */
@@ -426,9 +487,9 @@
 
 /* Label styling */
 .form-group label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #166534; /* Dark green label */
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary-strong);
 }
 
 /* Base input, select, and textarea styles */
@@ -436,52 +497,46 @@
 .form-group select,
 .form-group textarea {
   padding: 10px 12px;
-  border: 1px solid #bbf7d0; /* Soft green border */
-  border-radius: 6px;
-  font-size: 0.9rem;
-  color: #0f172a;
-  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  background-color: var(--color-surface);
   outline: none;
   font-family: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
 }
 
-/* Dropdown select custom styling */
+/* Dropdown select custom styling — light green highlight, same
+   convention as every other select in the app */
 .form-group select {
   cursor: pointer;
-  background-color: #f0fdf4; /* Very light green tint */
-  color: #166534;
+  background-color: var(--color-primary-tint);
+  color: var(--color-primary);
 }
 
 .form-group select:hover {
-  background-color: #dcfce7;
-  border-color: #86efac;
+  background-color: var(--color-primary-tint-strong);
+  border-color: var(--color-primary);
 }
 
 /* Hover state for text inputs & textareas */
 .form-group input[type="text"]:hover,
 .form-group textarea:hover {
-  border-color: #86efac;
+  border-color: var(--color-primary);
 }
 
 /* Focus ring for all form fields */
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #16a34a; /* Medium green focus border */
-  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); /* Soft green glow */
-  background-color: #ffffff;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 143, 107, 0.15);
+  background-color: var(--color-surface);
 }
 
 .form-group textarea {
   resize: vertical;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: #08775d;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* Form Actions */
@@ -492,38 +547,37 @@
   gap: 12px;
   margin-top: 12px;
   padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border);
 }
 
 .cancel-discount-button,
 .save-discount-button {
   padding: 10px 18px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color var(--transition-base), border-color var(--transition-base);
 }
 
 .cancel-discount-button {
-  background-color: #f0fdf4;
-  border-color: #bbf7d0;
-  color: #008f6b;
+  background-color: var(--btn-secondary-bg, #f1f3f2);
+  border-color: var(--color-border);
+  color: var(--btn-secondary-text, var(--color-text-muted));
 }
 
 .cancel-discount-button:hover {
-  background-color: #dcfce7;
-  border-color: #008f6b;
+  background-color: var(--btn-secondary-hover-bg, #e5e7eb);
 }
 
 .save-discount-button {
-  background-color: #0b5843;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
 }
 
 .save-discount-button:hover {
-  background-color: #0b5843;
+  background-color: var(--color-primary-hover);
 }
 
 /* ======================================================
@@ -546,7 +600,7 @@
     flex-direction: column;
   }
 
-  .discounts-filters select,
+  .status-filter,
   .discounts-filters input[type="text"] {
     width: 100%;
   }

@@ -119,18 +119,18 @@ const Billing = () => {
   // VOICE STATE
   // ==========================================================
 
-  const [isListening, setIsListening] = useState(false);
-  const [voiceOutput, setVoiceOutput] = useState("");
+  // const [isListening, setIsListening] = useState(false);
+  // const [voiceOutput, setVoiceOutput] = useState("");
 
-  const [minutes, setMinutes] = useState(0);
-  const [seconds, setSeconds] = useState(0);
+  // const [minutes, setMinutes] = useState(0);
+  // const [seconds, setSeconds] = useState(0);
 
-  const recognitionRef = useRef(null);
-  const timerRef = useRef(null);
-  const silenceTimerRef = useRef(null);
+  // const recognitionRef = useRef(null);
+  // const timerRef = useRef(null);
+  // const silenceTimerRef = useRef(null);
 
-  const hasSpokenRef = useRef(false);
-  const isStoppingRef = useRef(false);
+  // const hasSpokenRef = useRef(false);
+  // const isStoppingRef = useRef(false);
 
   // ==========================================================
   // BILL ITEMS
@@ -867,264 +867,264 @@ const Billing = () => {
   // SILENCE TIMER
   // ==========================================================
 
-  const clearSilenceTimer = () => {
-    if (silenceTimerRef.current) {
-      clearTimeout(
-        silenceTimerRef.current
-      );
+  // const clearSilenceTimer = () => {
+  //   if (silenceTimerRef.current) {
+  //     clearTimeout(
+  //       silenceTimerRef.current
+  //     );
 
-      silenceTimerRef.current = null;
-    }
-  };
+  //     silenceTimerRef.current = null;
+  //   }
+  // };
 
-  const resetSilenceTimer = () => {
-    clearSilenceTimer();
+  // const resetSilenceTimer = () => {
+  //   clearSilenceTimer();
 
-    silenceTimerRef.current =
-      setTimeout(() => {
-        if (
-          recognitionRef.current &&
-          !isStoppingRef.current
-        ) {
-          isStoppingRef.current = true;
+  //   silenceTimerRef.current =
+  //     setTimeout(() => {
+  //       if (
+  //         recognitionRef.current &&
+  //         !isStoppingRef.current
+  //       ) {
+  //         isStoppingRef.current = true;
 
-          try {
-            recognitionRef.current.stop();
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      }, SILENCE_TIMEOUT);
-  };
+  //         try {
+  //           recognitionRef.current.stop();
+  //         } catch (error) {
+  //           console.error(error);
+  //         }
+  //       }
+  //     }, SILENCE_TIMEOUT);
+  // };
 
   // ==========================================================
   // TIMER
   // ==========================================================
 
-  const startTimer = () => {
-    setMinutes(0);
-    setSeconds(0);
+  // const startTimer = () => {
+  //   setMinutes(0);
+  //   setSeconds(0);
 
-    timerRef.current =
-      setInterval(() => {
-        setSeconds(
-          (previousSeconds) => {
-            if (
-              previousSeconds === 59
-            ) {
-              setMinutes(
-                (previousMinutes) =>
-                  previousMinutes + 1
-              );
+  //   timerRef.current =
+  //     setInterval(() => {
+  //       setSeconds(
+  //         (previousSeconds) => {
+  //           if (
+  //             previousSeconds === 59
+  //           ) {
+  //             setMinutes(
+  //               (previousMinutes) =>
+  //                 previousMinutes + 1
+  //             );
 
-              return 0;
-            }
+  //             return 0;
+  //           }
 
-            return previousSeconds + 1;
-          }
-        );
-      }, 1000);
-  };
+  //           return previousSeconds + 1;
+  //         }
+  //       );
+  //     }, 1000);
+  // };
 
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearInterval(
-        timerRef.current
-      );
+  // const stopTimer = () => {
+  //   if (timerRef.current) {
+  //     clearInterval(
+  //       timerRef.current
+  //     );
 
-      timerRef.current = null;
-    }
-  };
+  //     timerRef.current = null;
+  //   }
+  // };
 
   // ==========================================================
   // VOICE RECOGNITION
   // ==========================================================
 
-  const startListening = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition ||
-      window.webkitSpeechRecognition;
+  // const startListening = () => {
+  //   const SpeechRecognition =
+  //     window.SpeechRecognition ||
+  //     window.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
-      alert(
-        "Speech recognition is not supported in this browser."
-      );
+  //   if (!SpeechRecognition) {
+  //     alert(
+  //       "Speech recognition is not supported in this browser."
+  //     );
 
-      return;
-    }
+  //     return;
+  //   }
 
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  //   if (recognitionRef.current) {
+  //     try {
+  //       recognitionRef.current.stop();
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
 
-    clearSilenceTimer();
-    stopTimer();
+  //   clearSilenceTimer();
+  //   stopTimer();
 
-    const recognition =
-      new SpeechRecognition();
+  //   const recognition =
+  //     new SpeechRecognition();
 
-    recognition.lang =
-      navigator.language ||
-      "en-US";
+  //   recognition.lang =
+  //     navigator.language ||
+  //     "en-US";
 
-    recognition.interimResults =
-      true;
+  //   recognition.interimResults =
+  //     true;
 
-    recognition.continuous =
-      true;
+  //   recognition.continuous =
+  //     true;
 
-    hasSpokenRef.current =
-      false;
+  //   hasSpokenRef.current =
+  //     false;
 
-    isStoppingRef.current =
-      false;
+  //   isStoppingRef.current =
+  //     false;
 
-    setVoiceOutput("");
+  //   setVoiceOutput("");
 
-    setIsListening(true);
+  //   setIsListening(true);
 
-    startTimer();
+  //   startTimer();
 
-    recognition.onstart = () => {
-      setIsListening(true);
+  //   recognition.onstart = () => {
+  //     setIsListening(true);
 
-      resetSilenceTimer();
-    };
+  //     resetSilenceTimer();
+  //   };
 
-    recognition.onresult = (event) => {
-      let finalText = "";
+  //   recognition.onresult = (event) => {
+  //     let finalText = "";
 
-      let interimText = "";
+  //     let interimText = "";
 
-      for (
-        let i = event.resultIndex;
-        i < event.results.length;
-        i++
-      ) {
-        const transcript =
-          event.results[i][0]
-            .transcript;
+  //     for (
+  //       let i = event.resultIndex;
+  //       i < event.results.length;
+  //       i++
+  //     ) {
+  //       const transcript =
+  //         event.results[i][0]
+  //           .transcript;
 
-        if (
-          event.results[i].isFinal
-        ) {
-          finalText +=
-            transcript + " ";
+  //       if (
+  //         event.results[i].isFinal
+  //       ) {
+  //         finalText +=
+  //           transcript + " ";
 
-          hasSpokenRef.current =
-            true;
-        } else {
-          interimText +=
-            transcript;
-        }
-      }
+  //         hasSpokenRef.current =
+  //           true;
+  //       } else {
+  //         interimText +=
+  //           transcript;
+  //       }
+  //     }
 
-      const output =
-        `${finalText}${interimText}`
-          .trim();
+  //     const output =
+  //       `${finalText}${interimText}`
+  //         .trim();
 
-      if (output) {
-        setVoiceOutput(output);
+  //     if (output) {
+  //       setVoiceOutput(output);
 
-        setSearchTerm(output);
+  //       setSearchTerm(output);
 
-        resetSilenceTimer();
-      }
-    };
+  //       resetSilenceTimer();
+  //     }
+  //   };
 
-    recognition.onerror = (event) => {
-      console.error(
-        "Speech recognition error:",
-        event.error
-      );
+  //   recognition.onerror = (event) => {
+  //     console.error(
+  //       "Speech recognition error:",
+  //       event.error
+  //     );
 
-      clearSilenceTimer();
+  //     clearSilenceTimer();
 
-      stopTimer();
+  //     stopTimer();
 
-      setIsListening(false);
-    };
+  //     setIsListening(false);
+  //   };
 
-    recognition.onend = () => {
-      clearSilenceTimer();
+  //   recognition.onend = () => {
+  //     clearSilenceTimer();
 
-      stopTimer();
+  //     stopTimer();
 
-      setIsListening(false);
+  //     setIsListening(false);
 
-      isStoppingRef.current =
-        false;
-    };
+  //     isStoppingRef.current =
+  //       false;
+  //   };
 
-    recognitionRef.current =
-      recognition;
+  //   recognitionRef.current =
+  //     recognition;
 
-    try {
-      recognition.start();
-    } catch (error) {
-      console.error(
-        "Unable to start speech recognition:",
-        error
-      );
+  //   try {
+  //     recognition.start();
+  //   } catch (error) {
+  //     console.error(
+  //       "Unable to start speech recognition:",
+  //       error
+  //     );
 
-      setIsListening(false);
+  //     setIsListening(false);
 
-      stopTimer();
-    }
-  };
+  //     stopTimer();
+  //   }
+  // };
 
   // ==========================================================
   // STOP LISTENING
   // ==========================================================
 
-  const stopListening = (
-    clearOutput = false
-  ) => {
-    clearSilenceTimer();
+  // const stopListening = (
+  //   clearOutput = false
+  // ) => {
+  //   clearSilenceTimer();
 
-    stopTimer();
+  //   stopTimer();
 
-    isStoppingRef.current =
-      true;
+  //   isStoppingRef.current =
+  //     true;
 
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch (error) {
-        console.error(error);
-      }
-    }
+  //   if (recognitionRef.current) {
+  //     try {
+  //       recognitionRef.current.stop();
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   }
 
-    setIsListening(false);
+  //   setIsListening(false);
 
-    if (clearOutput) {
-      setVoiceOutput("");
-    }
-  };
+  //   if (clearOutput) {
+  //     setVoiceOutput("");
+  //   }
+  // };
 
   // ==========================================================
   // CLEANUP
   // ==========================================================
 
-  useEffect(() => {
-    return () => {
-      clearSilenceTimer();
+  // useEffect(() => {
+  //   return () => {
+  //     clearSilenceTimer();
 
-      stopTimer();
+  //     stopTimer();
 
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    };
-  }, []);
+  //     if (recognitionRef.current) {
+  //       try {
+  //         recognitionRef.current.stop();
+  //       } catch (error) {
+  //         console.error(error);
+  //       }
+  //     }
+  //   };
+  // }, []);
 
   // ==========================================================
   // ADD INVENTORY PRODUCT TO BILL
@@ -1643,7 +1643,7 @@ const Billing = () => {
 
     setSearchTerm("");
 
-    setVoiceOutput("");
+    // setVoiceOutput("");
 
     setSelectedDiscountId(
       "none"
@@ -1718,7 +1718,7 @@ const Billing = () => {
             VOICE SECTION
         ================================================== */}
 
-        <section className="voice-section">
+        {/* <section className="voice-section">
 
           {!isListening ? (
             <>
@@ -1782,13 +1782,13 @@ const Billing = () => {
             </div>
           )}
 
-        </section>
+        </section> */}
 
         {/* ==================================================
             VOICE OUTPUT
         ================================================== */}
 
-        <section className="voice-output-section">
+        {/* <section className="voice-output-section">
 
           <div className="voice-output-container">
 
@@ -1819,7 +1819,7 @@ const Billing = () => {
             </div>
           )}
 
-        </section>
+        </section> */}
 
         {/* ==================================================
             INVENTORY SEARCH

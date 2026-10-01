@@ -190,7 +190,22 @@ export default function BillHistory() {
       return;
     }
 
+    // Only this specific bill card should appear in the print
+    // output — mark it, print, then unmark (see the global
+    // @media print rule in index.css).
+    const card = event.currentTarget.closest(
+      ".bill-history-card"
+    );
+
+    if (card) {
+      card.classList.add("printable-bill");
+    }
+
     window.print();
+
+    if (card) {
+      card.classList.remove("printable-bill");
+    }
   };
 
   return (

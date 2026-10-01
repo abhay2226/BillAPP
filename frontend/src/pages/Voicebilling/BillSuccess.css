@@ -16,8 +16,8 @@
   padding: 2rem;
   box-sizing: border-box;
 
-  background-color: #ffffff;
-  color: #22272b;
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
 
@@ -49,7 +49,7 @@
   flex-shrink: 0;
 
   border-radius: 50%;
-  background-color: #dff7ef;
+  background-color: var(--color-primary-tint);
 }
 
 
@@ -62,7 +62,7 @@
   height: 5rem;
 
   border-radius: 50%;
-  background-color: #0b8a6a;
+  background-color: var(--color-primary);
 }
 
 
@@ -79,7 +79,7 @@
 .bill-success-page .success h2 {
   margin: 1.2rem 0 0.5rem;
 
-  color: #22272b;
+  color: var(--color-text);
 
   font-size: 1.5rem;
   font-weight: 700;
@@ -94,7 +94,7 @@
 
   margin: 0;
 
-  color: #6b7470;
+  color: var(--color-text-muted);
 
   font-size: 0.95rem;
   line-height: 1.5;
@@ -126,9 +126,9 @@
 
   box-sizing: border-box;
 
-  background-color: #f7f8fa;
+  background-color: var(--color-surface-alt);
 
-  border: 0.0625rem solid #e2e5e9;
+  border: 0.0625rem solid var(--color-border);
   border-radius: 0.75rem;
 }
 
@@ -138,7 +138,7 @@
 
   margin: 0;
 
-  color: #6b7470;
+  color: var(--color-text-muted);
 
   font-size: 0.7rem;
   font-weight: 600;
@@ -150,7 +150,7 @@
 .bill-success-page .card h2 {
   margin: 0.5rem 0 0;
 
-  color: #22272b;
+  color: var(--color-text);
 
   font-size: 1rem;
   font-weight: 700;
@@ -173,7 +173,7 @@
 
   box-sizing: border-box;
 
-  background-color: #0b8a6a;
+  background-color: var(--color-primary);
 
   border-radius: 0.8rem;
 }
@@ -192,7 +192,7 @@
 .bill-success-page .amount-content strong {
   margin: 0;
 
-  color: #ffffff;
+  color: var(--color-surface);
 
   font-size: 0.85rem;
   font-weight: 500;
@@ -202,7 +202,7 @@
 .bill-success-page .amount-content h1 {
   margin: 0;
 
-  color: #ffffff;
+  color: var(--color-surface);
 
   font-size: 1.7rem;
   font-weight: 700;
@@ -226,7 +226,7 @@
   border: none;
   border-radius: 50%;
 
-  background-color: #ffffff;
+  background-color: var(--color-surface);
 
   cursor: pointer;
 }
@@ -269,9 +269,9 @@
   background-color: transparent;
 
   border: none;
-  border-bottom: 0.0625rem solid #eeeeee;
+  border-bottom: 0.0625rem solid var(--color-border);
 
-  color: #22272b;
+  color: var(--color-text);
 
   cursor: pointer;
 
@@ -280,7 +280,7 @@
 
 
 .bill-success-page .action-item:hover {
-  background-color: #fafafa;
+  background-color: var(--color-surface-alt);
 }
 
 
@@ -304,7 +304,7 @@
 
   flex-shrink: 0;
 
-  background-color: #f1f3f4;
+  background-color: var(--color-surface-alt);
 
   border-radius: 50%;
 }
@@ -323,7 +323,7 @@
 .bill-success-page .action-left p {
   margin: 0;
 
-  color: #22272b;
+  color: var(--color-text);
 
   font-size: 0.95rem;
   font-weight: 600;
@@ -379,8 +379,8 @@
   border: none;
   border-radius: 2rem;
 
-  background-color: #008f6b;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
 
   cursor: pointer;
 
@@ -389,7 +389,7 @@
 
 
 .bill-success-page .new-bill:hover {
-  background-color: #007a5b;
+  background-color: var(--color-primary-hover);
 }
 
 
@@ -406,7 +406,7 @@
 .bill-success-page .new-bill p {
   margin: 0;
 
-  color: #ffffff;
+  color: var(--color-surface);
 
   font-size: 0.85rem;
   font-weight: 600;

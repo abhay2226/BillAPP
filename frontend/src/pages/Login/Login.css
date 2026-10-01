@@ -15,16 +15,9 @@
 
   padding: 48px 20px;
 
-  background: #f4faf5;
+  background: var(--color-surface-alt);
 
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--font-family-base);
 }
 
 /* ============================================================
@@ -48,13 +41,13 @@
 
   border-radius: 50%;
 
-  background: #e3f5e6;
+  background: var(--color-primary-tint);
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  color: #1f7a3d;
+  color: var(--color-primary);
 }
 
 .auth-icon-badge img {
@@ -68,7 +61,7 @@
   font-size: 22px;
   font-weight: 600;
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 
   margin: 0 0 6px;
 }
@@ -76,7 +69,7 @@
 .auth-header-block p {
   font-size: 14px;
 
-  color: #5b7863;
+  color: var(--color-text-muted);
 
   margin: 0;
 
@@ -91,9 +84,9 @@
   width: 100%;
   max-width: 380px;
 
-  background: #ffffff;
+  background: var(--color-surface);
 
-  border: 1px solid #d9ecdc;
+  border: 1px solid var(--color-border);
   border-radius: 14px;
 
   padding: 24px;
@@ -110,7 +103,7 @@
 
   display: flex;
 
-  border: 1px solid #d9ecdc;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
 
   overflow: hidden;
@@ -128,8 +121,8 @@
 
   border: none;
 
-  background: #ffffff;
-  color: #5b7863;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
 
   font-size: 14px;
   font-weight: 500;
@@ -142,12 +135,12 @@
 }
 
 .auth-tab:not(:last-child) {
-  border-right: 1px solid #d9ecdc;
+  border-right: 1px solid var(--color-border);
 }
 
 .auth-tab.active {
-  background:#0b8a6a;
-  color: #ffffff;
+  background:var(--color-primary);
+  color: var(--color-surface);
 }
 
 .auth-tab:disabled {
@@ -200,14 +193,14 @@
 
   padding: 11px 14px;
 
-  border: 1px solid #cfe6d4;
+  border: 1px solid var(--color-border);
   border-radius: 9px;
 
   font-size: 14px;
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 
-  background: #f7fdf8;
+  background: var(--color-primary-tint);
 
   outline: none;
 
@@ -217,13 +210,13 @@
 }
 
 .auth-input-wrap input::placeholder {
-  color: #8fac96;
+  color: var(--color-text-placeholder, #8fac96);
 }
 
 .auth-input-wrap input:focus,
 .auth-input-wrap select:focus {
-  border-color: #0b8a6a;
-  background: #ffffff;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
 }
 
 .auth-input-wrap input:disabled,
@@ -243,8 +236,8 @@
 }
 
 .auth-input-wrap select option {
-  color: #14321c;
-  background: #ffffff;
+  color: var(--color-primary-strong);
+  background: var(--color-surface);
 }
 
 /* ============================================================
@@ -301,13 +294,13 @@
 
   font-size: 13px;
 
-  color: #5b7863;
+  color: var(--color-text-muted);
 
   cursor: pointer;
 }
 
 .auth-checkbox-row input {
-  accent-color: #0b8a6a;
+  accent-color: var(--color-primary);
 
   cursor: pointer;
 }
@@ -319,7 +312,7 @@
 
   background: transparent;
 
-  color: #0b8a6a;
+  color: var(--color-primary);
 
   font-size: 13px;
   font-weight: 500;
@@ -350,19 +343,19 @@
 }
 
 .auth-feedback.error {
-  background: #fdeceb;
+  background: var(--color-danger-tint);
 
-  color: #b3261e;
+  color: var(--color-danger);
 
   border: 1px solid #f6cfcb;
 }
 
 .auth-feedback.success {
-  background: #eaf6ec;
+  background: var(--color-primary-tint);
 
-  color: #0b8a6a;
+  color: var(--color-primary);
 
-  border: 1px solid #c9e9cd;
+  border: 1px solid var(--color-primary-tint-strong);
 }
 
 /* ============================================================
@@ -384,9 +377,9 @@
 
   border-radius: 9px;
 
-  background: #0b8a6a;
+  background: var(--color-primary);
 
-  color: #ffffff;
+  color: var(--color-surface);
 
   font-size: 14px;
   font-weight: 600;
@@ -399,7 +392,7 @@
 }
 
 .auth-submit:hover:not(:disabled) {
-  background: #0b8a6a;
+  background: var(--color-primary-hover);
 }
 
 .auth-submit:disabled {
@@ -447,7 +440,7 @@
 
   max-width: 380px;
 
-  background: #ffffff;
+  background: var(--color-surface);
 
   border-radius: 14px;
 
@@ -484,7 +477,7 @@
 
   font-weight: 600;
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 
   margin: 0 0 4px;
 
@@ -494,7 +487,7 @@
 .store-popup-header p {
   font-size: 13px;
 
-  color: #5b7863;
+  color: var(--color-text-muted);
 
   margin: 0;
 
@@ -512,7 +505,7 @@
 
   line-height: 1;
 
-  color: #8fac96;
+  color: var(--color-text-placeholder, #8fac96);
 
   cursor: pointer;
 
@@ -520,7 +513,7 @@
 }
 
 .store-popup-close:hover:not(:disabled) {
-  color: #14321c;
+  color: var(--color-primary-strong);
 }
 
 .store-popup-close:disabled {
@@ -560,7 +553,7 @@
 
   font-weight: 500;
 
-  color: #5b7863;
+  color: var(--color-text-muted);
 
   margin-bottom: 5px;
 }
@@ -572,15 +565,15 @@
 
   padding: 10px 12px;
 
-  border: 1px solid #cfe6d4;
+  border: 1px solid var(--color-border);
 
   border-radius: 8px;
 
   font-size: 14px;
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 
-  background: #f7fdf8;
+  background: var(--color-primary-tint);
 
   outline: none;
 
@@ -590,13 +583,13 @@
 }
 
 .popup-input-wrap input::placeholder {
-  color: #8fac96;
+  color: var(--color-text-placeholder, #8fac96);
 }
 
 .popup-input-wrap input:focus {
-  border-color: #0b8a6a;
+  border-color: var(--color-primary);
 
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
 .popup-input-wrap input:disabled {
@@ -653,7 +646,7 @@
 
   font-weight: 500;
 
-  color: #5b7863;
+  color: var(--color-text-muted);
 
   margin-bottom: 6px;
 }
@@ -675,13 +668,13 @@
 
   padding: 12px;
 
-  border: 1px solid #d9ecdc;
+  border: 1px solid var(--color-border);
 
   border-radius: 8px;
 
-  background: #ffffff;
+  background: var(--color-surface);
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 
   font-size: 13px;
 
@@ -696,9 +689,9 @@
 }
 
 .store-search-results button:hover:not(:disabled) {
-  border-color: #0b8a6a;
+  border-color: var(--color-primary);
 
-  background: #f7fdf8;
+  background: var(--color-primary-tint);
 }
 
 .store-search-results button:disabled {
@@ -720,11 +713,11 @@
 
   border-radius: 8px;
 
-  background: #f0faf7;
+  background: var(--color-primary-tint);
 
-  border: 1px solid #0b8a6a;
+  border: 1px solid var(--color-primary);
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 }
 
 .store-selected-box strong {
@@ -732,7 +725,7 @@
 
   font-size: 13px;
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 
   margin-bottom: 5px;
 }
@@ -744,7 +737,7 @@
 
   line-height: 1.4;
 
-  color: #5b7863;
+  color: var(--color-text-muted);
 }
 
 /* ============================================================
@@ -784,29 +777,29 @@
 }
 
 .popup-cancel-button {
-  border: 1px solid #cfe6d4;
+  border: 1px solid var(--color-border);
 
-  background: #ffffff;
+  background: var(--color-surface);
 
-  color: #14321c;
+  color: var(--color-primary-strong);
 }
 
 .popup-cancel-button:hover:not(:disabled) {
-  background: #f4faf5;
+  background: var(--color-surface-alt);
 
-  border-color: #b8d8bf;
+  border-color: var(--color-primary-tint-strong);
 }
 
 .popup-create-button {
   border: none;
 
-  background: #0b8a6a;
+  background: var(--color-primary);
 
-  color: #ffffff;
+  color: var(--color-surface);
 }
 
 .popup-create-button:hover:not(:disabled) {
-  background: #185f30;
+  background: var(--color-primary-hover);
 }
 
 .popup-cancel-button:disabled,
@@ -827,21 +820,21 @@
 
 .store-popup::-webkit-scrollbar-track,
 .store-popup-form::-webkit-scrollbar-track {
-  background: #f4faf5;
+  background: var(--color-surface-alt);
 
   border-radius: 10px;
 }
 
 .store-popup::-webkit-scrollbar-thumb,
 .store-popup-form::-webkit-scrollbar-thumb {
-  background: #cfe6d4;
+  background: var(--color-border);
 
   border-radius: 10px;
 }
 
 .store-popup::-webkit-scrollbar-thumb:hover,
 .store-popup-form::-webkit-scrollbar-thumb:hover {
-  background: #a9cdb0;
+  background: var(--color-primary-tint-strong);
 }
 
 /* ============================================================
@@ -1208,7 +1201,7 @@
 .auth-input-wrap input:focus-visible,
 .auth-input-wrap select:focus-visible,
 .popup-input-wrap input:focus-visible {
-  outline: 2px solid #1f7a3d;
+  outline: 2px solid var(--color-primary);
 
   outline-offset: 2px;
 }
