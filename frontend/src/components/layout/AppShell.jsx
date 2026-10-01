@@ -43,13 +43,7 @@ function AppShell() {
                     }
         >
           <Outlet context={{ setHeaderAction }} />
-          {!isAuthPage && (
-            <div className="app-shell-footer">
-              <footer>
-                <span>Copyright @2026</span>
-              </footer>
-            </div>
-          )}
+          
         </main>
 
       </div>

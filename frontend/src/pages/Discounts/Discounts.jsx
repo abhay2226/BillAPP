@@ -1,8 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as discountServices from "../../services/discountService";
 import { getCurrentStoreId } from "../../services/api";
 import "./Discounts.css";
 
+const STATUS_OPTIONS = [
+  { value: "ALL", label: "All discounts" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "INACTIVE", label: "Deactivated" },
+];
 
 export default function Discounts() {
   // ======================================================
@@ -17,6 +22,29 @@ export default function Discounts() {
 
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
+  const statusMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (!isStatusMenuOpen) {
+      return undefined;
+    }
+
+    const handleOutsideClick = (event) => {
+      if (
+        statusMenuRef.current &&
+        !statusMenuRef.current.contains(event.target)
+      ) {
+        setIsStatusMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () =>
+      document.removeEventListener("mousedown", handleOutsideClick);
+  }, [isStatusMenuOpen]);
 
   const [showForm, setShowForm] = useState(false);
   const [editingDiscount, setEditingDiscount] = useState(null);
@@ -399,24 +427,49 @@ export default function Discounts() {
 
       <div className="discounts-filters">
 
-        <select
-          value={statusFilter}
-          onChange={(event) =>
-            setStatusFilter(event.target.value)
-          }
-        >
-          <option value="ALL">
-            All discounts
-          </option>
+        <div className="status-filter" ref={statusMenuRef}>
+          <button
+            type="button"
+            className="status-filter-toggle"
+            onClick={() =>
+              setIsStatusMenuOpen((open) => !open)
+            }
+          >
+            <span>
+              {
+                STATUS_OPTIONS.find(
+                  (option) => option.value === statusFilter,
+                )?.label
+              }
+            </span>
 
-          <option value="ACTIVE">
-            Active
-          </option>
+            <span className="status-filter-chevron">
+              ▾
+            </span>
+          </button>
 
-          <option value="INACTIVE">
-            Deactivated
-          </option>
-        </select>
+          {isStatusMenuOpen && (
+            <div className="status-filter-menu">
+              {STATUS_OPTIONS.map((option) => (
+                <button
+                  type="button"
+                  key={option.value}
+                  className={
+                    option.value === statusFilter
+                      ? "status-filter-option active"
+                      : "status-filter-option"
+                  }
+                  onClick={() => {
+                    setStatusFilter(option.value);
+                    setIsStatusMenuOpen(false);
+                  }}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <input
           type="text"

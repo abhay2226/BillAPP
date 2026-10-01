@@ -1,7 +1,6 @@
 :root {
   --sidebar-width: 6rem;
   --header-height: 4.5rem;
-  --footer-height: 4rem;
 }
 
 /* =========================================================
@@ -71,8 +70,8 @@ body,
   flex-direction: column;
 
   overflow-y: auto;
-  overflow-x: auto;
-  scrollbar-width: none; 
+  overflow-x: hidden;
+  scrollbar-width: none;
 
   transition:
     margin-left 0.3s ease,
@@ -118,26 +117,25 @@ body,
   font-size: 0.75rem;
 } */
 
-.app-shell-footer {
+/* .app-shell-footer {
   width: 100%;
-  /* Automatically pushes footer to the bottom when content is short */
   margin-top: auto;
   padding-top: 2rem;
-}
+}  */
 
-.app-shell-footer footer {
+/* .app-shell-footer footer {
   width: 100%;
   min-height: var(--footer-height);
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #008f6b;
-}
+} */
 
-.app-shell-footer span {
+/* .app-shell-footer span {
   color: #ffffff;
   font-size: 0.75rem;
-}
+} */
 
 /* =========================================================
     HEADER / SIDEBAR STYLES
@@ -268,13 +266,13 @@ body {
 }
 
 .sidebar-desktop .sidebar-link.active {
-  background-color: #e8f7f2;
-  color: #008f6b;
+  background-color: var(--color-nav-active-bg);
+  color: var(--color-nav-active-text);
   border-radius: 0.5rem;
 }
 
 .sidebar-desktop .sidebar-link.active .nav-label {
-  color: #008f6b;
+  color: var(--color-nav-active-text);
   font-weight: 600;
 }
 
@@ -409,9 +407,9 @@ body {
 
   
   .bottom-nav .nav-link.active {
-    background-color: #e8f7f2;
+    background-color:var(--color-nav-active-bg);
   
-    color: #008f6b;
+    color: var(--color-nav-active-text);
 
     width: 6rem;
     height: 4rem;
@@ -423,7 +421,7 @@ body {
   /* ACTIVE TEXT */
   
   .bottom-nav .nav-link.active .nav-label {
-    color: #008f6b;
+    color: var(--color-nav-active-text);
   
     font-weight: 600;
   }
@@ -448,7 +446,7 @@ body {
   
     height: 0.25rem;
   
-    background-color: #008f6b;
+    background-color: var(--color-nav-active-bg);
   
     border-radius: 0 0.25rem 0.25rem 0;
   }
@@ -557,7 +555,7 @@ body {
 }
 
 .app-shell-content {
-  padding-bottom: calc(var(--footer-height) + 4.5rem);
+  padding-bottom: 2rem;
 }
 
 
