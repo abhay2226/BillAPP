@@ -221,6 +221,64 @@ function Inventory() {
   const [editingDamageId, setEditingDamageId] = useState(null);
 
   const [productActionMenuId, setProductActionMenuId] = useState(null);
+  const [actionMenuPosition, setActionMenuPosition] = useState({
+    top: 0,
+    left: 0,
+  });
+
+  const ACTION_MENU_WIDTH = 160;
+
+  const openProductActionMenu = (event, id) => {
+    if (productActionMenuId === id) {
+      setProductActionMenuId(null);
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+
+    const left = Math.min(
+      rect.right - ACTION_MENU_WIDTH,
+      window.innerWidth - ACTION_MENU_WIDTH - 8,
+    );
+
+    setActionMenuPosition({
+      top: rect.bottom + 6,
+      left: Math.max(8, left),
+    });
+
+    setProductActionMenuId(id);
+  };
+
+  // Close the action menu on an outside click, or on scroll/resize —
+  // it's rendered as position:fixed so it no longer tracks its
+  // trigger button once the page/table scrolls underneath it.
+  useEffect(() => {
+    if (productActionMenuId === null) {
+      return undefined;
+    }
+
+    const handleOutsideInteraction = (event) => {
+      if (
+        !event.target.closest(
+          ".product-action-menu, .mobile-product-action-menu, .icon-btn, .more-item-button",
+        )
+      ) {
+        setProductActionMenuId(null);
+      }
+    };
+
+    const closeMenu = () => setProductActionMenuId(null);
+
+    document.addEventListener("mousedown", handleOutsideInteraction);
+    window.addEventListener("scroll", closeMenu, true);
+    window.addEventListener("resize", closeMenu);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideInteraction);
+      window.removeEventListener("scroll", closeMenu, true);
+      window.removeEventListener("resize", closeMenu);
+    };
+  }, [productActionMenuId]);
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -1023,7 +1081,7 @@ function Inventory() {
     const linkedInventory = inventoryByProductId.get(
       product.product_id
     );
-    return linkedInventory && linkedInventory.qty > 0;
+    return linkedInventory > 0;
   }).length;
 
   const productsLowStock = products.filter((product) => {
@@ -1398,12 +1456,10 @@ function Inventory() {
                                 <button
                                   className="icon-btn"
                                   type="button"
-                                  onClick={() =>
-                                    setProductActionMenuId(
-                                      productActionMenuId ===
-                                        product.id
-                                        ? null
-                                        : product.id,
+                                  onClick={(event) =>
+                                    openProductActionMenu(
+                                      event,
+                                      product.id,
                                     )
                                   }
                                 >
@@ -1415,7 +1471,13 @@ function Inventory() {
 
                                 {productActionMenuId ===
                                   product.id && (
-                                  <div className="product-action-menu">
+                                  <div
+                                    className="product-action-menu"
+                                    style={{
+                                      top: actionMenuPosition.top,
+                                      left: actionMenuPosition.left,
+                                    }}
+                                  >
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -1779,12 +1841,10 @@ function Inventory() {
                               <button
                                 className="more-item-button"
                                 type="button"
-                                onClick={() =>
-                                  setProductActionMenuId(
-                                    productActionMenuId ===
-                                      item.id
-                                      ? null
-                                      : item.id,
+                                onClick={(event) =>
+                                  openProductActionMenu(
+                                    event,
+                                    item.id,
                                   )
                                 }
                               >
@@ -1796,7 +1856,13 @@ function Inventory() {
 
                               {productActionMenuId ===
                                 item.id && (
-                                <div className="mobile-product-action-menu">
+                                <div
+                                  className="mobile-product-action-menu"
+                                  style={{
+                                    top: actionMenuPosition.top,
+                                    left: actionMenuPosition.left,
+                                  }}
+                                >
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -2092,8 +2158,9 @@ function Inventory() {
                     </option>
                   </select>
                 ) : (
-                  <div>
+                  <div className="add-new-row">
                     <input
+                      className="add-new-input"
                       type="text"
                       name="typeName"
                       placeholder="Enter New Type"
@@ -2103,6 +2170,7 @@ function Inventory() {
 
                     <button
                       type="button"
+                      className="add-new-cancel-button"
                       onClick={() =>
                         setAddingNewType(false)
                       }
@@ -2138,8 +2206,9 @@ function Inventory() {
                     </option>
                   </select>
                 ) : (
-                  <div>
+                  <div className="add-new-row">
                     <input
+                      className="add-new-input"
                       type="text"
                       name="brandName"
                       placeholder="Enter New Brand"
@@ -2149,6 +2218,7 @@ function Inventory() {
 
                     <button
                       type="button"
+                      className="add-new-cancel-button"
                       onClick={() =>
                         setAddingNewBrand(false)
                       }

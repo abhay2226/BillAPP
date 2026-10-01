@@ -52,66 +52,73 @@ function BillSuccess({
 
       </section>
 
-      {/* ------ BILL DETAILS ---------- */}
+      {/* ------ BILL DETAILS ----------
+          (printable-bill: this is the only part of the page
+          that should show up when "Print Bill" is used)
+      ---------------------------------- */}
 
-      <section className="bill-details">
+      <div className="printable-bill">
 
-        <article className="card">
+        <section className="bill-details">
 
-          <strong>
-            BILL NUMBER
-          </strong>
+          <article className="card">
 
-          <h2>
-            {billNumber}
-          </h2>
+            <strong>
+              BILL NUMBER
+            </strong>
 
-        </article>
+            <h2>
+              {billNumber}
+            </h2>
 
-        <article className="card">
+          </article>
 
-          <strong>
-            DATE
-          </strong>
+          <article className="card">
 
-          <h2>
-            {billDate}
-          </h2>
+            <strong>
+              DATE
+            </strong>
 
-        </article>
+            <h2>
+              {billDate}
+            </h2>
 
-      </section>
+          </article>
 
-      {/* -------- AMOUNT --------- */}
+        </section>
 
-      <section className="amount-card">
+        {/* -------- AMOUNT --------- */}
 
-        <div className="amount-content">
+        <section className="amount-card">
 
-          <strong>
-            Total Amount Paid
-          </strong>
+          <div className="amount-content">
 
-          <h1>
-            {successTotalAmount}
-          </h1>
+            <strong>
+              Total Amount Paid
+            </strong>
 
-        </div>
+            <h1>
+              {successTotalAmount}
+            </h1>
 
-        <button
-          className="receipt-btn"
-          type="button"
-          aria-label="View Receipt"
-        >
+          </div>
 
-          <img
-            src={BillIcon}
-            alt="Receipt"
-          />
+          <button
+            className="receipt-btn"
+            type="button"
+            aria-label="View Receipt"
+          >
 
-        </button>
+            <img
+              src={BillIcon}
+              alt="Receipt"
+            />
 
-      </section>
+          </button>
+
+        </section>
+
+      </div>
 
       {/* ---------- ACTIONS ---------- */}
 
