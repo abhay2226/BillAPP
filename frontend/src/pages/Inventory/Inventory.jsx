@@ -1081,7 +1081,7 @@ function Inventory() {
     const linkedInventory = inventoryByProductId.get(
       product.product_id
     );
-    return linkedInventory > 0;
+    return linkedInventory ;
   }).length;
 
   const productsLowStock = products.filter((product) => {
