@@ -27,6 +27,32 @@ changes are required.
 ============================================================
 */
 const LOW_STOCK_THRESHOLD = 5;
+
+const normalizeStatus = (rawStatus) => {
+  const value = (rawStatus || "").toString().trim().toLowerCase();
+
+  if (
+    value === "out of stock" ||
+    value === "out_of_stock" ||
+    value === "outofstock"
+  ) {
+    return "Out of Stock";
+  }
+
+  if (
+    value === "low stock" ||
+    value === "low_stock" ||
+    value === "lowstock"
+  ) {
+    return "Low Stock";
+  }
+
+  return "Available";
+};
+
+const getProductStatus = (product) => normalizeStatus(product.status);
+const getInventoryStatus = (item) => normalizeStatus(item.status);
+
 function SearchableSelect({
   options,
   value,
@@ -394,38 +420,6 @@ function Inventory() {
   accordingly.
   ============================================================
   */
-
-  const normalizeStatus = (rawStatus) => {
-    const value = (rawStatus || "").toString().trim().toLowerCase();
-
-    if (
-      value === "out of stock" ||
-      value === "out_of_stock" ||
-      value === "outofstock"
-    ) {
-      return "Out of Stock";
-    }
-
-    if (
-      value === "low stock" ||
-      value === "low_stock" ||
-      value === "lowstock"
-    ) {
-      return "Low Stock";
-    }
-
-    return "Available";
-  };
-
-  const getProductStatus = (product) => {
-    return normalizeStatus(product.status);
-  };
-
-  const getInventoryStatus = (item) => {
-    return normalizeStatus(item.status);
-  };
-
-  
 
   /*
   ============================================================

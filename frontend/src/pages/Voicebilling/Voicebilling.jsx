@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import BillSuccess from "../../components/BillSuccess";
 
 import pencilIcon from "../../assets/icons/pencil.png";
 import deleteIcon from "../../assets/icons/delete.png";
-import micIcon from "../../assets/icons/mic.png";
 
 import "./Voicebilling.css";
 
@@ -16,8 +15,6 @@ import * as customerService from "../../services/customerService";
 // ============================================================
 // CONSTANTS
 // ============================================================
-
-const SILENCE_TIMEOUT = 2500;
 
 const WALKIN_CUSTOMER_PHONE = "0000000000";
 
