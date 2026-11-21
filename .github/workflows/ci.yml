@@ -79,12 +79,9 @@ jobs:
 
       - name: Pull Vercel project settings
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-        working-directory: frontend
 
       - name: Build for production
         run: vercel build --prod --token="$VERCEL_TOKEN"
-        working-directory: frontend
 
       - name: Deploy to production
         run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
-        working-directory: frontend
