@@ -55,6 +55,10 @@ jobs:
         run: npm run check
         working-directory: backend
 
+      - name: Test backend
+        run: npm test
+        working-directory: backend
+
   deploy-backend:
     name: Deploy backend to Render
     needs: [backend]

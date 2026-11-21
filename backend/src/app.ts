@@ -22,6 +22,12 @@ import damageGoodsRoutes from "./routes/DamageGood.routes.js";
 
 const app: Application = express();
 
+app.get("/", (_req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: "BillAPP API is running."
+    });
+});
 
 const allowedOrigins = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(",").map((origin) => origin.trim())
