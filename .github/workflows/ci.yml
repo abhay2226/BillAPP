@@ -39,17 +39,39 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.22.0
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
-        run: npm ci
+        run: npm ci --include=dev
+        working-directory: backend
+
+      - name: Verify SQLite driver
+        run: node -e "require('sqlite3'); console.log('SQLite driver loaded')"
         working-directory: backend
 
       - name: Type-check backend
         run: npm run check
         working-directory: backend
+
+  deploy-backend:
+    name: Deploy backend to Render
+    needs: [backend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+    steps:
+      - name: Verify Render deploy hook
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::error::Add the RENDER_DEPLOY_HOOK repository secret before deploying."
+            exit 1
+          fi
+
+      - name: Trigger Render deployment
+        run: curl --fail --silent --show-error --request POST "$RENDER_DEPLOY_HOOK"
 
   deploy:
     name: Deploy frontend to Vercel
