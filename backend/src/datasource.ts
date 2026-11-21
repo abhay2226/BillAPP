@@ -1,6 +1,8 @@
 import "reflect-metadata";
 
 import { DataSource } from "typeorm";
+import { fileURLToPath } from "node:url";
+import sqlite3 from "sqlite3";
 
 import { Role } from "./entity/MasterRole.js";
 import { Type } from "./entity/MasterProductType.js";
@@ -26,7 +28,8 @@ import { ActionType } from "./entity/MasterActionType.js";
 
 export const AppDataSource = new DataSource({
     type: "sqlite",
-    database: "shop_inventory.sqlite",
+    driver: sqlite3,
+    database: fileURLToPath(new URL("../shop_inventory.sqlite", import.meta.url)),
     synchronize:true,
     logging: false,
     entities: [

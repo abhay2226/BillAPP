@@ -48,7 +48,7 @@ jobs:
         working-directory: backend
 
       - name: Verify SQLite driver
-        run: node -e "require('sqlite3'); console.log('SQLite driver loaded')"
+        run: npx tsx -e "import { AppDataSource } from './src/datasource.ts'; console.log('TypeORM SQLite datasource loaded:', AppDataSource.options.type === 'sqlite')"
         working-directory: backend
 
       - name: Type-check backend
