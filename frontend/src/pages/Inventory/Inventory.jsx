@@ -2230,7 +2230,7 @@ function Inventory() {
                         title="Delete selected type"
                         aria-label="Delete selected type"
                       >
-                        <img src={deleteIcon} alt="" />
+                        Delete
                       </button>
                     )}
                   </div>
@@ -2292,7 +2292,7 @@ function Inventory() {
                         title="Delete selected brand"
                         aria-label="Delete selected brand"
                       >
-                        <img src={deleteIcon} alt="" />
+                        Delete
                       </button>
                     )}
                   </div>

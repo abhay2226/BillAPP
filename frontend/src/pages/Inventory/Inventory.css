@@ -907,22 +907,20 @@ select.discount-input option {
 }
 
 .master-delete-button {
-  width: 2.75rem;
+  min-width: 2.75rem;
   height: 2.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  padding: 0 0.65rem;
   border: 1px solid #efc1c1;
   border-radius: var(--radius-sm);
   background-color: #fff5f5;
+  color: #b42318;
+  font-size: 0.78rem;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease;
-}
-
-.master-delete-button img {
-  width: 1.1rem;
-  height: 1.1rem;
-  object-fit: contain;
 }
 
 .master-delete-button:hover {
