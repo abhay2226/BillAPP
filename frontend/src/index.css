@@ -68,15 +68,16 @@ body {
 
 @media print {
   @page {
-    size: auto;
-    margin: 8mm;
+    size: A4 portrait;
+    margin: 10mm;
   }
 
   html,
   body {
-    width: 100%;
+    width: 210mm;
     min-height: 0;
     margin: 0;
+    padding: 0;
     background: #ffffff !important;
   }
 
@@ -90,20 +91,39 @@ body {
   }
 
   .printable-bill {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 190mm;
+    max-width: 190mm;
     min-height: 0;
     margin: 0;
-    padding: 0;
+    padding: 0 !important;
     background: #ffffff;
+    overflow: visible;
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .printable-bill button,
   .printable-bill img,
   .printable-bill .receipt-btn,
-  .printable-bill .action-list {
+  .printable-bill .action-list,
+  .printable-bill .amount-card,
+  .printable-bill .success,
+  .bill-success-page .success,
+  .bill-success-page .description {
     display: none !important;
+  }
+
+  .printable-bill .formatted-bill-header,
+  .printable-bill .bill-details,
+  .printable-bill .formatted-bill-meta,
+  .printable-bill .formatted-bill-items,
+  .printable-bill .formatted-bill-totals,
+  .printable-bill .formatted-bill-item,
+  .printable-bill .formatted-bill-totals > div {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

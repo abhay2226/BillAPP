@@ -178,6 +178,28 @@
   font-size: 0.82rem;
 }
 
+@media print {
+  .bill-success-page .formatted-bill {
+    width: 190mm;
+    max-width: 190mm;
+  }
+
+  .bill-success-page .bill-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bill-success-page .formatted-bill-item {
+    grid-template-columns: minmax(0, 1fr) 28mm 35mm;
+  }
+
+  .bill-success-page .amount-card,
+  .bill-success-page .success,
+  .bill-success-page .description,
+  .bill-success-page .action-list {
+    display: none !important;
+  }
+}
+
 .bill-success-page .formatted-bill-totals .formatted-bill-grand-total {
   margin-top: 0.35rem;
   padding-top: 0.65rem;

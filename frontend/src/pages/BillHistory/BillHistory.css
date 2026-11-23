@@ -490,4 +490,16 @@
   .formatted-bill-meta {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .formatted-bill-header,
+  .formatted-bill-meta,
+  .formatted-bill-items,
+  .formatted-bill-totals {
+    width: 190mm;
+    max-width: 190mm;
+  }
+
+  .formatted-bill-item {
+    grid-template-columns: minmax(0, 1fr) 28mm 35mm;
+  }
 }
