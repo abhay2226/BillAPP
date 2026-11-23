@@ -69,15 +69,16 @@ body {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 0;
   }
 
   html,
   body {
-    width: 210mm;
+    width: 100%;
     min-height: 0;
     margin: 0;
     padding: 0;
+    overflow: visible;
     background: #ffffff !important;
   }
 
@@ -94,13 +95,14 @@ body {
     position: relative;
     top: auto;
     left: auto;
-    width: 190mm;
-    max-width: 190mm;
+    width: 100%;
+    max-width: 100%;
     min-height: 0;
     margin: 0;
-    padding: 0 !important;
+    padding: 10mm !important;
     background: #ffffff;
     overflow: visible;
+    font-size: 11pt;
     break-after: auto;
     page-break-after: auto;
     box-sizing: border-box;
@@ -111,8 +113,8 @@ body {
   .printable-bill .formatted-bill-items,
   .printable-bill .formatted-bill-totals,
   .printable-bill .formatted-bill-meta {
-    width: 190mm;
-    max-width: 190mm;
+    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
   }
 
@@ -126,7 +128,9 @@ body {
   }
 
   .printable-bill .formatted-bill-item {
-    grid-template-columns: minmax(0, 1fr) 28mm 35mm;
+    grid-template-columns: minmax(0, 1fr) 18mm 32mm;
+    width: 100%;
+    table-layout: fixed;
   }
 
   .printable-bill .formatted-bill-item span,
@@ -137,8 +141,8 @@ body {
   }
 
   .printable-bill .formatted-bill-grand-total {
-    width: 190mm;
-    max-width: 190mm;
+    width: 100%;
+    max-width: 100%;
   }
 
   .printable-bill button,

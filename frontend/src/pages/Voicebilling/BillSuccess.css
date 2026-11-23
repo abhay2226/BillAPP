@@ -180,8 +180,8 @@
 
 @media print {
   .bill-success-page .formatted-bill {
-    width: 190mm;
-    max-width: 190mm;
+    width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
   }
 
@@ -190,7 +190,7 @@
   }
 
   .bill-success-page .formatted-bill-item {
-    grid-template-columns: minmax(0, 1fr) 28mm 35mm;
+    grid-template-columns: minmax(0, 1fr) 18mm 32mm;
   }
 
   .bill-success-page .amount-card,
