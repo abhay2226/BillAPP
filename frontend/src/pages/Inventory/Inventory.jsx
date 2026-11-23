@@ -61,6 +61,8 @@ function SearchableSelect({
   getOptionLabel,
   getOptionValue,
   disabled,
+  extraActions,
+  onDeleteOption,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -181,41 +183,94 @@ function SearchableSelect({
                   String(optionValue) === String(value);
 
                 return (
-                  <button
-                    type="button"
+                  <div
                     key={optionValue}
-                    onClick={() => {
-                      onChange(optionValue);
-                      setIsOpen(false);
-                      setQuery("");
-                    }}
                     style={{
-                      display: "block",
+                      display: "grid",
+                      gridTemplateColumns: "minmax(0, 1fr) 32px",
+                      alignItems: "center",
                       width: "100%",
-                      textAlign: "left",
-                      padding: "8px 12px",
-                      border: "none",
-                      background: isSelected
-                        ? "#eef4ff"
-                        : "transparent",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      color: "#111",
-                    }}
-                    onMouseEnter={(event) => {
-                      event.currentTarget.style.background =
-                        "#f5f5f5";
-                    }}
-                    onMouseLeave={(event) => {
-                      event.currentTarget.style.background =
-                        isSelected ? "#eef4ff" : "transparent";
+                      paddingRight: "6px",
                     }}
                   >
-                    {getOptionLabel(option)}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(optionValue);
+                        setIsOpen(false);
+                        setQuery("");
+                      }}
+                      style={{
+                        display: "block",
+                        width: "100%",
+                        textAlign: "left",
+                        padding: "8px 12px",
+                        border: "none",
+                        background: isSelected
+                          ? "#eef4ff"
+                          : "transparent",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        color: "#111",
+                      }}
+                    >
+                      {getOptionLabel(option)}
+                    </button>
+
+                    {onDeleteOption && (
+                      <button
+                        type="button"
+                        title={`Delete ${getOptionLabel(option)}`}
+                        aria-label={`Delete ${getOptionLabel(option)}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onDeleteOption(option);
+                        }}
+                        style={{
+                          width: "28px",
+                          height: "28px",
+                          border: "1px solid #efc1c1",
+                          borderRadius: "6px",
+                          background: "#fff5f5",
+                          color: "#b42318",
+                          fontSize: "18px",
+                          lineHeight: "1",
+                          cursor: "pointer",
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 );
               })
             )}
+
+            {extraActions?.map((action) => (
+              <button
+                type="button"
+                key={action.value}
+                onClick={() => {
+                  onChange(action.value);
+                  setIsOpen(false);
+                  setQuery("");
+                }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "8px 12px",
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  color: "#008f6b",
+                }}
+              >
+                {action.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -448,28 +503,32 @@ function Inventory() {
     }));
   };
 
-  const handleTypeChange = (event) => {
-    const value = event.target.value;
+  const deleteProductType = async (type) => {
+    if (
+      !window.confirm(
+        `Delete "${type.type_name}"?`
+      )
+    ) {
+      return;
+    }
 
-    if (value === "__ADD_NEW__") {
-      setAddingNewType(true);
-
+    try {
+      await masterDataService.deleteProductType(
+        type.product_type_id
+      );
+      await loadAll();
       setFormData((previous) => ({
         ...previous,
         typeId: "",
         typeName: "",
       }));
-
-      return;
+    } catch (error) {
+      console.error(error);
+      alert(
+        error.message ||
+        "Failed to delete product type."
+      );
     }
-
-    setAddingNewType(false);
-
-    setFormData((previous) => ({
-      ...previous,
-      typeId: value,
-      typeName: "",
-    }));
   };
 
   const handleBrandChange = (event) => {
@@ -2132,28 +2191,38 @@ function Inventory() {
                 {/* TYPE */}
 
                 {!addingNewType ? (
-                  <select
-                    name="typeId"
+                  <SearchableSelect
+                    options={productTypes}
                     value={formData.typeId}
-                    onChange={handleTypeChange}
-                  >
-                    <option value="">
-                      Select Type
-                    </option>
+                    onChange={(newValue) => {
+                      if (newValue === "__ADD_NEW__") {
+                        setAddingNewType(true);
+                        setFormData((previous) => ({
+                          ...previous,
+                          typeId: "",
+                          typeName: "",
+                        }));
+                        return;
+                      }
 
-                    {productTypes.map((type) => (
-                      <option
-                        key={type.product_type_id}
-                        value={type.product_type_id}
-                      >
-                        {type.type_name}
-                      </option>
-                    ))}
-
-                    <option value="__ADD_NEW__">
-                      + Add New Type
-                    </option>
-                  </select>
+                      setAddingNewType(false);
+                      setFormData((previous) => ({
+                        ...previous,
+                        typeId: newValue,
+                        typeName: "",
+                      }));
+                    }}
+                    placeholder="Select Type"
+                    getOptionLabel={(type) => type.type_name}
+                    getOptionValue={(type) => type.product_type_id}
+                    onDeleteOption={deleteProductType}
+                    extraActions={[
+                      {
+                        value: "__ADD_NEW__",
+                        label: "+ Add New Type",
+                      },
+                    ]}
+                  />
                 ) : (
                   <div className="add-new-row">
                     <input
