@@ -1,4 +1,6 @@
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_URL =
+  process.env.REACT_APP_API_URL ||
+  "https://billapp-e05j.onrender.com";
 
 function getToken() {
   return sessionStorage.getItem("token");
