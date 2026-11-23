@@ -1,4 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 
 import "./Sales.css";
 
@@ -11,6 +22,12 @@ const monthLabel = (date) =>
   date.toLocaleDateString("en-IN", {
     month: "short",
     year: "numeric",
+  });
+
+const dayLabel = (date) =>
+  date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
   });
 
 export default function Sales() {
@@ -58,7 +75,6 @@ export default function Sales() {
   }, []);
 
   const salesRows = useMemo(() => {
-    const now = new Date();
     const buckets = new Map();
 
     bills.forEach((bill) => {
@@ -70,15 +86,21 @@ export default function Sales() {
       let key;
       let label;
 
-      if (period === "monthly") {
+      if (period === "daily") {
+        key = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}-${String(
+          date.getDate()
+        ).padStart(2, "0")}`;
+        label = dayLabel(date);
+      } else if (period === "monthly") {
         key = `${date.getFullYear()}-${String(
           date.getMonth() + 1
         ).padStart(2, "0")}`;
         label = monthLabel(date);
       } else {
-        const quarter = Math.floor(date.getMonth() / 3) + 1;
-        key = `${date.getFullYear()}-Q${quarter}`;
-        label = `Q${quarter} ${date.getFullYear()}`;
+        key = String(date.getFullYear());
+        label = key;
       }
 
       const previous = buckets.get(key) || {
@@ -94,28 +116,29 @@ export default function Sales() {
       buckets.set(key, previous);
     });
 
-    const rows = Array.from(buckets.values()).sort(
+    return Array.from(buckets.values()).sort(
       (first, second) =>
-        second.date.getTime() - first.date.getTime()
+        first.date.getTime() - second.date.getTime()
     );
-
-    if (period === "monthly") {
-      return rows.filter((row) =>
-        row.date.getFullYear() === now.getFullYear()
-      ).slice(0, 12);
-    }
-
-    return rows.filter((row) => {
-      const year = row.date.getFullYear();
-      return year >= now.getFullYear() - 1;
-    }).slice(0, 8);
   }, [bills, period]);
 
-  const totalSales = salesRows.reduce(
+  const chartData = useMemo(() => {
+    if (period === "daily") {
+      return salesRows.slice(-31);
+    }
+
+    if (period === "monthly") {
+      return salesRows.slice(-12);
+    }
+
+    return salesRows.slice(-10);
+  }, [salesRows, period]);
+
+  const totalSales = chartData.reduce(
     (sum, row) => sum + row.sales,
     0
   );
-  const totalBills = salesRows.reduce(
+  const totalBills = chartData.reduce(
     (sum, row) => sum + row.bills,
     0
   );
@@ -125,25 +148,22 @@ export default function Sales() {
       <div className="sales-header">
         <div>
           <h1>Sales</h1>
-          <p>Monthly and quarterly sales summary</p>
+          <p>Daily, monthly and yearly sales summary</p>
         </div>
       </div>
 
-      <div className="sales-period-tabs">
-        <button
-          type="button"
-          className={period === "monthly" ? "active" : ""}
-          onClick={() => setPeriod("monthly")}
+      <div className="sales-period-control">
+        <label htmlFor="sales-period">Period</label>
+        <select
+          id="sales-period"
+          value={period}
+          onChange={(event) => setPeriod(event.target.value)}
+          className="sales-period-select"
         >
-          Monthly
-        </button>
-        <button
-          type="button"
-          className={period === "quarterly" ? "active" : ""}
-          onClick={() => setPeriod("quarterly")}
-        >
-          Quarterly
-        </button>
+          <option value="daily">Daily</option>
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
+        </select>
       </div>
 
       {errorMessage && (
@@ -165,6 +185,79 @@ export default function Sales() {
           <strong>
             {isLoading ? "…" : totalBills}
           </strong>
+        </article>
+      </div>
+
+      <div className="sales-chart-grid">
+        <article className="sales-chart-card">
+          <h2>Sales Trend</h2>
+
+          {isLoading ? (
+            <div className="sales-empty">Loading chart...</div>
+          ) : chartData.length === 0 ? (
+            <div className="sales-empty">No sales data.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData} margin={{ top: 12, right: 8, left: 0, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  tickFormatter={(value) => `₹${value}`}
+                />
+                <Tooltip
+                  formatter={(value) => [formatCurrency(value), "Sales"]}
+                  cursor={{ fill: "#edf1ef" }}
+                />
+                <Bar
+                  dataKey="sales"
+                  name="Sales"
+                  fill="#008f6b"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={48}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </article>
+
+        <article className="sales-chart-card">
+          <h2>Bills Trend</h2>
+
+          {isLoading ? (
+            <div className="sales-empty">Loading chart...</div>
+          ) : chartData.length === 0 ? (
+            <div className="sales-empty">No bill data.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData} margin={{ top: 12, right: 8, left: 0, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: "#64748b", fontSize: 12 }}
+                />
+                <Tooltip formatter={(value) => [value, "Bills"]} />
+                <Line
+                  type="monotone"
+                  dataKey="bills"
+                  name="Bills"
+                  stroke="#f28c00"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: "#f28c00", strokeWidth: 0 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </article>
       </div>
 
