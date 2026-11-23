@@ -67,6 +67,19 @@ body {
 ============================================================ */
 
 @media print {
+  @page {
+    size: auto;
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    background: #ffffff !important;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -81,5 +94,16 @@ body {
     top: 0;
     left: 0;
     width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .printable-bill button,
+  .printable-bill img,
+  .printable-bill .receipt-btn,
+  .printable-bill .action-list {
+    display: none !important;
   }
 }

@@ -376,3 +376,118 @@
   }
 
 }
+
+.printable-bill-only {
+  display: none;
+}
+
+.formatted-bill {
+  color: #22272b;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.formatted-bill-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0 0.75rem;
+  border-bottom: 1px solid #22272b;
+  text-align: center;
+}
+
+.formatted-bill-header strong {
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+}
+
+.formatted-bill-header span {
+  color: #6b7470;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.formatted-bill-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.formatted-bill-meta div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+}
+
+.formatted-bill-meta span {
+  color: #6b7470;
+  text-transform: uppercase;
+}
+
+.formatted-bill-items {
+  margin-top: 1rem;
+  border-top: 1px solid #dfe5e2;
+  border-bottom: 1px solid #dfe5e2;
+}
+
+.formatted-bill-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3rem 7rem;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 2.25rem;
+  border-bottom: 1px solid #e7ebe9;
+  font-size: 0.82rem;
+}
+
+.formatted-bill-item:last-child {
+  border-bottom: none;
+}
+
+.formatted-bill-item span:nth-child(2),
+.formatted-bill-item span:nth-child(3) {
+  text-align: right;
+}
+
+.formatted-bill-item-head {
+  min-height: 2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.formatted-bill-totals {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.formatted-bill-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 1.8rem;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.formatted-bill-totals .formatted-bill-grand-total {
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #22272b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+@media print {
+  .printable-bill-only {
+    display: block !important;
+  }
+
+  .formatted-bill-meta {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

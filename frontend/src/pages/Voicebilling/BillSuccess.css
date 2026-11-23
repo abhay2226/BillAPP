@@ -105,6 +105,87 @@
 
 /* ================= BILL DETAILS ================= */
 
+.bill-success-page .formatted-bill {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bill-success-page .formatted-bill-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0 0.75rem;
+  border-bottom: 1px solid #22272b;
+  text-align: center;
+}
+
+.bill-success-page .formatted-bill-header strong {
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+}
+
+.bill-success-page .formatted-bill-header span {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.bill-success-page .formatted-bill-items {
+  margin-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bill-success-page .formatted-bill-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3rem 7rem;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 2.25rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.82rem;
+}
+
+.bill-success-page .formatted-bill-item:last-child {
+  border-bottom: none;
+}
+
+.bill-success-page .formatted-bill-item span:nth-child(2),
+.bill-success-page .formatted-bill-item span:nth-child(3) {
+  text-align: right;
+}
+
+.bill-success-page .formatted-bill-item-head {
+  min-height: 2rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bill-success-page .formatted-bill-totals {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.bill-success-page .formatted-bill-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 1.8rem;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.bill-success-page .formatted-bill-totals .formatted-bill-grand-total {
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #22272b;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
 .bill-success-page .bill-details {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

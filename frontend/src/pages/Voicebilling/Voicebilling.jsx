@@ -198,6 +198,13 @@ const Billing = () => {
   const [successTotalAmount, setSuccessTotalAmount] =
     useState(0);
 
+  const [successBillSummary, setSuccessBillSummary] =
+    useState({
+      subtotal: 0,
+      discount: 0,
+      tax: 0,
+    });
+
   // ==========================================================
   // DISCOUNTS
   // ==========================================================
@@ -1584,6 +1591,12 @@ const Billing = () => {
         )
       );
 
+      setSuccessBillSummary({
+        subtotal: Number(bill.subtotal || 0),
+        discount: Number(bill.bill_discount_total || 0),
+        tax: Number(bill.tax_total || 0),
+      });
+
       setShowSuccessScreen(
         true
       );
@@ -1609,8 +1622,24 @@ const Billing = () => {
   // ==========================================================
 
   const shareReceipt = () => {
-    const message =
-      "Here is your bill receipt.";
+    const itemLines = items.map(
+      (item) =>
+        `${item.name} x ${item.quantity} - ₹${Number(item.total || 0).toFixed(2)}`
+    );
+
+    const message = [
+      "PROSHOP",
+      "Tax Invoice",
+      `Bill: ${billNumber}`,
+      `Date: ${billDate}`,
+      "",
+      ...itemLines,
+      "",
+      `Subtotal: ₹${Number(successBillSummary.subtotal || 0).toFixed(2)}`,
+      `Discount: - ₹${Number(successBillSummary.discount || 0).toFixed(2)}`,
+      `GST (18%): ₹${Number(successBillSummary.tax || 0).toFixed(2)}`,
+      `Grand Total: ₹${Number(successTotalAmount || 0).toFixed(2)}`,
+    ].join("\n");
 
     const whatsappUrl =
       `https://wa.me/?text=${encodeURIComponent(
@@ -1660,6 +1689,12 @@ const Billing = () => {
 
     setSuccessTotalAmount(0);
 
+    setSuccessBillSummary({
+      subtotal: 0,
+      discount: 0,
+      tax: 0,
+    });
+
     closeItemPopup();
 
     loadDiscounts();
@@ -1682,6 +1717,16 @@ const Billing = () => {
         }
         successTotalAmount={
           `₹${successTotalAmount.toFixed(2)}`
+        }
+        billItems={items}
+        billSubtotal={
+          successBillSummary.subtotal
+        }
+        billDiscount={
+          successBillSummary.discount
+        }
+        billTax={
+          successBillSummary.tax
         }
         onNewBill={
           createNewBill

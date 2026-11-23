@@ -49,6 +49,7 @@ export default function BillHistory() {
   const [expandedBillId, setExpandedBillId] = useState(null);
   const [billItemsById, setBillItemsById] = useState({});
   const [loadingItemsForBillId, setLoadingItemsForBillId] = useState(null);
+  const [printingBill, setPrintingBill] = useState(null);
 
   const loadBills = async () => {
     setIsLoading(true);
@@ -179,7 +180,7 @@ export default function BillHistory() {
     }
   };
 
-  const printBill = (event, billId) => {
+  const printBill = async (event, billId) => {
     event.stopPropagation();
 
     const bill = bills.find(
@@ -190,21 +191,31 @@ export default function BillHistory() {
       return;
     }
 
-    // Only this specific bill card should appear in the print
-    // output — mark it, print, then unmark (see the global
-    // @media print rule in index.css).
-    const card = event.currentTarget.closest(
-      ".bill-history-card"
-    );
+    try {
+      let items = billItemsById[billId];
 
-    if (card) {
-      card.classList.add("printable-bill");
-    }
+      if (!items) {
+        items = await billService.getBillItems(billId);
+        setBillItemsById((previous) => ({
+          ...previous,
+          [billId]: items,
+        }));
+      }
 
-    window.print();
+      setPrintingBill({
+        bill,
+        items: Array.isArray(items) ? items : [],
+      });
 
-    if (card) {
-      card.classList.remove("printable-bill");
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          window.print();
+          setPrintingBill(null);
+        });
+      });
+    } catch (error) {
+      console.error("Failed to load bill for printing:", error);
+      alert(error.message || "Failed to prepare bill for printing.");
     }
   };
 
@@ -459,6 +470,74 @@ export default function BillHistory() {
           </div>
 
         </div>
+
+        {printingBill && (
+          <div className="printable-bill formatted-bill printable-bill-only">
+            <div className="formatted-bill-header">
+              <strong>PROSHOP</strong>
+              <span>Tax Invoice</span>
+            </div>
+
+            <section className="formatted-bill-meta">
+              <div>
+                <span>Bill Number</span>
+                <strong>#{printingBill.bill.invoice_number}</strong>
+              </div>
+              <div>
+                <span>Date</span>
+                <strong>
+                  {formatBillDateOnly(printingBill.bill.created_at)}
+                  {" "}
+                  {formatBillTimeOnly(printingBill.bill.created_at)}
+                </strong>
+              </div>
+              <div>
+                <span>Customer</span>
+                <strong>
+                  {printingBill.bill.customer?.phone_no || "Walk-in Customer"}
+                </strong>
+              </div>
+            </section>
+
+            <section className="formatted-bill-items">
+              <div className="formatted-bill-item formatted-bill-item-head">
+                <span>Item</span>
+                <span>Qty</span>
+                <span>Amount</span>
+              </div>
+
+              {printingBill.items.map((item) => (
+                <div
+                  className="formatted-bill-item"
+                  key={item.billItemId}
+                >
+                  <span>{item.productName}</span>
+                  <span>{item.qty}</span>
+                  <span>{formatCurrency(item.lineTotal)}</span>
+                </div>
+              ))}
+            </section>
+
+            <section className="formatted-bill-totals">
+              <div>
+                <span>Subtotal</span>
+                <strong>{formatCurrency(printingBill.bill.subtotal)}</strong>
+              </div>
+              <div>
+                <span>Discount</span>
+                <strong>- {formatCurrency(printingBill.bill.bill_discount_total)}</strong>
+              </div>
+              <div>
+                <span>GST (18%)</span>
+                <strong>{formatCurrency(printingBill.bill.tax_total)}</strong>
+              </div>
+              <div className="formatted-bill-grand-total">
+                <span>Grand Total</span>
+                <strong>{formatCurrency(printingBill.bill.grand_total)}</strong>
+              </div>
+            </section>
+          </div>
+        )}
       </div>
     </>
   );

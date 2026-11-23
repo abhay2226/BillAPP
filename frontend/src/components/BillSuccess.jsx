@@ -14,10 +14,17 @@ function BillSuccess({
   billNumber,
   billDate,
   successTotalAmount,
+  billItems = [],
+  billSubtotal = 0,
+  billDiscount = 0,
+  billTax = 0,
   onShare,
   onPrint,
   onNewBill,
 }) {
+  const formatCurrency = (value) =>
+    `₹${Number(value || 0).toFixed(2)}`;
+
   return (
     <div
       id="billSuccessScreen"
@@ -57,7 +64,11 @@ function BillSuccess({
           that should show up when "Print Bill" is used)
       ---------------------------------- */}
 
-      <div className="printable-bill">
+      <div className="printable-bill formatted-bill">
+        <div className="formatted-bill-header">
+          <strong>PROSHOP</strong>
+          <span>Tax Invoice</span>
+        </div>
 
         <section className="bill-details">
 
@@ -85,6 +96,44 @@ function BillSuccess({
 
           </article>
 
+        </section>
+
+        <section className="formatted-bill-items">
+          <div className="formatted-bill-item formatted-bill-item-head">
+            <span>Item</span>
+            <span>Qty</span>
+            <span>Amount</span>
+          </div>
+
+          {billItems.map((item) => (
+            <div
+              className="formatted-bill-item"
+              key={item.id}
+            >
+              <span>{item.name}</span>
+              <span>{item.quantity}</span>
+              <span>{formatCurrency(item.total)}</span>
+            </div>
+          ))}
+        </section>
+
+        <section className="formatted-bill-totals">
+          <div>
+            <span>Subtotal</span>
+            <strong>{formatCurrency(billSubtotal)}</strong>
+          </div>
+          <div>
+            <span>Discount</span>
+            <strong>- {formatCurrency(billDiscount)}</strong>
+          </div>
+          <div>
+            <span>GST (18%)</span>
+            <strong>{formatCurrency(billTax)}</strong>
+          </div>
+          <div className="formatted-bill-grand-total">
+            <span>Grand Total</span>
+            <strong>{successTotalAmount}</strong>
+          </div>
         </section>
 
         {/* -------- AMOUNT --------- */}
