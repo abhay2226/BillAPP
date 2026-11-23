@@ -103,6 +103,42 @@ body {
     overflow: visible;
     break-after: auto;
     page-break-after: auto;
+    box-sizing: border-box;
+  }
+
+  .printable-bill .formatted-bill-header,
+  .printable-bill .bill-details,
+  .printable-bill .formatted-bill-items,
+  .printable-bill .formatted-bill-totals,
+  .printable-bill .formatted-bill-meta {
+    width: 190mm;
+    max-width: 190mm;
+    box-sizing: border-box;
+  }
+
+  .printable-bill .bill-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .printable-bill .card {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .printable-bill .formatted-bill-item {
+    grid-template-columns: minmax(0, 1fr) 28mm 35mm;
+  }
+
+  .printable-bill .formatted-bill-item span,
+  .printable-bill .formatted-bill-totals span,
+  .printable-bill .formatted-bill-totals strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .printable-bill .formatted-bill-grand-total {
+    width: 190mm;
+    max-width: 190mm;
   }
 
   .printable-bill button,

@@ -182,6 +182,7 @@
   .bill-success-page .formatted-bill {
     width: 190mm;
     max-width: 190mm;
+    box-sizing: border-box;
   }
 
   .bill-success-page .bill-details {
