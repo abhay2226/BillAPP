@@ -496,39 +496,6 @@ function Inventory() {
     }));
   };
 
-  const deleteProductBrand = async () => {
-    const brandId = Number(formData.brandId);
-
-    if (!brandId) {
-      return;
-    }
-
-    const selectedBrand = productBrands.find(
-      (brand) => Number(brand.product_brand_id) === brandId,
-    );
-
-    if (
-      !window.confirm(
-        `Delete "${selectedBrand?.brand_name || "this brand"}"?`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await masterDataService.deleteProductBrand(brandId);
-      await loadAll();
-      setFormData((previous) => ({
-        ...previous,
-        brandId: "",
-        brandName: "",
-      }));
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Failed to delete product brand.");
-    }
-  };
-
   /*
   ============================================================
   OPEN / CLOSE POPUP
@@ -2213,42 +2180,28 @@ function Inventory() {
                 {/* BRAND */}
 
                 {!addingNewBrand ? (
-                  <div className="master-select-row">
-                    <select
-                      name="brandId"
-                      value={formData.brandId}
-                      onChange={handleBrandChange}
-                    >
-                      <option value="">
-                        Select Brand
-                      </option>
+                  <select
+                    name="brandId"
+                    value={formData.brandId}
+                    onChange={handleBrandChange}
+                  >
+                    <option value="">
+                      Select Brand
+ </option>
 
-                      {productBrands.map((brand) => (
-                        <option
-                          key={brand.product_brand_id}
-                          value={brand.product_brand_id}
-                        >
-                          {brand.brand_name}
-                        </option>
-                      ))}
-
-                      <option value="__ADD_NEW__">
-                        + Add New Brand
-                      </option>
-                    </select>
-
-                    {formData.brandId && (
-                      <button
-                        type="button"
-                        className="master-delete-button"
-                        onClick={deleteProductBrand}
-                        title="Delete selected brand"
-                        aria-label="Delete selected brand"
+                    {productBrands.map((brand) => (
+                      <option
+                        key={brand.product_brand_id}
+                        value={brand.product_brand_id}
                       >
-                        Delete
-                      </button>
-                    )}
-                  </div>
+                        {brand.brand_name}
+                      </option>
+                    ))}
+
+                    <option value="__ADD_NEW__">
+                      + Add New Brand
+                    </option>
+                  </select>
                 ) : (
                   <div className="add-new-row">
                     <input
