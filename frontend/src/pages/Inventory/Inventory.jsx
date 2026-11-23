@@ -496,6 +496,39 @@ function Inventory() {
     }));
   };
 
+  const deleteProductType = async () => {
+    const typeId = Number(formData.typeId);
+
+    if (!typeId) {
+      return;
+    }
+
+    const selectedType = productTypes.find(
+      (type) => Number(type.product_type_id) === typeId,
+    );
+
+    if (
+      !window.confirm(
+        `Delete "${selectedType?.type_name || "this type"}"?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await masterDataService.deleteProductType(typeId);
+      await loadAll();
+      setFormData((previous) => ({
+        ...previous,
+        typeId: "",
+        typeName: "",
+      }));
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to delete product type.");
+    }
+  };
+
   /*
   ============================================================
   OPEN / CLOSE POPUP
@@ -1341,6 +1374,7 @@ function Inventory() {
                     type="button"
                     onClick={openPopup}
                   >
+                    <span aria-hidden="true">+</span>
                     Add Product
                   </button>
                 )}
@@ -1351,6 +1385,7 @@ function Inventory() {
                     type="button"
                     onClick={openPopup}
                   >
+                    <span aria-hidden="true">+</span>
                     Add Inventory
                   </button>
                 )}
@@ -1361,6 +1396,7 @@ function Inventory() {
                     type="button"
                     onClick={openPopup}
                   >
+                    <span aria-hidden="true">+</span>
                     Add Damage Good
                   </button>
                 )}
@@ -2129,28 +2165,42 @@ function Inventory() {
                 {/* TYPE */}
 
                 {!addingNewType ? (
-                  <select
-                    name="typeId"
-                    value={formData.typeId}
-                    onChange={handleTypeChange}
-                  >
-                    <option value="">
-                      Select Type
-                    </option>
-
-                    {productTypes.map((type) => (
-                      <option
-                        key={type.product_type_id}
-                        value={type.product_type_id}
-                      >
-                        {type.type_name}
+                  <div className="master-select-row">
+                    <select
+                      name="typeId"
+                      value={formData.typeId}
+                      onChange={handleTypeChange}
+                    >
+                      <option value="">
+                        Select Type
                       </option>
-                    ))}
 
-                    <option value="__ADD_NEW__">
-                      + Add New Type
-                    </option>
-                  </select>
+                      {productTypes.map((type) => (
+                        <option
+                          key={type.product_type_id}
+                          value={type.product_type_id}
+                        >
+                          {type.type_name}
+                        </option>
+                      ))}
+
+                      <option value="__ADD_NEW__">
+                        + Add New Type
+                      </option>
+                    </select>
+
+                    {formData.typeId && (
+                      <button
+                        type="button"
+                        className="master-delete-button"
+                        onClick={deleteProductType}
+                        title="Delete selected type"
+                        aria-label="Delete selected type"
+                      >
+                        <img src={deleteIcon} alt="" />
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="add-new-row">
                     <input

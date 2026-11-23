@@ -394,29 +394,45 @@ select.discount-input option {
   margin-bottom: 0.4rem; 
 } 
 
-.add-product-button { 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 0.35rem; 
-  padding: 0.35rem 0.5rem; 
-  background-color: transparent; 
-  border: none; 
-  color: #008f6b; 
-  font-size: 0.8rem; 
-  font-weight: 600; 
-  cursor: pointer; 
-} 
+.add-product-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.5rem;
+  padding: 0.55rem 1rem;
+  background-color: #008f6b;
+  border: 1px solid #008f6b;
+  border-radius: 0.55rem;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 143, 107, 0.18);
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
 
-.add-product-button span { 
-  font-size: 1.25rem; 
-  font-weight: 500; 
-  line-height: 1; 
-} 
+.add-product-button span {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1;
+}
 
-.add-product-button:hover { 
-  color: #007a5c; 
-} 
+.add-product-button:hover {
+  background-color: #007a5c;
+  border-color: #007a5c;
+  transform: translateY(-1px);
+  box-shadow: 0 0.35rem 0.9rem rgba(0, 143, 107, 0.24);
+}
+
+.add-product-button:active {
+  transform: translateY(0);
+}
+
+.add-product-button:focus-visible {
+  outline: 3px solid rgba(0, 143, 107, 0.24);
+  outline-offset: 2px;
+}
 
 
 /* ========================================================= 
@@ -877,6 +893,42 @@ select.discount-input option {
   overflow: hidden; 
   white-space: nowrap; 
 } 
+
+.master-select-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.75rem;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.master-select-row select {
+  min-width: 0;
+}
+
+.master-delete-button {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #efc1c1;
+  border-radius: var(--radius-sm);
+  background-color: #fff5f5;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.master-delete-button img {
+  width: 1.1rem;
+  height: 1.1rem;
+  object-fit: contain;
+}
+
+.master-delete-button:hover {
+  background-color: #fee2e2;
+  border-color: #dc2626;
+}
 
 .popup-content select option { 
   color: #22272b; 

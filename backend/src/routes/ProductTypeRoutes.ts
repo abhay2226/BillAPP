@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+    deactivateProductTypeController,
     getAllProductTypesController
 } from "../controller/ProductTypeController.js";
 
@@ -21,6 +22,12 @@ ProductTypeRouter.get(
     "/",
     authorize("OWNER", "STAFF"),
     getAllProductTypesController
+);
+
+ProductTypeRouter.delete(
+    "/:id",
+    authorize("OWNER", "STAFF"),
+    deactivateProductTypeController
 );
 
 

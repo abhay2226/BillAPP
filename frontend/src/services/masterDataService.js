@@ -23,3 +23,9 @@ export async function getUnits() {
   const result = await apiRequest("/units");
   return result.data || [];
 }
+
+export async function deleteProductType(productTypeId) {
+  return apiRequest(`/product-types/${productTypeId}`, {
+    method: "DELETE",
+  });
+}
