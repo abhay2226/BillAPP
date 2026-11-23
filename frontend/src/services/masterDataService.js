@@ -29,3 +29,9 @@ export async function deleteProductType(productTypeId) {
     method: "DELETE",
   });
 }
+
+export async function deleteProductBrand(productBrandId) {
+  return apiRequest(`/product-brands/${productBrandId}`, {
+    method: "DELETE",
+  });
+}

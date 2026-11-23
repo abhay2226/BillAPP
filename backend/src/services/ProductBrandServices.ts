@@ -21,3 +21,23 @@ export const getAllProductBrandsService = async () => {
         }
     });
 };
+
+export const deactivateProductBrandService = async (
+    productBrandId: number
+) => {
+    const brand = await brandRepository.findOne({
+        where: {
+            product_brand_id: productBrandId,
+            is_active: true
+        }
+    });
+
+    if (!brand) {
+        throw new Error("Product brand not found.");
+    }
+
+    brand.is_active = false;
+    brand.updated_at = new Date();
+
+    return await brandRepository.save(brand);
+};

@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+    deactivateProductBrandController,
     getAllProductBrandsController
 } from "../controller/ProductBrandController.js";
 
@@ -21,6 +22,12 @@ ProductBrandRouter.get(
     "/",
     authorize("OWNER", "STAFF"),
     getAllProductBrandsController
+);
+
+ProductBrandRouter.delete(
+    "/:id",
+    authorize("OWNER", "STAFF"),
+    deactivateProductBrandController
 );
 
 
