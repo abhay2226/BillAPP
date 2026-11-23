@@ -92,9 +92,9 @@ body {
   }
 
   .printable-bill {
-    position: relative;
-    top: auto;
-    left: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     max-width: 100%;
     min-height: 0;
