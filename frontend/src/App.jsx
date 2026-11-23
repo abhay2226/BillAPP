@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import AppShell from "./components/layout/AppShell";
 import { AuthProvider, useAuth } from "./components/layout/AuthContext";
@@ -11,9 +12,45 @@ import Profile from "./pages/Profile/Profile";
 import BillHistory from "./pages/BillHistory/BillHistory";
 import Sales from "./pages/Sales/Sales";
 import Login from "./pages/Login/login";
+import { getSignupRoles } from "./services/authService";
 
 function AppRoutes() {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
+    const [isOwner, setIsOwner] = useState(null);
+
+    useEffect(() => {
+        let active = true;
+
+        if (!isAuthenticated || !user?.roleId) {
+            setIsOwner(false);
+            return undefined;
+        }
+
+        getSignupRoles()
+            .then((roles) => {
+                if (!active) return;
+
+                const ownerRole = roles.find(
+                    (role) =>
+                        String(role.role_name).toUpperCase() === "OWNER"
+                );
+
+                setIsOwner(
+                    Boolean(
+                        ownerRole &&
+                        Number(ownerRole.role_id) ===
+                            Number(user.roleId)
+                    )
+                );
+            })
+            .catch(() => {
+                if (active) setIsOwner(false);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [isAuthenticated, user?.roleId]);
 
     return (
         <Routes>
@@ -49,7 +86,15 @@ function AppRoutes() {
                 />
                 <Route
                     path="/sales"
-                    element={isAuthenticated ? <Sales /> : <Navigate to="/login" replace />}
+                    element={
+                        !isAuthenticated
+                            ? <Navigate to="/login" replace />
+                            : isOwner === null
+                                ? null
+                                : isOwner
+                                    ? <Sales />
+                                    : <Navigate to="/dashboard" replace />
+                    }
                 />
                 
             </Route>

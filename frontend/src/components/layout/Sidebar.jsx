@@ -1,4 +1,8 @@
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+import { getSignupRoles } from "../../services/authService";
+import { useAuth } from "./AuthContext";
 
 import dashboardIcon from "../../assets/icons/dashboard.png";
 import boxIcon from "../../assets/icons/box.png";
@@ -8,6 +12,45 @@ import historyIcon from "../../assets/icons/history.png";
 import billIconSales from "../../assets/icons/bill.png";
 
 function Sidebar({ isOpen , onProfileClick}) {
+  const { user } = useAuth();
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadOwnerStatus = async () => {
+      try {
+        const roles = await getSignupRoles();
+        const ownerRole = roles.find(
+          (role) =>
+            String(role.role_name).toUpperCase() === "OWNER"
+        );
+
+        if (active) {
+          setIsOwner(
+            Boolean(
+              ownerRole &&
+              Number(ownerRole.role_id) ===
+                Number(user?.roleId)
+            )
+          );
+        }
+      } catch {
+        if (active) {
+          setIsOwner(false);
+        }
+      }
+    };
+
+    if (user?.roleId) {
+      loadOwnerStatus();
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [user?.roleId]);
+
   const routes = [
     {
       id: 1,
@@ -44,8 +87,13 @@ function Sidebar({ isOpen , onProfileClick}) {
       path: "/sales",
       label: "Sales",
       icon: billIconSales,
+      ownerOnly: true,
     },
   ];
+
+  const visibleRoutes = routes.filter(
+    (route) => !route.ownerOnly || isOwner
+  );
 
   return (
     <aside
@@ -55,7 +103,7 @@ function Sidebar({ isOpen , onProfileClick}) {
       id="sidebar"
     >
 
-      {routes.map((route) => (
+      {visibleRoutes.map((route) => (
         <div className="nav-item" key={route.id}>
 
           <NavLink
