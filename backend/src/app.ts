@@ -18,6 +18,10 @@ import ProductTypeRouter from "./routes/ProductTypeRoutes.js";
 import ProductBrandRouter from "./routes/ProductBrandRoutes.js";
 import UnitRouter from "./routes/UomRoute.js";
 import damageGoodsRoutes from "./routes/DamageGood.routes.js";
+import { authenticate } from "./middleware/Authenticate.js";
+import { authorize } from "./middleware/Authorize.js";
+import { deactivateProductBrandController } from "./controller/ProductBrandController.js";
+import { deactivateProductTypeController } from "./controller/ProductTypeController.js";
 
 
 const app: Application = express();
@@ -52,6 +56,20 @@ app.use("/product-types",ProductTypeRouter);
 app.use("/product-brands",ProductBrandRouter);
 app.use("/units",UnitRouter);
 app.use("/damaged-goods", damageGoodsRoutes);
+
+app.delete(
+    "/product-brands/:id",
+    authenticate,
+    authorize("OWNER", "STAFF"),
+    deactivateProductBrandController
+);
+
+app.delete(
+    "/product-types/:id",
+    authenticate,
+    authorize("OWNER", "STAFF"),
+    deactivateProductTypeController
+);
 
 app.use((req: Request, res: Response) => {
     res.status(404).json({
