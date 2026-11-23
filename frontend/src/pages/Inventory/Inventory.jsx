@@ -496,39 +496,6 @@ function Inventory() {
     }));
   };
 
-  const deleteProductType = async () => {
-    const typeId = Number(formData.typeId);
-
-    if (!typeId) {
-      return;
-    }
-
-    const selectedType = productTypes.find(
-      (type) => Number(type.product_type_id) === typeId,
-    );
-
-    if (
-      !window.confirm(
-        `Delete "${selectedType?.type_name || "this type"}"?`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await masterDataService.deleteProductType(typeId);
-      await loadAll();
-      setFormData((previous) => ({
-        ...previous,
-        typeId: "",
-        typeName: "",
-      }));
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Failed to delete product type.");
-    }
-  };
-
   const deleteProductBrand = async () => {
     const brandId = Number(formData.brandId);
 
@@ -2198,42 +2165,28 @@ function Inventory() {
                 {/* TYPE */}
 
                 {!addingNewType ? (
-                  <div className="master-select-row">
-                    <select
-                      name="typeId"
-                      value={formData.typeId}
-                      onChange={handleTypeChange}
-                    >
-                      <option value="">
-                        Select Type
-                      </option>
+                  <select
+                    name="typeId"
+                    value={formData.typeId}
+                    onChange={handleTypeChange}
+                  >
+                    <option value="">
+                      Select Type
+                    </option>
 
-                      {productTypes.map((type) => (
-                        <option
-                          key={type.product_type_id}
-                          value={type.product_type_id}
-                        >
-                          {type.type_name}
-                        </option>
-                      ))}
-
-                      <option value="__ADD_NEW__">
-                        + Add New Type
-                      </option>
-                    </select>
-
-                    {formData.typeId && (
-                      <button
-                        type="button"
-                        className="master-delete-button"
-                        onClick={deleteProductType}
-                        title="Delete selected type"
-                        aria-label="Delete selected type"
+                    {productTypes.map((type) => (
+                      <option
+                        key={type.product_type_id}
+                        value={type.product_type_id}
                       >
-                        Delete
-                      </button>
-                    )}
-                  </div>
+                        {type.type_name}
+                      </option>
+                    ))}
+
+                    <option value="__ADD_NEW__">
+                      + Add New Type
+                    </option>
+                  </select>
                 ) : (
                   <div className="add-new-row">
                     <input
