@@ -8,6 +8,11 @@ import {
 import * as authService from "../../services/authService";
 import * as userService from "../../services/userService";
 
+export function clearExpiredSession() {
+  sessionStorage.removeItem("user");
+  sessionStorage.removeItem("token");
+}
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {

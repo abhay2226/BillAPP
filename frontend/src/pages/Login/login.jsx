@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/layout/AuthContext";
 import { getSignupRoles, getSignupStores } from "../../services/authService";
@@ -33,12 +33,45 @@ export default function Login() {
   // since role ids are not guaranteed to be 1/2 (e.g. after roles are
   // recreated or extra roles are added, ids can shift).
   const [signupRoles, setSignupRoles] = useState([]);
+  const [isLoadingSignupRoles, setIsLoadingSignupRoles] = useState(true);
+  const [signupRolesError, setSignupRolesError] = useState("");
+
+  const loadSignupRoles = useCallback(async () => {
+    setIsLoadingSignupRoles(true);
+    setSignupRolesError("");
+
+    try {
+      const roles = await getSignupRoles();
+      const availableRoles = Array.isArray(roles)
+        ? roles.filter(
+            (role) =>
+              role &&
+              ["OWNER", "STAFF"].includes(
+                String(role.role_name).toUpperCase()
+              ) &&
+              Number.isInteger(Number(role.role_id))
+          )
+        : [];
+
+      setSignupRoles(availableRoles);
+      setRoleId("");
+
+      if (availableRoles.length === 0) {
+        setSignupRolesError("No signup roles are currently available.");
+      }
+    } catch (error) {
+      setSignupRoles([]);
+      setSignupRolesError(
+        error.message || "Unable to load signup roles."
+      );
+    } finally {
+      setIsLoadingSignupRoles(false);
+    }
+  }, []);
 
   useEffect(() => {
-    getSignupRoles()
-      .then(setSignupRoles)
-      .catch(() => setSignupRoles([]));
-  }, []);
+    loadSignupRoles();
+  }, [loadSignupRoles]);
 
   const ownerRoleId = String(
     signupRoles.find((role) => role.role_name === "OWNER")?.role_id ?? ""
@@ -75,6 +108,20 @@ export default function Login() {
     type: "",
     text: "",
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("expired") === "1") {
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+
+      setFeedback({
+        type: "error",
+        text: "Your login session expired. Please log in again.",
+      });
+    }
+  }, []);
 
   const [popupFeedback, setPopupFeedback] = useState({
     type: "",
@@ -607,10 +654,18 @@ export default function Login() {
                     text: "",
                   });
                 }}
-                disabled={isLoading}
+                disabled={
+                  isLoading ||
+                  isLoadingSignupRoles ||
+                  signupRoles.length === 0
+                }
               >
                 <option value="">
-                  Select your role
+                  {isLoadingSignupRoles
+                    ? "Loading roles..."
+                    : signupRolesError
+                    ? "Roles unavailable"
+                    : "Select your role"}
                 </option>
 
                 {signupRoles.map((role) => (
@@ -620,6 +675,19 @@ export default function Login() {
                   </option>
                 ))}
               </select>
+
+              {signupRolesError && (
+                <div className="auth-feedback error">
+                  {signupRolesError}{" "}
+                  <button
+                    type="button"
+                    onClick={loadSignupRoles}
+                    disabled={isLoadingSignupRoles}
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
