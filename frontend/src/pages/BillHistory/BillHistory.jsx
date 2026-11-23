@@ -173,6 +173,9 @@ export default function BillHistory() {
         }));
       } catch (error) {
         console.error("Failed to load bill items:", error);
+        if (error?.isSessionExpired) {
+          return;
+        }
         alert(error.message || "Failed to load bill items.");
       } finally {
         setLoadingItemsForBillId(null);
@@ -215,6 +218,9 @@ export default function BillHistory() {
       });
     } catch (error) {
       console.error("Failed to load bill for printing:", error);
+      if (error?.isSessionExpired) {
+        return;
+      }
       alert(error.message || "Failed to prepare bill for printing.");
     }
   };

@@ -5,6 +5,7 @@ import boxIcon from "../../assets/icons/box.png";
 import billIcon from "../../assets/icons/bill.png";
 import userIcon from "../../assets/icons/user.png";
 import historyIcon from "../../assets/icons/history.png";
+import billIconSales from "../../assets/icons/bill.png";
 
 function Sidebar({ isOpen , onProfileClick}) {
   const routes = [
@@ -38,6 +39,12 @@ function Sidebar({ isOpen , onProfileClick}) {
         label: "Bill History",
         icon: historyIcon,
       },
+    {
+      id: 6,
+      path: "/sales",
+      label: "Sales",
+      icon: billIconSales,
+    },
   ];
 
   return (

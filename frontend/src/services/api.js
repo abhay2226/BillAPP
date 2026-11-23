@@ -79,10 +79,13 @@ export async function apiRequest(path, { method = "GET", body, params } = {}) {
       window.location.href = "/login?expired=1";
     }
 
-    throw new Error(
+    const sessionError = new Error(
       (result && (result.message || result.error)) ||
         "Your session has expired. Please log in again."
     );
+    sessionError.name = "SessionExpiredError";
+    sessionError.isSessionExpired = true;
+    throw sessionError;
   }
 
   if (!response.ok || (result && result.success === false)) {

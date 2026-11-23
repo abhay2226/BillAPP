@@ -12,6 +12,7 @@ const routeTitles = {
   "/dashboard": "Dashboard",
   "/profile": "Profile",
   "/billhistory": "Bill History",
+  "/sales": "Sales",
 };
 
 function Header({ onMenuToggle, onAddProduct, isAuthPage }) {

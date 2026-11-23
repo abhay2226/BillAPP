@@ -1,0 +1,152 @@
+.sales-page {
+  width: 100%;
+  padding: 1.25rem;
+  box-sizing: border-box;
+}
+
+.sales-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.sales-header h1,
+.sales-header p {
+  margin: 0;
+}
+
+.sales-header h1 {
+  color: #22272b;
+  font-size: 1.35rem;
+}
+
+.sales-header p {
+  margin-top: 0.35rem;
+  color: #7a8580;
+  font-size: 0.85rem;
+}
+
+.sales-period-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  background: #edf1ef;
+}
+
+.sales-period-tabs button {
+  height: 2.75rem;
+  border: none;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sales-period-tabs button.active {
+  background: #008f6b;
+  color: #ffffff;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 143, 107, 0.18);
+}
+
+.sales-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.sales-summary-card {
+  min-height: 7rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.85rem;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.sales-summary-card span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sales-summary-card strong {
+  color: #008f6b;
+  font-size: 1.35rem;
+}
+
+.sales-table-card {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.85rem;
+  background: #ffffff;
+}
+
+.sales-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sales-table th,
+.sales-table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #edf1ef;
+}
+
+.sales-table th {
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.sales-table td:nth-child(2),
+.sales-table td:nth-child(3),
+.sales-table th:nth-child(2),
+.sales-table th:nth-child(3) {
+  text-align: right;
+}
+
+.sales-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sales-error,
+.sales-empty {
+  padding: 1.25rem;
+  color: #64748b;
+  text-align: center;
+}
+
+.sales-error {
+  margin-bottom: 1rem;
+  color: #b42318;
+  border: 1px solid #f3b8b2;
+  border-radius: 0.75rem;
+  background: #fff5f5;
+}
+
+@media (max-width: 480px) {
+  .sales-page {
+    padding: 0.75rem;
+  }
+
+  .sales-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-table th,
+  .sales-table td {
+    padding: 0.75rem 0.65rem;
+  }
+}

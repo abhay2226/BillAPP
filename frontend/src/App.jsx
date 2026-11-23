@@ -9,6 +9,7 @@ import Inventory from "./pages/Inventory/Inventory";
 import Voicebilling from "./pages/Voicebilling/Voicebilling";
 import Profile from "./pages/Profile/Profile";
 import BillHistory from "./pages/BillHistory/BillHistory";
+import Sales from "./pages/Sales/Sales";
 import Login from "./pages/Login/login";
 
 function AppRoutes() {
@@ -45,6 +46,10 @@ function AppRoutes() {
                 <Route
                     path="/billhistory"
                     element={isAuthenticated ? <BillHistory /> : <Navigate to="/login" replace />}
+                />
+                <Route
+                    path="/sales"
+                    element={isAuthenticated ? <Sales /> : <Navigate to="/login" replace />}
                 />
                 
             </Route>

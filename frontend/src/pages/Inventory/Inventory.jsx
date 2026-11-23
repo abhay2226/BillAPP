@@ -656,6 +656,9 @@ function Inventory() {
       closePopup();
     } catch (error) {
       console.error(error);
+      if (error?.isSessionExpired) {
+        return;
+      }
       alert(error.message || "Failed to save product.");
     } finally {
       setIsSubmitting(false);
@@ -672,6 +675,9 @@ function Inventory() {
       await loadAll();
     } catch (error) {
       console.error(error);
+      if (error?.isSessionExpired) {
+        return;
+      }
       alert(error.message || "Failed to delete product.");
     }
   };
@@ -832,6 +838,9 @@ function Inventory() {
       closePopup();
     } catch (error) {
       console.error(error);
+      if (error?.isSessionExpired) {
+        return;
+      }
       alert(error.message || "Failed to save inventory.");
     } finally {
       setIsSubmitting(false);
@@ -848,6 +857,9 @@ function Inventory() {
       await loadAll();
     } catch (error) {
       console.error(error);
+      if (error?.isSessionExpired) {
+        return;
+      }
       alert(error.message || "Failed to delete inventory record.");
     }
   };
@@ -932,6 +944,9 @@ function Inventory() {
       closePopup();
     } catch (error) {
       console.error(error);
+      if (error?.isSessionExpired) {
+        return;
+      }
       alert(error.message || "Failed to save damage record.");
     } finally {
       setIsSubmitting(false);
@@ -948,6 +963,9 @@ function Inventory() {
       await loadAll();
     } catch (error) {
       console.error(error);
+      if (error?.isSessionExpired) {
+        return;
+      }
       alert(error.message || "Failed to delete damage record.");
     }
   };
