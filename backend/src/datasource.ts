@@ -1,6 +1,8 @@
 import "reflect-metadata";
 
 import { DataSource } from "typeorm";
+import { mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import sqlite3 from "sqlite3";
 
@@ -26,10 +28,16 @@ import { Session } from "./entity/TransactionsSession.js";
 import { Audit } from "./entity/TransactionsAudit.js";
 import { ActionType } from "./entity/MasterActionType.js";
 
+const databasePath = process.env.SQLITE_DB_PATH
+    ? resolve(process.env.SQLITE_DB_PATH)
+    : fileURLToPath(new URL("../shop_inventory.sqlite", import.meta.url));
+
+mkdirSync(dirname(databasePath), { recursive: true });
+
 export const AppDataSource = new DataSource({
     type: "sqlite",
     driver: sqlite3,
-    database: fileURLToPath(new URL("../shop_inventory.sqlite", import.meta.url)),
+    database: databasePath,
     synchronize:true,
     logging: false,
     entities: [

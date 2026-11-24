@@ -1,0 +1,82 @@
+name: Deploy backend to Azure App Service
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend-check:
+    name: Check and build backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci --include=dev
+        working-directory: backend
+
+      - name: Verify SQLite driver
+        run: npx tsx -e "import { AppDataSource } from './src/datasource.ts'; console.log('TypeORM SQLite datasource loaded:', AppDataSource.options.type === 'sqlite')"
+        working-directory: backend
+
+      - name: Type-check backend
+        run: npm run check
+        working-directory: backend
+
+      - name: Test backend
+        run: npm test
+        working-directory: backend
+
+      - name: Build backend
+        run: npm run build
+        working-directory: backend
+
+  deploy-backend:
+    name: Deploy backend to Azure App Service
+    needs: [backend-check]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci --include=dev
+        working-directory: backend
+
+      - name: Build backend
+        run: npm run build
+        working-directory: backend
+
+      - name: Verify Azure backend settings
+        env:
+          AZURE_BACKEND_PUBLISH_PROFILE: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+        run: |
+          if [ -z "$AZURE_BACKEND_PUBLISH_PROFILE" ]; then
+            echo "::error::Add the AZURE_BACKEND_PUBLISH_PROFILE repository secret."
+            exit 1
+          fi
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: billapp-backend-evb8eue4gqccc3hw
+          publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+          package: backend

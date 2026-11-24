@@ -1,6 +1,4 @@
-const API_URL =
-  process.env.REACT_APP_API_URL ||
-  "https://billapp-e05j.onrender.com";
+const API_URL = process.env.REACT_APP_API_URL;
 
 function getToken() {
   return sessionStorage.getItem("token");
