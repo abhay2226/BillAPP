@@ -80,3 +80,24 @@ jobs:
           app-name: billapp-backend-evb8eue4gqccc3hw
           publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
           package: backend
+
+      - name: Verify Azure backend health
+        run: |
+          backend_url="$(sed -n 's/^REACT_APP_API_URL=//p' frontend/.env.production)"
+          if [ -z "$backend_url" ]; then
+            echo "::error::The production frontend environment file has no backend URL."
+            exit 1
+          fi
+
+          for attempt in $(seq 1 18); do
+            if response="$(curl --fail --silent --show-error --max-time 10 "$backend_url/")"; then
+              if printf '%s' "$response" | grep -q '"message":"BillAPP API is running."'; then
+                echo "Azure backend health check passed."
+                exit 0
+              fi
+            fi
+            sleep 10
+          done
+
+          echo "::error::Azure App Service did not return the BillAPP health response."
+          exit 1
