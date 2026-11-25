@@ -1,10 +1,15 @@
+
 name: Deploy backend to Azure App Service
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
   workflow_dispatch:
 
 permissions:
@@ -14,28 +19,32 @@ jobs:
   backend-check:
     name: Check and build backend
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22.22.0
+          node-version: 22.x
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
-        run: npm ci --include=dev
+        run: npm ci
         working-directory: backend
 
       - name: Verify SQLite driver
-        run: npx tsx -e "import { AppDataSource } from './src/datasource.ts'; console.log('TypeORM SQLite datasource loaded:', AppDataSource.options.type === 'sqlite')"
+        run: |
+          npx tsx -e "import { AppDataSource } from './src/datasource.ts'; console.log('SQLite datasource:', AppDataSource.options.type === 'sqlite')"
         working-directory: backend
 
-      - name: Type-check backend
+      - name: Type check backend
         run: npm run check
         working-directory: backend
 
-      - name: Test backend
+      - name: Run backend tests
         run: npm test
         working-directory: backend
 
@@ -45,32 +54,58 @@ jobs:
 
   deploy-backend:
     name: Deploy backend to Azure App Service
-    needs: [backend-check]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    needs: backend-check
 
-      - uses: actions/setup-node@v4
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22.22.0
+          node-version: 22.x
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
-        run: npm ci --include=dev
+        run: npm ci
         working-directory: backend
 
       - name: Build backend
         run: npm run build
         working-directory: backend
 
-      - name: Verify Azure backend settings
-        env:
-          AZURE_BACKEND_PUBLISH_PROFILE: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+      - name: Remove development dependencies
+        run: npm prune --omit=dev
+        working-directory: backend
+
+      - name: Verify build output
         run: |
-          if [ -z "$AZURE_BACKEND_PUBLISH_PROFILE" ]; then
-            echo "::error::Add the AZURE_BACKEND_PUBLISH_PROFILE repository secret."
+          if [ ! -f dist/server.js ]; then
+            echo "::error::Build output dist/server.js not found."
+            exit 1
+          fi
+        working-directory: backend
+
+      - name: Create deployment package
+        run: |
+          cd backend
+          zip -r ../backend-deploy.zip . \
+            -x "node_modules/.cache/*" \
+            -x ".git/*" \
+            -x "*.sqlite" \
+            -x "*.db"
+
+      - name: Verify Azure publish profile
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+        run: |
+          if [ -z "$PUBLISH_PROFILE" ]; then
+            echo "::error::Azure publish profile secret is missing."
             exit 1
           fi
 
@@ -79,4 +114,4 @@ jobs:
         with:
           app-name: BillApp-backend
           publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
-          package: backend
+          package: backend-deploy.zip
