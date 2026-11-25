@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 
 import "./BillHistory.css";
+import { useAuth } from "../../components/layout/AuthContext";
+import useSessionDraftState from "../../useSessionDraftState";
 
 import searchIcon from "../../assets/icons/search.png";
 import receiptIcon from "../../assets/icons/box.png";
@@ -37,14 +39,35 @@ const formatBillTimeOnly = (isoString) => {
 };
 
 export default function BillHistory() {
+  const { user } = useAuth();
   const [bills, setBills] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("date-desc");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [searchTerm, setSearchTerm] = useSessionDraftState(
+    "billHistory",
+    "searchTerm",
+    "",
+    user?.userId
+  );
+  const [sortOption, setSortOption] = useSessionDraftState(
+    "billHistory",
+    "sortOption",
+    "date-desc",
+    user?.userId
+  );
+  const [dateFrom, setDateFrom] = useSessionDraftState(
+    "billHistory",
+    "dateFrom",
+    "",
+    user?.userId
+  );
+  const [dateTo, setDateTo] = useSessionDraftState(
+    "billHistory",
+    "dateTo",
+    "",
+    user?.userId
+  );
 
   const [expandedBillId, setExpandedBillId] = useState(null);
   const [billItemsById, setBillItemsById] = useState({});

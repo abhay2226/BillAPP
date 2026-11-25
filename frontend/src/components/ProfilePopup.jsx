@@ -1,39 +1,87 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import "../pages/Voicebilling/Voicebilling.css";
 import "../components/ProfilePopup.css"
 
 import { useAuth } from "./layout/AuthContext";
 import * as storeService from "../services/storeService";
+import useSessionDraftState from "../useSessionDraftState";
 
 function UserProfile({ isOpen, onClose }) {
   const { user, updateProfile } = useAuth();
+  const [isStoreLoaded, setIsStoreLoaded] = useState(false);
 
-  const [userFirstName, setUserFirstName] = useState("");
-  const [userLastName, setUserLastName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [gstID, setGstID] = useState("");
+  const [profileDraft, setProfileDraft, hasSavedProfileDraft] =
+    useSessionDraftState(
+      "profile",
+      "fields",
+      {
+      userFirstName: user?.firstname || "",
+      userLastName: user?.lastname || "",
+      userEmail: user?.email || "",
+      gstID: "",
+      },
+      user?.userId,
+      isOpen && isStoreLoaded
+    );
+  const hasProfileDraft = useRef(hasSavedProfileDraft);
+
+  const [userFirstName, setUserFirstName] = useState(
+    profileDraft.userFirstName ?? user?.firstname ?? ""
+  );
+  const [userLastName, setUserLastName] = useState(
+    profileDraft.userLastName ?? user?.lastname ?? ""
+  );
+  const [userEmail, setUserEmail] = useState(
+    profileDraft.userEmail ?? user?.email ?? ""
+  );
+  const [gstID, setGstID] = useState(profileDraft.gstID ?? "");
 
   const [isSaving, setIsSaving] = useState(false);
   const [store, setStore] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen || !isStoreLoaded) {
+      return;
+    }
+
+    hasProfileDraft.current = true;
+    setProfileDraft({
+      userFirstName,
+      userLastName,
+      userEmail,
+      gstID,
+    });
+  }, [
+    isOpen,
+    userFirstName,
+    userLastName,
+    userEmail,
+    gstID,
+    isStoreLoaded,
+    setProfileDraft,
+  ]);
 
   useEffect(() => {
     if (!isOpen || !user) {
       return;
     }
 
-    setUserFirstName(user.firstname || "");
-    setUserLastName(user.lastname || "");
-    setUserEmail(user.email || "");
+    setIsStoreLoaded(false);
 
     storeService
       .getCurrentStore()
       .then((storeData) => {
         setStore(storeData);
-        setGstID(storeData?.gst_no || "");
+        if (!hasProfileDraft.current) {
+          setGstID(storeData?.gst_no || "");
+        }
       })
       .catch((error) => {
         console.error("Failed to load store details:", error);
+      })
+      .finally(() => {
+        setIsStoreLoaded(true);
       });
   }, [isOpen, user]);
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/layout/AuthContext";
 import { getSignupRoles, getSignupStores } from "../../services/authService";
+import useSessionDraftState from "../../useSessionDraftState";
 import "./Login.css";
 
  
@@ -10,13 +11,21 @@ export default function Login() {
 
   const { login, signup, isLoading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState("login");
+  const [activeTab, setActiveTab] = useSessionDraftState(
+    "login",
+    "activeTab",
+    "login"
+  );
 
   // ============================================================
   // LOGIN
   // ============================================================
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useSessionDraftState(
+    "login",
+    "email",
+    ""
+  );
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -24,10 +33,22 @@ export default function Login() {
   // SIGNUP
   // ============================================================
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useSessionDraftState(
+    "login",
+    "firstName",
+    ""
+  );
+  const [lastName, setLastName] = useSessionDraftState(
+    "login",
+    "lastName",
+    ""
+  );
 
-  const [roleId, setRoleId] = useState("");
+  const [roleId, setRoleId] = useSessionDraftState(
+    "login",
+    "roleId",
+    ""
+  );
 
   // Signup roles are fetched from the backend rather than hardcoded,
   // since role ids are not guaranteed to be 1/2 (e.g. after roles are
@@ -54,7 +75,13 @@ export default function Login() {
         : [];
 
       setSignupRoles(availableRoles);
-      setRoleId("");
+      setRoleId((currentRoleId) =>
+        availableRoles.some(
+          (role) => String(role.role_id) === String(currentRoleId)
+        )
+          ? currentRoleId
+          : ""
+      );
 
       if (availableRoles.length === 0) {
         setSignupRolesError("No signup roles are currently available.");
@@ -67,7 +94,7 @@ export default function Login() {
     } finally {
       setIsLoadingSignupRoles(false);
     }
-  }, []);
+  }, [setRoleId]);
 
   useEffect(() => {
     loadSignupRoles();
@@ -81,24 +108,48 @@ export default function Login() {
   // OWNER STORE DETAILS
   // ============================================================
 
-  const [storeName, setStoreName] = useState("");
-  const [gstNumber, setGstNumber] = useState("");
-  const [location, setLocation] = useState("");
+  const [storeName, setStoreName] = useSessionDraftState(
+    "login",
+    "storeName",
+    ""
+  );
+  const [gstNumber, setGstNumber] = useSessionDraftState(
+    "login",
+    "gstNumber",
+    ""
+  );
+  const [location, setLocation] = useSessionDraftState(
+    "login",
+    "location",
+    ""
+  );
 
   // ============================================================
   // STAFF STORE SEARCH
   // ============================================================
 
-  const [storeSearch, setStoreSearch] = useState("");
+  const [storeSearch, setStoreSearch] = useSessionDraftState(
+    "login",
+    "storeSearch",
+    ""
+  );
   const [storeResults, setStoreResults] = useState([]);
-  const [selectedStore, setSelectedStore] = useState(null);
+  const [selectedStore, setSelectedStore] = useSessionDraftState(
+    "login",
+    "selectedStore",
+    null
+  );
   const [isSearchingStores, setIsSearchingStores] = useState(false);
 
   // ============================================================
   // POPUP
   // ============================================================
 
-  const [showStorePopup, setShowStorePopup] = useState(false);
+  const [showStorePopup, setShowStorePopup] = useSessionDraftState(
+    "login",
+    "showStorePopup",
+    false
+  );
 
   // ============================================================
   // FEEDBACK

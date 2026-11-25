@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as discountServices from "../../services/discountService";
 import { getCurrentStoreId } from "../../services/api";
+import { useAuth } from "../../components/layout/AuthContext";
+import useSessionDraftState from "../../useSessionDraftState";
 import "./Discounts.css";
 
 const STATUS_OPTIONS = [
@@ -10,6 +12,8 @@ const STATUS_OPTIONS = [
 ];
 
 export default function Discounts() {
+  const { user } = useAuth();
+
   // ======================================================
   // STATE
   // ======================================================
@@ -20,8 +24,18 @@ export default function Discounts() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useSessionDraftState(
+    "discounts",
+    "statusFilter",
+    "ALL",
+    user?.userId
+  );
+  const [searchTerm, setSearchTerm] = useSessionDraftState(
+    "discounts",
+    "searchTerm",
+    "",
+    user?.userId
+  );
 
   const [isStatusMenuOpen, setIsStatusMenuOpen] = useState(false);
   const statusMenuRef = useRef(null);
@@ -46,19 +60,34 @@ export default function Discounts() {
       document.removeEventListener("mousedown", handleOutsideClick);
   }, [isStatusMenuOpen]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [editingDiscount, setEditingDiscount] = useState(null);
+  const [showForm, setShowForm] = useSessionDraftState(
+    "discounts",
+    "showForm",
+    false,
+    user?.userId
+  );
+  const [editingDiscount, setEditingDiscount] = useSessionDraftState(
+    "discounts",
+    "editingDiscount",
+    null,
+    user?.userId
+  );
 
-  const [formData, setFormData] = useState({
-    discount_name: "",
-    discount_type_id: "",
-    discount_value: "",
-    min_bill_amount: "",
-    max_discount_amount: "",
-    discount_from: "",
-    discount_to: "",
-    description: "",
-  });
+  const [formData, setFormData] = useSessionDraftState(
+    "discounts",
+    "formData",
+    {
+      discount_name: "",
+      discount_type_id: "",
+      discount_value: "",
+      min_bill_amount: "",
+      max_discount_amount: "",
+      discount_from: "",
+      discount_to: "",
+      description: "",
+    },
+    user?.userId
+  );
 
   const storeId = getCurrentStoreId();
 

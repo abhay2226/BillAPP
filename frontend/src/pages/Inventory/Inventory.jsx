@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useAuth } from "../../components/layout/AuthContext";
+import useSessionDraftState from "../../useSessionDraftState";
 
 import searchIcon from "../../assets/icons/search.png";
 import leftIcon from "../../assets/icons/left.png";
@@ -63,9 +65,21 @@ function SearchableSelect({
   disabled,
   extraActions,
   onDeleteOption,
+  draftField,
+  userId,
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useSessionDraftState(
+    "inventory",
+    `${draftField}.isOpen`,
+    false,
+    userId
+  );
+  const [query, setQuery] = useSessionDraftState(
+    "inventory",
+    `${draftField}.query`,
+    "",
+    userId
+  );
   const wrapperRef = useRef(null);
 
   useEffect(() => {
@@ -83,7 +97,7 @@ function SearchableSelect({
 
     return () =>
       document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [setIsOpen, setQuery]);
 
   const selectedOption = options.find(
     (option) =>
@@ -279,7 +293,13 @@ function SearchableSelect({
 }
 
 function Inventory() {
-  const [activeTab, setActiveTab] = useState("product");
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useSessionDraftState(
+    "inventory",
+    "activeTab",
+    "product",
+    user?.userId
+  );
 
   const [products, setProducts] = useState([]);
   const [inventory, setInventory] = useState([]);
@@ -292,14 +312,39 @@ function Inventory() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useSessionDraftState(
+    "inventory",
+    "searchValue",
+    "",
+    user?.userId
+  );
 
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useSessionDraftState(
+    "inventory",
+    "showPopup",
+    false,
+    user?.userId
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [editingProductId, setEditingProductId] = useState(null);
-  const [editingInventoryId, setEditingInventoryId] = useState(null);
-  const [editingDamageId, setEditingDamageId] = useState(null);
+  const [editingProductId, setEditingProductId] = useSessionDraftState(
+    "inventory",
+    "editingProductId",
+    null,
+    user?.userId
+  );
+  const [editingInventoryId, setEditingInventoryId] = useSessionDraftState(
+    "inventory",
+    "editingInventoryId",
+    null,
+    user?.userId
+  );
+  const [editingDamageId, setEditingDamageId] = useSessionDraftState(
+    "inventory",
+    "editingDamageId",
+    null,
+    user?.userId
+  );
 
   const [productActionMenuId, setProductActionMenuId] = useState(null);
   const [actionMenuPosition, setActionMenuPosition] = useState({
@@ -361,13 +406,28 @@ function Inventory() {
     };
   }, [productActionMenuId]);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useSessionDraftState(
+    "inventory",
+    "currentPage",
+    1,
+    user?.userId
+  );
 
   const rowsPerPage = 6;
 
 
-  const [addingNewType, setAddingNewType] = useState(false);
-  const [addingNewBrand, setAddingNewBrand] = useState(false);
+  const [addingNewType, setAddingNewType] = useSessionDraftState(
+    "inventory",
+    "addingNewType",
+    false,
+    user?.userId
+  );
+  const [addingNewBrand, setAddingNewBrand] = useSessionDraftState(
+    "inventory",
+    "addingNewBrand",
+    false,
+    user?.userId
+  );
 
   const emptyForm = {
     // product tab
@@ -392,7 +452,12 @@ function Inventory() {
     unitCost: "",
   };
 
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useSessionDraftState(
+    "inventory",
+    "formData",
+    emptyForm,
+    user?.userId
+  );
 
   /*
   ============================================================
@@ -1108,7 +1173,7 @@ function Inventory() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchValue, activeTab]);
+  }, [searchValue, activeTab, setCurrentPage]);
 
   const totalProducts = activeData.length;
 
@@ -1120,7 +1185,7 @@ function Inventory() {
     } else if (currentPage > totalPages) {
       setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, setCurrentPage]);
 
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
@@ -2210,6 +2275,8 @@ function Inventory() {
 
                 {!addingNewType ? (
                   <SearchableSelect
+                    draftField="productType"
+                    userId={user?.userId}
                     options={productTypes}
                     value={formData.typeId}
                     onChange={(newValue) => {
@@ -2374,6 +2441,8 @@ function Inventory() {
 
                 {editingInventoryId === null ? (
                   <SearchableSelect
+                    draftField="inventoryProduct"
+                    userId={user?.userId}
                     options={products}
                     value={formData.productId}
                     onChange={(newValue) =>
@@ -2470,6 +2539,8 @@ function Inventory() {
 
                 {editingDamageId === null ? (
                   <SearchableSelect
+                    draftField="damageInventory"
+                    userId={user?.userId}
                     options={inventory}
                     value={formData.inventoryId}
                     onChange={(newValue) =>

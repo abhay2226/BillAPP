@@ -1,6 +1,7 @@
-import React, { useState } from "react"; 
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../components/layout/AuthContext";
+import useSessionDraftState from "../../useSessionDraftState";
 
 import UserProfile from "../../components/ProfilePopup"; 
 import "./Profile.css"; 
@@ -9,9 +10,15 @@ import profileIcon from "../../assets/icons/user.png"
 import logoutIcon from "../../assets/icons/logout.png";
  
 function Profile() { 
-  const [isProfilePopupOpen, setIsProfilePopupOpen] = useState(false); 
+  const { logout, user } = useAuth();
+  const [isProfilePopupOpen, setIsProfilePopupOpen] =
+    useSessionDraftState(
+      "profile",
+      "popupOpen",
+      false,
+      user?.userId
+    );
 
-  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {

@@ -14,6 +14,8 @@ import {
 import "./Sales.css";
 
 import * as billService from "../../services/billService";
+import { useAuth } from "../../components/layout/AuthContext";
+import useSessionDraftState from "../../useSessionDraftState";
 
 const formatCurrency = (value) =>
   `₹${Number(value || 0).toFixed(2)}`;
@@ -31,8 +33,14 @@ const dayLabel = (date) =>
   });
 
 export default function Sales() {
+  const { user } = useAuth();
   const [bills, setBills] = useState([]);
-  const [period, setPeriod] = useState("monthly");
+  const [period, setPeriod] = useSessionDraftState(
+    "sales",
+    "period",
+    "monthly",
+    user?.userId
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
