@@ -1,8 +1,10 @@
+
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
-    OneToMany
+    OneToMany,
+    Relation
 } from "typeorm";
 
 import { Session } from "./TransactionsSession.js";
@@ -10,7 +12,7 @@ import { User } from "./TransactionsUser.js";
 import { Discount } from "./TransactionsDiscount.js";
 import { Bill } from "./TransactionsBill.js";
 import { Inventory } from "./TransactionsInventory.js";
-import { Product } from "./TransactionsProduct.js"
+import { Product } from "./TransactionsProduct.js";
 
 @Entity({ name: "transactions_store" })
 export class Store {
@@ -26,7 +28,7 @@ export class Store {
         type: "varchar",
         unique: true
     })
-    gst_no!: string ;
+    gst_no!: string;
 
     @Column({
         name: "store_name",
@@ -75,50 +77,45 @@ export class Store {
     })
     updated_by!: number | null;
 
-
-    // One Store -> Many Discounts
-
+    // One Store -> Many Users
     @OneToMany(
         () => User,
-        (user) => user.store
+        user => user.store
     )
-    users!: User[];
+    users!: Relation<User[]>;
 
+    // One Store -> Many Discounts
     @OneToMany(
         () => Discount,
-        (discount) => discount.store
+        discount => discount.store
     )
-    discounts!: Discount[];
-
+    discounts!: Relation<Discount[]>;
 
     // One Store -> Many Sessions
-
     @OneToMany(
         () => Session,
-        (session) => session.store
+        session => session.store
     )
-    sessions!: Session[];
-
+    sessions!: Relation<Session[]>;
 
     // One Store -> Many Bills
-
     @OneToMany(
         () => Bill,
-        (bill) => bill.store
+        bill => bill.store
     )
-    bills!: Bill[];
+    bills!: Relation<Bill[]>;
 
+    // One Store -> Many Products
     @OneToMany(
-        () => Product ,(product) => product.store
+        () => Product,
+        product => product.store
     )
-    products!: Product[];
-
+    products!: Relation<Product[]>;
 
     // One Store -> Many Inventory records
-
     @OneToMany(
         () => Inventory,
-        (inventory) => inventory.store
+        inventory => inventory.store
     )
-    inventory!: Inventory[];
+    inventory!: Relation<Inventory[]>;
 }
