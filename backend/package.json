@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/server.js",
   "scripts": {
-    "start": "npm run seed && tsx src/server.ts",
+    "start":  "node dist/server.js",
     "dev": "npm run seed && tsx watch src/server.ts",
     "build": "tsc",
     "check": "tsc --noEmit",
