@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import BillSuccess from "../../components/BillSuccess";
+import { useAuth } from "../../components/layout/AuthContext";
 
 import pencilIcon from "../../assets/icons/pencil.png";
 import deleteIcon from "../../assets/icons/delete.png";
@@ -19,6 +20,100 @@ import * as customerService from "../../services/customerService";
 const WALKIN_CUSTOMER_PHONE = "0000000000";
 
 const GST_RATE = 18;
+const BILLING_DRAFT_STORAGE_KEY = "billapp.billingDraft";
+
+const loadBillingDraft = (storageKey) => {
+  const emptyDraft = {
+    items: [],
+    editingItemId: null,
+    itemQuantity: 1,
+    showItemPopup: false,
+    customerPhone: "",
+    selectedCustomer: null,
+    searchTerm: "",
+    showSuccessScreen: false,
+    billNumber: "",
+    billDate: "",
+    successTotalAmount: 0,
+    successBillSummary: {
+      subtotal: 0,
+      discount: 0,
+      tax: 0,
+    },
+    selectedDiscountId: "none",
+  };
+
+  if (!storageKey) {
+    return emptyDraft;
+  }
+
+  try {
+    const savedDraft = sessionStorage.getItem(storageKey);
+
+    if (!savedDraft) {
+      return emptyDraft;
+    }
+
+    const parsedDraft = JSON.parse(savedDraft);
+
+    if (!parsedDraft || typeof parsedDraft !== "object" || Array.isArray(parsedDraft)) {
+      console.error("Saved billing draft has an invalid format.");
+      sessionStorage.removeItem(storageKey);
+      return emptyDraft;
+    }
+
+    const summary = parsedDraft.successBillSummary;
+
+    return {
+      ...emptyDraft,
+      ...parsedDraft,
+      items: Array.isArray(parsedDraft.items) ? parsedDraft.items : [],
+      editingItemId:
+        typeof parsedDraft.editingItemId === "string"
+          ? parsedDraft.editingItemId
+          : null,
+      itemQuantity: parsedDraft.itemQuantity ?? 1,
+      showItemPopup: parsedDraft.showItemPopup === true,
+      customerPhone:
+        typeof parsedDraft.customerPhone === "string"
+          ? parsedDraft.customerPhone
+          : "",
+      selectedCustomer:
+        parsedDraft.selectedCustomer &&
+        typeof parsedDraft.selectedCustomer === "object"
+          ? parsedDraft.selectedCustomer
+          : null,
+      searchTerm:
+        typeof parsedDraft.searchTerm === "string"
+          ? parsedDraft.searchTerm
+          : "",
+      showSuccessScreen: parsedDraft.showSuccessScreen === true,
+      billNumber:
+        typeof parsedDraft.billNumber === "string"
+          ? parsedDraft.billNumber
+          : "",
+      billDate:
+        typeof parsedDraft.billDate === "string"
+          ? parsedDraft.billDate
+          : "",
+      successTotalAmount: Number.isFinite(Number(parsedDraft.successTotalAmount))
+        ? Number(parsedDraft.successTotalAmount)
+        : 0,
+      successBillSummary: {
+        subtotal: Number(summary?.subtotal) || 0,
+        discount: Number(summary?.discount) || 0,
+        tax: Number(summary?.tax) || 0,
+      },
+      selectedDiscountId:
+        typeof parsedDraft.selectedDiscountId === "string"
+          ? parsedDraft.selectedDiscountId
+          : "none",
+    };
+  } catch (error) {
+    console.error("Unable to restore billing draft:", error);
+    return emptyDraft;
+  }
+};
 
 // ============================================================
 // DISCOUNT HELPERS
@@ -112,6 +207,14 @@ const getMaximumDiscountAmount = (discount) => {
 // ============================================================
 
 const Billing = () => {
+  const { user } = useAuth();
+  const billingDraftKey = user?.userId
+    ? `${BILLING_DRAFT_STORAGE_KEY}.${user.userId}`
+    : null;
+  const [initialDraft] = useState(() =>
+    loadBillingDraft(billingDraftKey)
+  );
+
   // ==========================================================
   // VOICE STATE
   // ==========================================================
@@ -133,26 +236,26 @@ const Billing = () => {
   // BILL ITEMS
   // ==========================================================
 
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(initialDraft.items);
 
   const [editingItemId, setEditingItemId] =
-    useState(null);
+    useState(initialDraft.editingItemId);
 
   const [itemQuantity, setItemQuantity] =
-    useState(1);
+    useState(initialDraft.itemQuantity);
 
   const [showItemPopup, setShowItemPopup] =
-    useState(false);
+    useState(initialDraft.showItemPopup);
 
   // ==========================================================
   // CUSTOMER
   // ==========================================================
 
   const [customerPhone, setCustomerPhone] =
-    useState("");
+    useState(initialDraft.customerPhone);
 
   const [selectedCustomer, setSelectedCustomer] =
-    useState(null);
+    useState(initialDraft.selectedCustomer);
 
   const [isSearchingCustomer, setIsSearchingCustomer] =
     useState(false);
@@ -168,7 +271,7 @@ const Billing = () => {
   // ==========================================================
 
   const [searchTerm, setSearchTerm] =
-    useState("");
+    useState(initialDraft.searchTerm);
 
   const [inventory, setInventory] =
     useState([]);
@@ -184,26 +287,22 @@ const Billing = () => {
   // ==========================================================
 
   const [showSuccessScreen, setShowSuccessScreen] =
-    useState(false);
+    useState(initialDraft.showSuccessScreen);
 
   const [isSubmittingBill, setIsSubmittingBill] =
     useState(false);
 
   const [billNumber, setBillNumber] =
-    useState("");
+    useState(initialDraft.billNumber);
 
   const [billDate, setBillDate] =
-    useState("");
+    useState(initialDraft.billDate);
 
   const [successTotalAmount, setSuccessTotalAmount] =
-    useState(0);
+    useState(initialDraft.successTotalAmount);
 
   const [successBillSummary, setSuccessBillSummary] =
-    useState({
-      subtotal: 0,
-      discount: 0,
-      tax: 0,
-    });
+    useState(initialDraft.successBillSummary);
 
   // ==========================================================
   // DISCOUNTS
@@ -212,11 +311,14 @@ const Billing = () => {
   const [availableDiscounts, setAvailableDiscounts] =
     useState([]);
 
+  const [hasLoadedDiscounts, setHasLoadedDiscounts] =
+    useState(false);
+
   const [discountNotice, setDiscountNotice] =
     useState("");
 
   const [selectedDiscountId, setSelectedDiscountId] =
-    useState("none");
+    useState(initialDraft.selectedDiscountId);
 
   // ==========================================================
   // LOAD INVENTORY
@@ -359,6 +461,7 @@ const Billing = () => {
       setAvailableDiscounts(
         activeDiscounts
       );
+      setHasLoadedDiscounts(true);
 
       if (activeDiscounts.length === 0) {
         if (notStartedNames.length > 0) {
@@ -398,11 +501,59 @@ const Billing = () => {
     loadDiscounts();
   }, []);
 
+  useEffect(() => {
+    if (!billingDraftKey) {
+      return;
+    }
+
+    try {
+      sessionStorage.setItem(
+        billingDraftKey,
+        JSON.stringify({
+          items,
+          editingItemId,
+          itemQuantity,
+          showItemPopup,
+          customerPhone,
+          selectedCustomer,
+          searchTerm,
+          showSuccessScreen,
+          billNumber,
+          billDate,
+          successTotalAmount,
+          successBillSummary,
+          selectedDiscountId,
+        })
+      );
+    } catch (error) {
+      console.error("Unable to save billing draft:", error);
+    }
+  }, [
+    billingDraftKey,
+    items,
+    editingItemId,
+    itemQuantity,
+    showItemPopup,
+    customerPhone,
+    selectedCustomer,
+    searchTerm,
+    showSuccessScreen,
+    billNumber,
+    billDate,
+    successTotalAmount,
+    successBillSummary,
+    selectedDiscountId,
+  ]);
+
   // ==========================================================
   // RESET INVALID SELECTED DISCOUNT
   // ==========================================================
 
   useEffect(() => {
+    if (!hasLoadedDiscounts) {
+      return;
+    }
+
     if (
       selectedDiscountId === "none"
     ) {
@@ -425,6 +576,7 @@ const Billing = () => {
     }
   }, [
     availableDiscounts,
+    hasLoadedDiscounts,
     selectedDiscountId,
   ]);
 

@@ -1,0 +1,12 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/static/*",
+      "/favicon.ico",
+      "/manifest.json",
+      "/robots.txt",
+      "/asset-manifest.json"
+    ]
+  }
+}
