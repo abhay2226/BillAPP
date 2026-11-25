@@ -1,13 +1,14 @@
+
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    JoinColumn
+    JoinColumn,
+    Relation
 } from "typeorm";
 
 import { Inventory } from "./TransactionsInventory.js";
-
 
 @Entity({ name: "transactions_damaged_goods" })
 export class DamagedGoods {
@@ -18,13 +19,11 @@ export class DamagedGoods {
     })
     damage_id!: number;
 
-
     @Column({
         name: "inventory_id",
         type: "integer"
     })
     inventory_id!: number;
-
 
     @Column({
         name: "qty",
@@ -32,14 +31,12 @@ export class DamagedGoods {
     })
     qty!: number;
 
-
     @Column({
         name: "reason",
         type: "varchar",
         nullable: true
     })
     reason!: string | null;
-
 
     @Column({
         name: "unit_cost",
@@ -49,7 +46,6 @@ export class DamagedGoods {
     })
     unit_cost!: number;
 
-
     @Column({
         name: "loss_value",
         type: "decimal",
@@ -58,7 +54,6 @@ export class DamagedGoods {
     })
     loss_value!: number;
 
-
     @Column({
         name: "is_active",
         type: "boolean",
@@ -66,13 +61,11 @@ export class DamagedGoods {
     })
     is_active!: boolean;
 
-
     @Column({
         name: "created_at",
         type: "datetime"
     })
     created_at!: Date;
-
 
     @Column({
         name: "created_by",
@@ -81,9 +74,6 @@ export class DamagedGoods {
     })
     created_by!: number | null;
 
-
-    // UPDATED AT
-
     @Column({
         name: "updated_at",
         type: "datetime",
@@ -91,16 +81,12 @@ export class DamagedGoods {
     })
     updated_at!: Date | null;
 
-
-    // UPDATED BY
-
     @Column({
         name: "updated_by",
         type: "integer",
         nullable: true
     })
     updated_by!: number | null;
-
 
     @ManyToOne(
         () => Inventory,
@@ -113,5 +99,5 @@ export class DamagedGoods {
         name: "inventory_id",
         referencedColumnName: "inventory_id"
     })
-    inventory!: Inventory;
+    inventory!: Relation<Inventory>;
 }
