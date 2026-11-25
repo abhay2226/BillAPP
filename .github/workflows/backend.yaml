@@ -5,11 +5,9 @@ on:
   push:
     branches:
       - main
-
   pull_request:
     branches:
       - main
-
   workflow_dispatch:
 
 permissions:
@@ -31,7 +29,7 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: npm ci
         working-directory: backend
 
@@ -40,11 +38,11 @@ jobs:
           npx tsx -e "import { AppDataSource } from './src/datasource.ts'; console.log('SQLite datasource:', AppDataSource.options.type === 'sqlite')"
         working-directory: backend
 
-      - name: Type check backend
+      - name: Type check
         run: npm run check
         working-directory: backend
 
-      - name: Run backend tests
+      - name: Run tests
         run: npm test
         working-directory: backend
 
@@ -53,7 +51,7 @@ jobs:
         working-directory: backend
 
   deploy-backend:
-    name: Deploy backend to Azure App Service
+    name: Deploy to Azure App Service
     needs: backend-check
 
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
@@ -71,7 +69,7 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install backend dependencies
+      - name: Install dependencies
         run: npm ci
         working-directory: backend
 
@@ -79,14 +77,10 @@ jobs:
         run: npm run build
         working-directory: backend
 
-      - name: Remove development dependencies
-        run: npm prune --omit=dev
-        working-directory: backend
-
       - name: Verify build output
         run: |
           if [ ! -f dist/server.js ]; then
-            echo "::error::Build output dist/server.js not found."
+            echo "::error::dist/server.js not found"
             exit 1
           fi
         working-directory: backend
@@ -95,7 +89,7 @@ jobs:
         run: |
           cd backend
           zip -r ../backend-deploy.zip . \
-            -x "node_modules/.cache/*" \
+            -x "node_modules/*" \
             -x ".git/*" \
             -x "*.sqlite" \
             -x "*.db"
