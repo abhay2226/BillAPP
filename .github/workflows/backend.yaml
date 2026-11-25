@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   backend-check:
-    name: Check and build backend
+    name: Check, build and package backend
     runs-on: ubuntu-latest
 
     steps:
@@ -30,25 +30,83 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
         working-directory: backend
+        run: npm ci
 
       - name: Verify SQLite driver
+        working-directory: backend
         run: |
           npx tsx -e "import { AppDataSource } from './src/datasource.ts'; console.log('SQLite datasource:', AppDataSource.options.type === 'sqlite')"
-        working-directory: backend
 
       - name: Type check
-        run: npm run check
         working-directory: backend
+        run: npm run check
 
       - name: Run tests
-        run: npm test
         working-directory: backend
+        run: npm test
+
+      - name: Clean previous build
+        working-directory: backend
+        run: rm -rf dist
 
       - name: Build backend
-        run: npm run build
         working-directory: backend
+        run: npm run build
+
+      - name: Verify build output
+        working-directory: backend
+        run: |
+          if [ ! -f dist/server.js ]; then
+            echo "::error::dist/server.js not found"
+            exit 1
+          fi
+
+          if [ ! -f dist/entity/TransactionsProduct.js ]; then
+            echo "::error::TransactionsProduct.js not found"
+            exit 1
+          fi
+
+          echo "Backend build output verified."
+
+      - name: Verify Store entity metadata
+        working-directory: backend
+        run: |
+          echo "Checking compiled TransactionsProduct.js..."
+
+          if grep -nE '__metadata\("design:type", Store\)' dist/entity/TransactionsProduct.js; then
+            echo "::error::Store metadata issue detected in compiled JavaScript."
+            exit 1
+          else
+            echo "No direct Store design:type metadata found."
+          fi
+
+          echo "Checking expected Relation metadata..."
+
+          grep -n -A 4 -B 4 'design:type.*Object' dist/entity/TransactionsProduct.js || true
+
+      - name: Create deployment package
+        run: |
+          cd backend
+
+          zip -r ../backend-deploy.zip . \
+            -x "node_modules/*" \
+            -x "node_modules/**" \
+            -x ".git/*" \
+            -x ".git/**" \
+            -x "*.sqlite" \
+            -x "*.db" \
+            -x ".env" \
+            -x ".env.*" \
+            -x "npm-debug.log*"
+
+      - name: Upload verified deployment package
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-deployment-package
+          path: backend-deploy.zip
+          if-no-files-found: error
+          retention-days: 1
 
   deploy-backend:
     name: Deploy to Azure App Service
@@ -59,40 +117,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Download verified deployment package
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22.x
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
+          name: backend-deployment-package
+          path: .
 
-      - name: Install dependencies
-        run: npm ci
-        working-directory: backend
-
-      - name: Build backend
-        run: npm run build
-        working-directory: backend
-
-      - name: Verify build output
+      - name: Verify deployment package
         run: |
-          if [ ! -f dist/server.js ]; then
-            echo "::error::dist/server.js not found"
+          if [ ! -f backend-deploy.zip ]; then
+            echo "::error::Deployment package not found"
             exit 1
           fi
-        working-directory: backend
 
-      - name: Create deployment package
-        run: |
-          cd backend
-          zip -r ../backend-deploy.zip . \
-            -x "node_modules/*" \
-            -x ".git/*" \
-            -x "*.sqlite" \
-            -x "*.db"
+          unzip -l backend-deploy.zip | head -40
 
       - name: Verify Azure publish profile
         env:
