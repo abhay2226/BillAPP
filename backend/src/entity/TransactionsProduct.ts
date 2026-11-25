@@ -1,11 +1,12 @@
+
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
     ManyToOne,
-    // OneToMany,
     OneToOne,
-    JoinColumn
+    JoinColumn,
+    Relation
 } from "typeorm";
 
 import { Store } from "./TransactionsStore.js";
@@ -13,6 +14,7 @@ import { Type } from "./MasterProductType.js";
 import { Brand } from "./MasterProductBrand.js";
 import { UoM } from "./MasterUoM.js";
 import { Inventory } from "./TransactionsInventory.js";
+
 // import { BillItem } from "./TransactionsBillItem.js";
 
 @Entity({ name: "transactions_product" })
@@ -99,16 +101,16 @@ export class Product {
     @ManyToOne(
         () => Store,
         store => store.products,
-        { 
-            nullable:false,
-            onDelete:"CASCADE"
+        {
+            nullable: false,
+            onDelete: "CASCADE"
         }
     )
     @JoinColumn({
         name: "store_id",
         referencedColumnName: "store_id"
     })
-    store!: Store;
+    store!: Relation<Store>;
 
     @ManyToOne(
         () => Type,
@@ -121,11 +123,11 @@ export class Product {
         name: "type_id",
         referencedColumnName: "product_type_id"
     })
-    type!: Type;
+    type!: Relation<Type>;
 
     @ManyToOne(
         () => Brand,
-        (brand : Brand) => brand.products,
+        brand => brand.products,
         {
             nullable: false
         }
@@ -134,7 +136,7 @@ export class Product {
         name: "brand_id",
         referencedColumnName: "product_brand_id"
     })
-    brand!: Brand;
+    brand!: Relation<Brand>;
 
     @ManyToOne(
         () => UoM,
@@ -147,26 +149,24 @@ export class Product {
         name: "unit_id",
         referencedColumnName: "unit_id"
     })
-    uom!: UoM;
+    uom!: Relation<UoM>;
 
-    
     @OneToOne(
-      () => Inventory,
-      inventory => inventory.product,
-      { cascade: true } // optional: auto-save inventory when product is saved
+        () => Inventory,
+        inventory => inventory.product,
+        { cascade: true }
     )
-    inventory!: Inventory;
-
+    inventory!: Relation<Inventory>;
 
     // @OneToMany(
     //     () => Inventory,
     //     inventory => inventory.product
     // )
-    // inventory!: Inventory[];
+    // inventory!: Relation<Inventory[]>;
 
-//     @OneToMany(
-//         () => BillItem,
-//         billItem => billItem.product
-//     )
-//     billItems!: BillItem[];
+    // @OneToMany(
+    //     () => BillItem,
+    //     billItem => billItem.product
+    // )
+    // billItems!: Relation<BillItem[]>;
 }
