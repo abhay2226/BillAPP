@@ -1,3 +1,4 @@
+
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -6,7 +7,8 @@ import {
     OneToMany,
     OneToOne,
     JoinColumn,
-    Unique
+    Unique,
+    Relation
 } from "typeorm";
 
 import { Product } from "./TransactionsProduct.js";
@@ -28,7 +30,6 @@ export class Inventory {
     })
     inventory_id!: number;
 
-
     // Foreign Key → transactions_product.product_id
     @Column({
         name: "product_id",
@@ -36,7 +37,6 @@ export class Inventory {
         nullable: false
     })
     product_id!: number;
-
 
     // Foreign Key → transactions_store.store_id
     @Column({
@@ -46,7 +46,6 @@ export class Inventory {
     })
     store_id!: number;
 
-
     // Available quantity
     @Column({
         name: "qty",
@@ -55,7 +54,6 @@ export class Inventory {
         default: 0
     })
     qty!: number;
-
 
     // Cost price
     @Column({
@@ -67,7 +65,6 @@ export class Inventory {
     })
     cost_price!: number | null;
 
-
     // Selling price
     @Column({
         name: "selling_price",
@@ -78,7 +75,6 @@ export class Inventory {
     })
     selling_price!: number;
 
-
     // Active / inactive
     @Column({
         name: "is_active",
@@ -88,7 +84,6 @@ export class Inventory {
     })
     is_active!: boolean;
 
-
     // Created timestamp
     @Column({
         name: "created_at",
@@ -96,7 +91,6 @@ export class Inventory {
         nullable: false
     })
     created_at!: Date;
-
 
     // Created by user
     @Column({
@@ -106,7 +100,6 @@ export class Inventory {
     })
     created_by!: number | null;
 
-
     // Updated timestamp
     @Column({
         name: "updated_at",
@@ -114,7 +107,6 @@ export class Inventory {
         nullable: true
     })
     updated_at!: Date | null;
-
 
     // Updated by user
     @Column({
@@ -124,11 +116,9 @@ export class Inventory {
     })
     updated_by!: number | null;
 
-
     // --------------------------------------------------
     // RELATIONSHIPS
     // --------------------------------------------------
-
 
     // One Product ↔ One Inventory
     @OneToOne(
@@ -143,8 +133,7 @@ export class Inventory {
         name: "product_id",
         referencedColumnName: "product_id"
     })
-    product!: Product;
-
+    product!: Relation<Product>;
 
     // Many Inventory records → One Store
     @ManyToOne(
@@ -158,21 +147,19 @@ export class Inventory {
         name: "store_id",
         referencedColumnName: "store_id"
     })
-    store!: Store;
-
+    store!: Relation<Store>;
 
     // One Inventory → Many Damaged Goods
     @OneToMany(
         () => DamagedGoods,
         damagedGoods => damagedGoods.inventory
     )
-    damagedGoods!: DamagedGoods[];
-
+    damagedGoods!: Relation<DamagedGoods[]>;
 
     // One Inventory → Many Stock Movements
     @OneToMany(
         () => StockMovement,
         stockMovement => stockMovement.inventory
     )
-    stockMovements!: StockMovement[];
+    stockMovements!: Relation<StockMovement[]>;
 }
