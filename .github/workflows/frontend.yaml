@@ -10,11 +10,35 @@ permissions:
 
 jobs:
   deploy-frontend:
-    name: Build and deploy frontend
+    name: Check, build, and deploy frontend
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci --include=dev
+        working-directory: frontend
+
+      - name: Check production API configuration
+        run: |
+          api_url="$(sed -n 's/^REACT_APP_API_URL=//p' .env.production | head -n 1 | tr -d '\r')"
+          if ! printf '%s' "$api_url" | grep -Eq '^https?://[^[:space:]]+$'; then
+            echo "::error::Set REACT_APP_API_URL to an HTTP(S) URL in frontend/.env.production."
+            exit 1
+          fi
+          echo "Production API URL is configured."
+        working-directory: frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
 
       - name: Verify Azure frontend settings
         env:
@@ -25,11 +49,12 @@ jobs:
             exit 1
           fi
 
-      - name: Build and deploy to Azure Static Web Apps
+      - name: Deploy frontend to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ASHY_STONE_093182600 }}
           action: upload
-          app_location: frontend
+          app_location: frontend/build
           api_location: ""
-          output_location: build
+          output_location: ""
+          skip_app_build: true
