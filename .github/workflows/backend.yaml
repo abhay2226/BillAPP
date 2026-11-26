@@ -126,6 +126,11 @@ jobs:
           $packageJson = Get-Content -LiteralPath $packagePath -Raw | ConvertFrom-Json
           $packageJson.main = 'server.js'
           $packageJson.scripts.start = 'node server.js'
+          $packageJson.scripts.PSObject.Properties.Remove('build') | Out-Null
+          if ($packageJson.scripts.PSObject.Properties['build']) {
+            Write-Error '::error::The precompiled deployment package must not have a build script.'
+            exit 1
+          }
           $packageContents = ($packageJson | ConvertTo-Json -Depth 100) + "`n"
           [System.IO.File]::WriteAllText($packagePath, $packageContents, [System.Text.UTF8Encoding]::new($false))
 
