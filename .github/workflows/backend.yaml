@@ -85,20 +85,27 @@ jobs:
 
           grep -n -A 4 -B 4 'design:type.*Object' dist/entity/TransactionsProduct.js || true
 
-      - name: Create deployment package
+      - name: Create dist-only deployment package
         run: |
-          cd backend
+          deploy_dir="$RUNNER_TEMP/backend-deploy"
+          rm -rf "$deploy_dir"
+          mkdir -p "$deploy_dir"
+          cp -R backend/dist/. "$deploy_dir/"
+          cp backend/package.json backend/package-lock.json "$deploy_dir/"
 
-          zip -r ../backend-deploy.zip . \
-            -x "node_modules/*" \
-            -x "node_modules/**" \
-            -x ".git/*" \
-            -x ".git/**" \
-            -x "*.sqlite" \
-            -x "*.db" \
-            -x ".env" \
-            -x ".env.*" \
-            -x "npm-debug.log*"
+          node - "$deploy_dir/package.json" <<'NODE'
+          const fs = require("node:fs");
+          const packagePath = process.argv[2];
+          const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+          packageJson.main = "server.js";
+          packageJson.scripts.start = "node server.js";
+          fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
+          NODE
+
+          test -f "$deploy_dir/server.js"
+          test ! -d "$deploy_dir/node_modules"
+          cd "$deploy_dir"
+          zip -qr "$GITHUB_WORKSPACE/backend-deploy.zip" .
 
       - name: Upload verified deployment package
         uses: actions/upload-artifact@v4
@@ -130,7 +137,16 @@ jobs:
             exit 1
           fi
 
-          unzip -l backend-deploy.zip | head -40
+          unzip -Z1 backend-deploy.zip > package-files.txt
+          cat package-files.txt
+          if ! grep -Fxq "server.js" package-files.txt; then
+            echo "::error::server.js must be at the deployment package root."
+            exit 1
+          fi
+          if grep -q '^node_modules/' package-files.txt; then
+            echo "::error::Deployment package must not include node_modules."
+            exit 1
+          fi
 
       - name: Verify Azure publish profile
         env:
@@ -147,3 +163,4 @@ jobs:
           app-name: BillApp-backend
           publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
           package: backend-deploy.zip
+          startup-command: npm ci --omit=dev --no-audit --no-fund && npm start
