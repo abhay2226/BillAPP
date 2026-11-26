@@ -9,10 +9,13 @@ permissions:
   contents: read
 
 jobs:
-  deploy-frontend:
-    name: Check, build, and deploy frontend
+  build-frontend:
+    name: Check and build frontend
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
     steps:
       - uses: actions/checkout@v4
 
@@ -28,12 +31,15 @@ jobs:
 
       - name: Check production API configuration
         run: |
-          api_url="$(sed -n 's/^REACT_APP_API_URL=//p' .env.production | head -n 1 | tr -d '\r')"
-          if ! printf '%s' "$api_url" | grep -Eq '^https?://[^[:space:]]+$'; then
-            echo "::error::Set REACT_APP_API_URL to an HTTP(S) URL in frontend/.env.production."
+          $apiLine = Get-Content -LiteralPath '.env.production' |
+            Where-Object { $_ -cmatch '^REACT_APP_API_URL=' } |
+            Select-Object -First 1
+          $apiUrl = $apiLine -replace '^REACT_APP_API_URL=', ''
+          if ($apiUrl -cnotmatch '^https?://\S+$') {
+            Write-Error '::error::Set REACT_APP_API_URL to an HTTP(S) URL in frontend/.env.production.'
             exit 1
-          fi
-          echo "Production API URL is configured."
+          }
+          Write-Output 'Production API URL is configured.'
         working-directory: frontend
 
       - name: Build frontend
@@ -43,6 +49,30 @@ jobs:
       - name: Test frontend
         run: npm test -- --watchAll=false --runInBand
         working-directory: frontend
+        env:
+          CI: "true"
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+          if-no-files-found: error
+          retention-days: 1
+
+  deploy-frontend:
+    name: Deploy frontend to Azure Static Web Apps
+    needs: build-frontend
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
 
       - name: Verify Azure frontend settings
         env:
