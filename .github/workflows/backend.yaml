@@ -13,10 +13,14 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   backend-check:
     name: Check, build and package backend
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -36,7 +40,23 @@ jobs:
       - name: Verify SQLite driver
         working-directory: backend
         run: |
-          npx tsx -e "import { AppDataSource } from './src/datasource.ts'; console.log('SQLite datasource:', AppDataSource.options.type === 'sqlite')"
+          $checkScript = Join-Path $PWD ('.verify-sqlite-' + [guid]::NewGuid().ToString('N') + '.ts')
+          try {
+            @'
+          import { AppDataSource } from "./src/datasource.ts";
+          console.log("SQLite datasource:", AppDataSource.options.type === "sqlite");
+          if (AppDataSource.options.type !== "sqlite") process.exitCode = 1;
+          '@ | Set-Content -LiteralPath $checkScript -Encoding utf8
+            npx tsx $checkScript
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+          }
+          finally {
+            if (Test-Path -LiteralPath $checkScript) {
+              Remove-Item -LiteralPath $checkScript -Force
+            }
+          }
 
       - name: Type check
         working-directory: backend
@@ -48,7 +68,10 @@ jobs:
 
       - name: Clean previous build
         working-directory: backend
-        run: rm -rf dist
+        run: |
+          if (Test-Path -LiteralPath 'dist') {
+            Remove-Item -LiteralPath 'dist' -Recurse -Force
+          }
 
       - name: Build backend
         working-directory: backend
@@ -57,61 +80,75 @@ jobs:
       - name: Verify build output
         working-directory: backend
         run: |
-          if [ ! -f dist/server.js ]; then
-            echo "::error::dist/server.js not found"
+          if (-not (Test-Path -LiteralPath 'dist\server.js' -PathType Leaf)) {
+            Write-Error '::error::dist/server.js not found'
             exit 1
-          fi
+          }
 
-          if [ ! -f dist/entity/TransactionsProduct.js ]; then
-            echo "::error::TransactionsProduct.js not found"
+          if (-not (Test-Path -LiteralPath 'dist\entity\TransactionsProduct.js' -PathType Leaf)) {
+            Write-Error '::error::TransactionsProduct.js not found'
             exit 1
-          fi
+          }
 
-          echo "Backend build output verified."
+          Write-Output 'Backend build output verified.'
 
       - name: Verify Store entity metadata
         working-directory: backend
         run: |
-          echo "Checking compiled TransactionsProduct.js..."
+          $compiledEntity = 'dist\entity\TransactionsProduct.js'
+          Write-Output 'Checking compiled TransactionsProduct.js...'
 
-          if grep -nE '__metadata\("design:type", Store\)' dist/entity/TransactionsProduct.js; then
-            echo "::error::Store metadata issue detected in compiled JavaScript."
+          if (Select-String -Path $compiledEntity -Pattern '__metadata\("design:type", Store\)' -Quiet) {
+            Write-Error '::error::Store metadata issue detected in compiled JavaScript.'
             exit 1
           else
-            echo "No direct Store design:type metadata found."
-          fi
+            Write-Output 'No direct Store design:type metadata found.'
+          }
 
-          echo "Checking expected Relation metadata..."
+          Write-Output 'Checking expected Relation metadata...'
 
-          grep -n -A 4 -B 4 'design:type.*Object' dist/entity/TransactionsProduct.js || true
+          $relationMetadata = Select-String -Path $compiledEntity -Pattern 'design:type.*Object' -Context 4, 4
+          if ($relationMetadata) {
+            $relationMetadata
+          }
 
       - name: Create dist-only deployment package
         run: |
-          deploy_dir="$RUNNER_TEMP/backend-deploy"
-          rm -rf "$deploy_dir"
-          mkdir -p "$deploy_dir"
-          cp -R backend/dist/. "$deploy_dir/"
-          cp backend/package.json backend/package-lock.json "$deploy_dir/"
+          $deployDir = Join-Path $env:RUNNER_TEMP 'backend-deploy'
+          if (Test-Path -LiteralPath $deployDir) {
+            Remove-Item -LiteralPath $deployDir -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $deployDir | Out-Null
+          Copy-Item -Path 'backend\dist\*' -Destination $deployDir -Recurse -Force
+          Copy-Item -Path 'backend\package.json', 'backend\package-lock.json' -Destination $deployDir -Force
 
-          node - "$deploy_dir/package.json" <<'NODE'
-          const fs = require("node:fs");
-          const packagePath = process.argv[2];
-          const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
-          packageJson.main = "server.js";
-          packageJson.scripts.start = "node server.js";
-          fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
-          NODE
+          $packagePath = Join-Path $deployDir 'package.json'
+          $packageJson = Get-Content -LiteralPath $packagePath -Raw | ConvertFrom-Json
+          $packageJson.main = 'server.js'
+          $packageJson.scripts.start = 'node server.js'
+          $packageContents = ($packageJson | ConvertTo-Json -Depth 100) + "`n"
+          [System.IO.File]::WriteAllText($packagePath, $packageContents, [System.Text.UTF8Encoding]::new($false))
 
-          test -f "$deploy_dir/server.js"
-          test ! -d "$deploy_dir/node_modules"
-          cd "$deploy_dir"
-          zip -qr "$GITHUB_WORKSPACE/backend-deploy.zip" .
+          if (-not (Test-Path -LiteralPath (Join-Path $deployDir 'server.js') -PathType Leaf)) {
+            Write-Error '::error::server.js must be at the deployment package root.'
+            exit 1
+          }
+          if (Test-Path -LiteralPath (Join-Path $deployDir 'node_modules')) {
+            Write-Error '::error::Deployment package must not include node_modules.'
+            exit 1
+          }
+
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'backend-deploy.zip'
+          if (Test-Path -LiteralPath $zipPath) {
+            Remove-Item -LiteralPath $zipPath -Force
+          }
+          Compress-Archive -Path (Join-Path $deployDir '*') -DestinationPath $zipPath -CompressionLevel Optimal
 
       - name: Upload verified deployment package
         uses: actions/upload-artifact@v4
         with:
           name: backend-deployment-package
-          path: backend-deploy.zip
+          path: ${{ github.workspace }}/backend-deploy.zip
           if-no-files-found: error
           retention-days: 1
 
@@ -121,7 +158,7 @@ jobs:
 
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Download verified deployment package
@@ -132,30 +169,38 @@ jobs:
 
       - name: Verify deployment package
         run: |
-          if [ ! -f backend-deploy.zip ]; then
-            echo "::error::Deployment package not found"
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'backend-deploy.zip'
+          if (-not (Test-Path -LiteralPath $zipPath -PathType Leaf)) {
+            Write-Error '::error::Deployment package not found'
             exit 1
-          fi
+          }
 
-          unzip -Z1 backend-deploy.zip > package-files.txt
-          cat package-files.txt
-          if ! grep -Fxq "server.js" package-files.txt; then
-            echo "::error::server.js must be at the deployment package root."
+          $extractDir = Join-Path $env:RUNNER_TEMP 'backend-deploy-verify'
+          if (Test-Path -LiteralPath $extractDir) {
+            Remove-Item -LiteralPath $extractDir -Recurse -Force
+          }
+          Expand-Archive -LiteralPath $zipPath -DestinationPath $extractDir
+          Get-ChildItem -LiteralPath $extractDir -Recurse | ForEach-Object {
+            Write-Output $_.FullName.Substring($extractDir.Length + 1)
+          }
+
+          if (-not (Test-Path -LiteralPath (Join-Path $extractDir 'server.js') -PathType Leaf)) {
+            Write-Error '::error::server.js must be at the deployment package root.'
             exit 1
-          fi
-          if grep -q '^node_modules/' package-files.txt; then
-            echo "::error::Deployment package must not include node_modules."
+          }
+          if (Test-Path -LiteralPath (Join-Path $extractDir 'node_modules')) {
+            Write-Error '::error::Deployment package must not include node_modules.'
             exit 1
-          fi
+          }
 
       - name: Verify Azure publish profile
         env:
           PUBLISH_PROFILE: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
         run: |
-          if [ -z "$PUBLISH_PROFILE" ]; then
-            echo "::error::Azure publish profile secret is missing."
+          if ([string]::IsNullOrWhiteSpace($env:PUBLISH_PROFILE)) {
+            Write-Error '::error::Azure publish profile secret is missing.'
             exit 1
-          fi
+          }
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
