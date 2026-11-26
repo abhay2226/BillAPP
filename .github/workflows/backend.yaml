@@ -200,9 +200,9 @@ jobs:
 
       - name: Verify Azure publish profile
         env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+          AZURE_BACKEND_PUBLISH_PROFILE: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:PUBLISH_PROFILE)) {
+          if ([string]::IsNullOrWhiteSpace($env:AZURE_BACKEND_PUBLISH_PROFILE)) {
             Write-Error '::error::Azure publish profile secret is missing.'
             exit 1
           }
