@@ -121,34 +121,17 @@ jobs:
           # Copy package files
           Copy-Item 'backend/package.json' $deployDir
           Copy-Item 'backend/package-lock.json' $deployDir
-          # Create Windows IISNode configuration
-          @'
-          <?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-          <system.webServer>
-          <handlers>
-          <add name="iisnode" path="dist/server.js" verb="*" modules="iisnode" />
-          </handlers>
-          <rewrite>
-          <rules>
-          <rule name="DynamicContent">
-          <conditions>
-          <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True" />
-          </conditions>
-          <action type="Rewrite" url="dist/server.js" />
-          </rule>
-          </rules>
-          </rewrite>
-          <iisnode watchedFiles="web.config;*.js" />
-          </system.webServer>
-          </configuration>
-          '@ | Set-Content (Join-Path $deployDir 'web.config') -Encoding utf8
+          # Include the repository's Windows IISNode configuration
+          Copy-Item 'backend/Web.config' (Join-Path $deployDir 'web.config') -Force
           # Verify deployment files
           if (!(Test-Path (Join-Path $deployDir 'dist/server.js'))) {
             throw 'Compiled server.js missing from deployment package'
           }
           if (!(Test-Path (Join-Path $deployDir 'node_modules/sqlite3'))) {
             throw 'SQLite production dependency missing'
+          }
+          if (!(Test-Path (Join-Path $deployDir 'web.config'))) {
+            throw 'Windows IISNode configuration missing from deployment package'
           }
           # Create ZIP with files at package root
           $zipPath = Join-Path $env:GITHUB_WORKSPACE 'intern-deploy.zip'
