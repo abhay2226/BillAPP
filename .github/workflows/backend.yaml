@@ -17,7 +17,7 @@ defaults:
     shell: pwsh
 
 env:
-  AZURE_WEBAPP_NAME: intern
+  AZURE_WEBAPP_NAME: backenddpy
   NODE_VERSION: '22.x'
   NPM_VERSION: '10.9.2'
 
