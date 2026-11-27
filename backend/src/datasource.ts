@@ -35,13 +35,20 @@ import { ActionType } from "./entity/MasterActionType.js";
 
 const currentDirectory = dirname(fileURLToPath(import.meta.url));
 const localDatabasePath = resolve(currentDirectory, "../shop_inventory.sqlite");
+const appServiceStoragePath = process.env.WEBSITE_SITE_NAME
+    ? resolve(
+        process.env.HOME ??
+            (process.platform === "win32" ? "D:\\home" : "/home"),
+        "site"
+    )
+    : null;
 const seedDatabasePath = process.env.SQLITE_SEED_DB_PATH
     ? resolve(process.env.SQLITE_SEED_DB_PATH)
-    : process.env.WEBSITE_SITE_NAME
-        ? "/home/site/shop_inventory_seed.sqlite"
+    : appServiceStoragePath
+        ? resolve(appServiceStoragePath, "shop_inventory_seed.sqlite")
         : localDatabasePath;
-const defaultDatabasePath = process.env.WEBSITE_SITE_NAME
-    ? "/home/site/shop_inventory.sqlite"
+const defaultDatabasePath = appServiceStoragePath
+    ? resolve(appServiceStoragePath, "shop_inventory.sqlite")
     : localDatabasePath;
 const databasePath = process.env.SQLITE_DB_PATH
     ? resolve(process.env.SQLITE_DB_PATH)

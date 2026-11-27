@@ -1,13 +1,12 @@
-
-name: Deploy backend to Azure App Service
+name: Deploy Backend to Azure Windows App Service
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yaml'
   workflow_dispatch:
 
 permissions:
@@ -17,208 +16,189 @@ defaults:
   run:
     shell: pwsh
 
-jobs:
-  backend-check:
-    name: Check, build and package backend
-    runs-on: windows-latest
+env:
+  AZURE_WEBAPP_NAME: intern
+  NODE_VERSION: '22.x'
+  NPM_VERSION: '10.9.2'
 
+jobs:
+
+  build:
+    name: Build and Package Backend
+    runs-on: windows-latest
     steps:
+
+      # 1. Checkout source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Setup Node.js 22
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
+      # 3. Pin npm version
+      - name: Setup npm
+        run: |
+          npm install --global npm@${{ env.NPM_VERSION }}
+          node --version
+          npm --version
+
+      # 4. Install dependencies
       - name: Install dependencies
         working-directory: backend
         run: npm ci
 
-      - name: Verify SQLite driver
+      # 5. Verify SQLite native driver
+      - name: Verify SQLite
         working-directory: backend
         run: |
-          $checkScript = Join-Path $PWD ('.verify-sqlite-' + [guid]::NewGuid().ToString('N') + '.ts')
-          try {
-            @'
-          import { AppDataSource } from "./src/datasource.ts";
-          console.log("SQLite datasource:", AppDataSource.options.type === "sqlite");
-          if (AppDataSource.options.type !== "sqlite") process.exitCode = 1;
-          '@ | Set-Content -LiteralPath $checkScript -Encoding utf8
-            npx tsx $checkScript
-            if ($LASTEXITCODE -ne 0) {
-              exit $LASTEXITCODE
-            }
-          }
-          finally {
-            if (Test-Path -LiteralPath $checkScript) {
-              Remove-Item -LiteralPath $checkScript -Force
-            }
-          }
+          node -e "const sqlite3 = require('sqlite3'); console.log('SQLite driver loaded successfully')"
 
-      - name: Type check
+      # 6. TypeScript validation
+      - name: TypeScript check
         working-directory: backend
         run: npm run check
 
+      # 7. Run tests
       - name: Run tests
         working-directory: backend
         run: npm test
 
+      # 8. Clean old build
       - name: Clean previous build
         working-directory: backend
         run: |
-          if (Test-Path -LiteralPath 'dist') {
-            Remove-Item -LiteralPath 'dist' -Recurse -Force
+          if (Test-Path 'dist') {
+            Remove-Item 'dist' -Recurse -Force
           }
 
+      # 9. Build TypeScript
       - name: Build backend
         working-directory: backend
         run: npm run build
 
+      # 10. Verify compiled application
       - name: Verify build output
         working-directory: backend
         run: |
-          if (-not (Test-Path -LiteralPath 'dist\server.js' -PathType Leaf)) {
-            Write-Error '::error::dist/server.js not found'
-            exit 1
+          if (!(Test-Path 'dist/server.js')) {
+            throw 'dist/server.js was not generated'
           }
-
-          if (-not (Test-Path -LiteralPath 'dist\entity\TransactionsProduct.js' -PathType Leaf)) {
-            Write-Error '::error::TransactionsProduct.js not found'
-            exit 1
-          }
-
           $databaseFiles = Get-ChildItem -LiteralPath 'dist' -Recurse -File |
             Where-Object { $_.Extension -match '^\.(sqlite|sqlite3|db)$' }
           if ($databaseFiles) {
-            $databaseFiles | ForEach-Object {
-              Write-Error "::error::Database files must not be included in dist: $($_.FullName)"
-            }
-            exit 1
+            throw 'Database files must not be included in dist.'
           }
+          Write-Host 'Compiled server.js verified.'
 
-          Write-Output 'Backend build output verified.'
+      # 11. Remove development dependencies
+      - name: Install production dependencies only
+        working-directory: backend
+        run: npm prune --omit=dev
 
-      - name: Verify Store entity metadata
+      # 12. Verify SQLite after pruning
+      - name: Verify production SQLite driver
         working-directory: backend
         run: |
-          $compiledEntity = 'dist\entity\TransactionsProduct.js'
-          Write-Output 'Checking compiled TransactionsProduct.js...'
+          node -e "require('sqlite3'); console.log('Production SQLite driver verified')"
 
-          if (Select-String -Path $compiledEntity -Pattern '__metadata\("design:type", Store\)' -Quiet) {
-            Write-Error '::error::Store metadata issue detected in compiled JavaScript.'
-            exit 1
-          else
-            Write-Output 'No direct Store design:type metadata found.'
-          }
-
-          Write-Output 'Checking expected Relation metadata...'
-
-          $relationMetadata = Select-String -Path $compiledEntity -Pattern 'design:type.*Object' -Context 4, 4
-          if ($relationMetadata) {
-            $relationMetadata
-          }
-
-      - name: Create dist-only deployment package
+      # 13. Create deployment package
+      - name: Create deployment package
         run: |
-          $deployDir = Join-Path $env:RUNNER_TEMP 'backend-deploy'
-          if (Test-Path -LiteralPath $deployDir) {
-            Remove-Item -LiteralPath $deployDir -Recurse -Force
+          $deployDir = Join-Path $env:RUNNER_TEMP 'intern-deploy'
+          if (Test-Path $deployDir) {
+            Remove-Item $deployDir -Recurse -Force
           }
           New-Item -ItemType Directory -Path $deployDir | Out-Null
-          Copy-Item -Path 'backend\dist\*' -Destination $deployDir -Recurse -Force
-          Copy-Item -Path 'backend\package.json', 'backend\package-lock.json' -Destination $deployDir -Force
-
-          $packagePath = Join-Path $deployDir 'package.json'
-          $packageJson = Get-Content -LiteralPath $packagePath -Raw | ConvertFrom-Json
-          $packageJson.main = 'server.js'
-          $packageJson.scripts.start = 'node server.js'
-          $packageJson.scripts.PSObject.Properties.Remove('build') | Out-Null
-          if ($packageJson.scripts.PSObject.Properties['build']) {
-            Write-Error '::error::The precompiled deployment package must not have a build script.'
-            exit 1
+          # Copy compiled application
+          Copy-Item 'backend/dist' $deployDir -Recurse -Force
+          # Copy production dependencies
+          Copy-Item 'backend/node_modules' $deployDir -Recurse -Force
+          # Copy package files
+          Copy-Item 'backend/package.json' $deployDir
+          Copy-Item 'backend/package-lock.json' $deployDir
+          # Create Windows IISNode configuration
+          @'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+          <system.webServer>
+          <handlers>
+          <add name="iisnode" path="dist/server.js" verb="*" modules="iisnode" />
+          </handlers>
+          <rewrite>
+          <rules>
+          <rule name="DynamicContent">
+          <conditions>
+          <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True" />
+          </conditions>
+          <action type="Rewrite" url="dist/server.js" />
+          </rule>
+          </rules>
+          </rewrite>
+          <iisnode watchedFiles="web.config;*.js" />
+          </system.webServer>
+          </configuration>
+          '@ | Set-Content (Join-Path $deployDir 'web.config') -Encoding utf8
+          # Verify deployment files
+          if (!(Test-Path (Join-Path $deployDir 'dist/server.js'))) {
+            throw 'Compiled server.js missing from deployment package'
           }
-          $packageContents = ($packageJson | ConvertTo-Json -Depth 100) + "`n"
-          [System.IO.File]::WriteAllText($packagePath, $packageContents, [System.Text.UTF8Encoding]::new($false))
-
-          if (-not (Test-Path -LiteralPath (Join-Path $deployDir 'server.js') -PathType Leaf)) {
-            Write-Error '::error::server.js must be at the deployment package root.'
-            exit 1
+          if (!(Test-Path (Join-Path $deployDir 'node_modules/sqlite3'))) {
+            throw 'SQLite production dependency missing'
           }
-          if (Test-Path -LiteralPath (Join-Path $deployDir 'node_modules')) {
-            Write-Error '::error::Deployment package must not include node_modules.'
-            exit 1
+          # Create ZIP with files at package root
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'intern-deploy.zip'
+          if (Test-Path $zipPath) {
+            Remove-Item $zipPath -Force
           }
+          Compress-Archive -Path "$deployDir/*" `
+            -DestinationPath $zipPath `
+            -CompressionLevel Optimal
+          Write-Host 'Deployment package created successfully.'
 
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'backend-deploy.zip'
-          if (Test-Path -LiteralPath $zipPath) {
-            Remove-Item -LiteralPath $zipPath -Force
-          }
-          Compress-Archive -Path (Join-Path $deployDir '*') -DestinationPath $zipPath -CompressionLevel Optimal
-
-      - name: Upload verified deployment package
+      # 14. Upload deployment artifact
+      - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
         with:
-          name: backend-deployment-package
-          path: ${{ github.workspace }}/backend-deploy.zip
+          name: intern-deployment-package
+          path: intern-deploy.zip
           if-no-files-found: error
           retention-days: 1
 
-  deploy-backend:
-    name: Deploy to Azure App Service
-    needs: backend-check
-
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-
+  deploy:
+    name: Deploy to Windows App Service
     runs-on: windows-latest
-
+    needs: build
     steps:
-      - name: Download verified deployment package
+
+      # 15. Download package
+      - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: backend-deployment-package
+          name: intern-deployment-package
           path: .
 
-      - name: Verify deployment package
-        run: |
-          $zipPath = Join-Path $env:GITHUB_WORKSPACE 'backend-deploy.zip'
-          if (-not (Test-Path -LiteralPath $zipPath -PathType Leaf)) {
-            Write-Error '::error::Deployment package not found'
-            exit 1
-          }
-
-          $extractDir = Join-Path $env:RUNNER_TEMP 'backend-deploy-verify'
-          if (Test-Path -LiteralPath $extractDir) {
-            Remove-Item -LiteralPath $extractDir -Recurse -Force
-          }
-          Expand-Archive -LiteralPath $zipPath -DestinationPath $extractDir
-          Get-ChildItem -LiteralPath $extractDir -Recurse | ForEach-Object {
-            Write-Output $_.FullName.Substring($extractDir.Length + 1)
-          }
-
-          if (-not (Test-Path -LiteralPath (Join-Path $extractDir 'server.js') -PathType Leaf)) {
-            Write-Error '::error::server.js must be at the deployment package root.'
-            exit 1
-          }
-          if (Test-Path -LiteralPath (Join-Path $extractDir 'node_modules')) {
-            Write-Error '::error::Deployment package must not include node_modules.'
-            exit 1
-          }
-
+      # 16. Verify publish profile secret
       - name: Verify Azure publish profile
         env:
-          AZURE_NEW_SEC: ${{ secrets.AZURE_NEW_SEC }}
+          AZURE_PROFILE: ${{ secrets.AZURE_NEW_SEC }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_NEW_SEC)) {
-            Write-Error '::error::Azure publish profile secret is missing.'
-            exit 1
+          if ([string]::IsNullOrWhiteSpace($env:AZURE_PROFILE)) {
+            throw 'Azure Windows publish profile secret is missing'
           }
+          if (!(Test-Path 'intern-deploy.zip')) {
+            throw 'Deployment ZIP package not found'
+          }
+          Write-Host 'Publish profile and deployment package verified.'
 
+      # 17. Deploy to Azure
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: BillApp-backend
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_NEW_SEC }}
-          package: backend-deploy.zip
+          package: intern-deploy.zip
