@@ -1,7 +1,12 @@
 import "reflect-metadata";
 
 import { DataSource } from "typeorm";
-import { mkdirSync } from "node:fs";
+import {
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    statSync
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import sqlite3 from "sqlite3";
@@ -28,11 +33,40 @@ import { Session } from "./entity/TransactionsSession.js";
 import { Audit } from "./entity/TransactionsAudit.js";
 import { ActionType } from "./entity/MasterActionType.js";
 
+const currentDirectory = dirname(fileURLToPath(import.meta.url));
+const localDatabasePath = resolve(currentDirectory, "../shop_inventory.sqlite");
+const seedDatabasePath = process.env.SQLITE_SEED_DB_PATH
+    ? resolve(process.env.SQLITE_SEED_DB_PATH)
+    : process.env.WEBSITE_SITE_NAME
+        ? "/home/site/shop_inventory_seed.sqlite"
+        : localDatabasePath;
+const defaultDatabasePath = process.env.WEBSITE_SITE_NAME
+    ? "/home/site/shop_inventory.sqlite"
+    : localDatabasePath;
 const databasePath = process.env.SQLITE_DB_PATH
     ? resolve(process.env.SQLITE_DB_PATH)
-    : fileURLToPath(new URL("../shop_inventory.sqlite", import.meta.url));
+    : defaultDatabasePath;
 
 mkdirSync(dirname(databasePath), { recursive: true });
+
+if (!existsSync(databasePath)) {
+    if (!existsSync(seedDatabasePath)) {
+        throw new Error(
+            `SQLite database not found. Expected source: ${seedDatabasePath}`
+        );
+    }
+
+    const seedStats = statSync(seedDatabasePath);
+    if (seedStats.size === 0) {
+        throw new Error("Original SQLite database is empty.");
+    }
+
+    copyFileSync(seedDatabasePath, databasePath);
+    console.log("Existing SQLite database copied to persistent storage.");
+}
+
+console.log("SQLite source database:", seedDatabasePath);
+console.log("Active SQLite database:", databasePath);
 
 export const AppDataSource = new DataSource({
     type: "sqlite",

@@ -90,6 +90,15 @@ jobs:
             exit 1
           }
 
+          $databaseFiles = Get-ChildItem -LiteralPath 'dist' -Recurse -File |
+            Where-Object { $_.Extension -match '^\.(sqlite|sqlite3|db)$' }
+          if ($databaseFiles) {
+            $databaseFiles | ForEach-Object {
+              Write-Error "::error::Database files must not be included in dist: $($_.FullName)"
+            }
+            exit 1
+          }
+
           Write-Output 'Backend build output verified.'
 
       - name: Verify Store entity metadata
