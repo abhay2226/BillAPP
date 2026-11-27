@@ -209,9 +209,9 @@ jobs:
 
       - name: Verify Azure publish profile
         env:
-          AZURE_NEW_SEC: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+          AZURE_NEW_SEC: ${{ secrets.AZURE_NEW_SEC }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_BACKEND_PUBLISH_PROFILE)) {
+          if ([string]::IsNullOrWhiteSpace($env:AZURE_NEW_SEC)) {
             Write-Error '::error::Azure publish profile secret is missing.'
             exit 1
           }
@@ -220,5 +220,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: BillApp-backend
-          publish-profile: ${{ secrets.AZURE_BACKEND_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_NEW_SEC }}
           package: backend-deploy.zip
